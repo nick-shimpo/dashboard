@@ -1,0 +1,64 @@
+{
+  "lastUpdated": "2026-02-14T13:00:00+01:00",
+  "updatedBy": "Kai",
+  "categories": {
+    "quick": {
+      "label": "Quick",
+      "description": "5 minutes or less",
+      "icon": "⚡"
+    },
+    "long": {
+      "label": "Long",
+      "description": "Extended tasks and projects",
+      "icon": "📋"
+    },
+    "recurring": {
+      "label": "Recurring",
+      "description": "Regular / ongoing",
+      "icon": "🔄"
+    }
+  },
+  "todos": [
+    {
+      "id": "t001",
+      "title": "Complete remaining TELOS files",
+      "category": "long",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Beliefs, Frames, Models, Books, Movies, Ideas, etc. — do in a PAI session",
+      "created": "2026-02-14",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t002",
+      "title": "Set up GitHub Pages for this dashboard",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Create repo, enable Pages, push files",
+      "created": "2026-02-14",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t003",
+      "title": "Inventory personal admin backlog",
+      "category": "long",
+      "status": "pending",
+      "priority": "high",
+      "notes": "First step of G2 — list all outstanding admin tasks so they can be categorized and tackled",
+      "created": "2026-02-14",
+      "due": null,
+      "subtasks": []
+    }
+  ],
+  "sections": [
+    {
+      "id": "todos",
+      "type": "todos",
+      "title": "Todo List",
+      "enabled": true
+    }
+  ]
+}

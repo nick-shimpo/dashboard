@@ -1,0 +1,508 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Nick's Dashboard</title>
+<style>
+  :root {
+    --bg: #0f1117;
+    --bg-card: #1a1d27;
+    --bg-card-hover: #1f2233;
+    --border: #2a2d3a;
+    --text: #e2e4e9;
+    --text-dim: #8b8fa3;
+    --text-faint: #5a5e72;
+    --accent: #3b82f6;
+    --accent-dim: #2563eb;
+    --green: #22c55e;
+    --amber: #f59e0b;
+    --red: #ef4444;
+    --purple: #a855f7;
+    --quick-bg: #1e293b;
+    --quick-border: #3b82f6;
+    --long-bg: #1e2127;
+    --long-border: #f59e0b;
+    --recurring-bg: #1a1e27;
+    --recurring-border: #a855f7;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.5;
+    min-height: 100vh;
+  }
+
+  /* Header */
+  .header {
+    padding: 1.5rem 2rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .header h1 {
+    font-size: 1.25rem;
+    font-weight: 600;
+    color: var(--text);
+  }
+  .header h1 span { color: var(--accent); }
+  .header-meta {
+    font-size: 0.8rem;
+    color: var(--text-dim);
+  }
+  .header-meta .updated { color: var(--text-faint); }
+
+  /* Dashboard grid */
+  .dashboard {
+    max-width: 1400px;
+    margin: 0 auto;
+    padding: 1.5rem 2rem;
+    display: flex;
+    flex-direction: column;
+    gap: 1.5rem;
+  }
+
+  /* Section panels */
+  .panel {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    overflow: hidden;
+  }
+  .panel-header {
+    padding: 1rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .panel-title {
+    font-size: 1rem;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .panel-count {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 0.15rem 0.5rem;
+    border-radius: 999px;
+  }
+
+  /* Category filters */
+  .filters {
+    display: flex;
+    gap: 0.5rem;
+    padding: 0.75rem 1.25rem;
+    border-bottom: 1px solid var(--border);
+    flex-wrap: wrap;
+  }
+  .filter-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 0.35rem 0.85rem;
+    border-radius: 6px;
+    font-size: 0.8rem;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .filter-btn:hover { border-color: var(--text-dim); color: var(--text); }
+  .filter-btn.active {
+    background: var(--accent);
+    border-color: var(--accent);
+    color: white;
+  }
+
+  /* Todo columns layout */
+  .todo-columns {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 0;
+  }
+  .todo-column {
+    border-right: 1px solid var(--border);
+    min-height: 200px;
+  }
+  .todo-column:last-child { border-right: none; }
+  .column-header {
+    padding: 0.75rem 1rem;
+    font-size: 0.8rem;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    border-bottom: 2px solid transparent;
+  }
+  .column-header .count {
+    font-size: 0.7rem;
+    font-weight: 400;
+    color: var(--text-dim);
+    background: var(--bg);
+    padding: 0.1rem 0.4rem;
+    border-radius: 999px;
+  }
+  .col-quick .column-header { border-bottom-color: var(--quick-border); color: var(--quick-border); }
+  .col-long .column-header { border-bottom-color: var(--long-border); color: var(--long-border); }
+  .col-recurring .column-header { border-bottom-color: var(--recurring-border); color: var(--recurring-border); }
+
+  .column-items { padding: 0.5rem; }
+
+  /* Todo items */
+  .todo-item {
+    padding: 0.75rem;
+    margin-bottom: 0.35rem;
+    border-radius: 8px;
+    background: var(--bg);
+    border: 1px solid transparent;
+    cursor: default;
+    transition: all 0.15s;
+  }
+  .todo-item:hover {
+    border-color: var(--border);
+    background: var(--bg-card-hover);
+  }
+  .todo-item.completed .todo-title {
+    text-decoration: line-through;
+    color: var(--text-faint);
+  }
+  .todo-title {
+    font-size: 0.875rem;
+    font-weight: 500;
+    margin-bottom: 0.25rem;
+  }
+  .todo-meta {
+    display: flex;
+    gap: 0.75rem;
+    align-items: center;
+    flex-wrap: wrap;
+  }
+  .todo-notes {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    line-height: 1.4;
+  }
+  .todo-priority {
+    font-size: 0.65rem;
+    padding: 0.1rem 0.4rem;
+    border-radius: 4px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.03em;
+  }
+  .priority-high { background: rgba(239,68,68,0.15); color: var(--red); }
+  .priority-normal { background: rgba(59,130,246,0.1); color: var(--accent); }
+  .priority-low { background: rgba(100,116,139,0.15); color: var(--text-dim); }
+  .todo-date {
+    font-size: 0.7rem;
+    color: var(--text-faint);
+  }
+  .todo-due {
+    font-size: 0.7rem;
+    color: var(--amber);
+  }
+
+  /* Subtasks */
+  .subtasks {
+    margin-top: 0.5rem;
+    padding-left: 0.25rem;
+  }
+  .subtask {
+    font-size: 0.75rem;
+    color: var(--text-dim);
+    padding: 0.15rem 0;
+    display: flex;
+    align-items: center;
+    gap: 0.4rem;
+  }
+  .subtask-check { color: var(--text-faint); }
+  .subtask.done .subtask-label { text-decoration: line-through; color: var(--text-faint); }
+  .subtask.done .subtask-check { color: var(--green); }
+
+  /* Stats bar */
+  .stats-bar {
+    padding: 0.75rem 1.25rem;
+    border-top: 1px solid var(--border);
+    display: flex;
+    gap: 1.5rem;
+    font-size: 0.75rem;
+    color: var(--text-dim);
+  }
+  .stat-value { color: var(--text); font-weight: 600; }
+
+  /* Suggestion box */
+  .suggestion-box {
+    background: var(--bg-card);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 1.25rem;
+  }
+  .suggestion-title {
+    font-size: 0.875rem;
+    font-weight: 600;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+  }
+  .suggestion-content {
+    font-size: 0.825rem;
+    color: var(--text-dim);
+    line-height: 1.6;
+  }
+  .suggestion-content strong { color: var(--text); }
+
+  /* Empty state */
+  .empty {
+    padding: 2rem 1rem;
+    text-align: center;
+    color: var(--text-faint);
+    font-size: 0.8rem;
+  }
+
+  /* Loading */
+  .loading {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4rem;
+    color: var(--text-dim);
+  }
+
+  /* Error */
+  .error {
+    padding: 2rem;
+    text-align: center;
+    color: var(--red);
+  }
+
+  /* Responsive */
+  @media (max-width: 900px) {
+    .todo-columns {
+      grid-template-columns: 1fr;
+    }
+    .todo-column {
+      border-right: none;
+      border-bottom: 1px solid var(--border);
+    }
+    .todo-column:last-child { border-bottom: none; }
+    .header { padding: 1rem; }
+    .dashboard { padding: 1rem; }
+  }
+
+  @media (max-width: 600px) {
+    .stats-bar { flex-wrap: wrap; gap: 0.75rem; }
+  }
+</style>
+</head>
+<body>
+
+<div class="header">
+  <h1><span>Nick's</span> Dashboard</h1>
+  <div class="header-meta">
+    <span class="updated" id="lastUpdated">Loading...</span>
+  </div>
+</div>
+
+<div class="dashboard" id="dashboard">
+  <div class="loading">Loading dashboard...</div>
+</div>
+
+<script>
+const DATA_URL = 'data/todos.json';
+
+async function loadData() {
+  try {
+    const res = await fetch(DATA_URL + '?t=' + Date.now());
+    if (!res.ok) throw new Error('Failed to load data');
+    return await res.json();
+  } catch (e) {
+    console.error('Load error:', e);
+    return null;
+  }
+}
+
+function formatDate(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+}
+
+function formatUpdated(dateStr) {
+  if (!dateStr) return '';
+  const d = new Date(dateStr);
+  const now = new Date();
+  const diffMs = now - d;
+  const diffMins = Math.floor(diffMs / 60000);
+  const diffHours = Math.floor(diffMs / 3600000);
+  const diffDays = Math.floor(diffMs / 86400000);
+
+  if (diffMins < 1) return 'just now';
+  if (diffMins < 60) return diffMins + 'm ago';
+  if (diffHours < 24) return diffHours + 'h ago';
+  if (diffDays < 7) return diffDays + 'd ago';
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric' });
+}
+
+function renderPriority(priority) {
+  if (!priority || priority === 'normal') return '<span class="todo-priority priority-normal">normal</span>';
+  if (priority === 'high') return '<span class="todo-priority priority-high">high</span>';
+  if (priority === 'low') return '<span class="todo-priority priority-low">low</span>';
+  return '';
+}
+
+function renderSubtasks(subtasks) {
+  if (!subtasks || subtasks.length === 0) return '';
+  const items = subtasks.map(st => {
+    const done = st.done ? 'done' : '';
+    const check = st.done ? '✓' : '○';
+    return `<div class="subtask ${done}"><span class="subtask-check">${check}</span><span class="subtask-label">${esc(st.title)}</span></div>`;
+  }).join('');
+  return `<div class="subtasks">${items}</div>`;
+}
+
+function renderTodoItem(todo) {
+  const completedClass = todo.status === 'completed' ? 'completed' : '';
+  const dueHtml = todo.due ? `<span class="todo-due">Due ${formatDate(todo.due)}</span>` : '';
+  const notesHtml = todo.notes ? `<div class="todo-notes">${esc(todo.notes)}</div>` : '';
+
+  return `
+    <div class="todo-item ${completedClass}">
+      <div class="todo-title">${esc(todo.title)}</div>
+      ${notesHtml}
+      ${renderSubtasks(todo.subtasks)}
+      <div class="todo-meta">
+        ${renderPriority(todo.priority)}
+        ${dueHtml}
+        <span class="todo-date">${formatDate(todo.created)}</span>
+      </div>
+    </div>
+  `;
+}
+
+function esc(str) {
+  const div = document.createElement('div');
+  div.textContent = str;
+  return div.innerHTML;
+}
+
+function renderTodos(data) {
+  const todos = data.todos || [];
+  const cats = data.categories || {};
+
+  const pending = todos.filter(t => t.status !== 'completed');
+  const completed = todos.filter(t => t.status === 'completed');
+
+  const quick = pending.filter(t => t.category === 'quick');
+  const long = pending.filter(t => t.category === 'long');
+  const recurring = pending.filter(t => t.category === 'recurring');
+
+  const renderCol = (items) => {
+    if (items.length === 0) return '<div class="empty">Nothing here yet</div>';
+    // Sort: high priority first
+    items.sort((a, b) => {
+      const p = { high: 0, normal: 1, low: 2 };
+      return (p[a.priority] || 1) - (p[b.priority] || 1);
+    });
+    return items.map(renderTodoItem).join('');
+  };
+
+  return `
+    <div class="panel">
+      <div class="panel-header">
+        <div class="panel-title">📝 Todo List <span class="panel-count">${pending.length} pending</span></div>
+      </div>
+      <div class="todo-columns">
+        <div class="todo-column col-quick">
+          <div class="column-header">⚡ Quick <span class="count">${quick.length}</span></div>
+          <div class="column-items">${renderCol(quick)}</div>
+        </div>
+        <div class="todo-column col-long">
+          <div class="column-header">📋 Long <span class="count">${long.length}</span></div>
+          <div class="column-items">${renderCol(long)}</div>
+        </div>
+        <div class="todo-column col-recurring">
+          <div class="column-header">🔄 Recurring <span class="count">${recurring.length}</span></div>
+          <div class="column-items">${renderCol(recurring)}</div>
+        </div>
+      </div>
+      <div class="stats-bar">
+        <span>Pending: <span class="stat-value">${pending.length}</span></span>
+        <span>Completed: <span class="stat-value">${completed.length}</span></span>
+        <span>Quick wins available: <span class="stat-value">${quick.length}</span></span>
+      </div>
+    </div>
+  `;
+}
+
+function renderSuggestion(data) {
+  const todos = (data.todos || []).filter(t => t.status !== 'completed');
+  const quick = todos.filter(t => t.category === 'quick');
+  const highPri = todos.filter(t => t.priority === 'high');
+
+  let suggestion = '';
+  if (highPri.length > 0) {
+    suggestion = `You have <strong>${highPri.length} high priority</strong> item${highPri.length > 1 ? 's' : ''} waiting. Consider tackling: <strong>${esc(highPri[0].title)}</strong>`;
+  } else if (quick.length > 0) {
+    suggestion = `Got 5 minutes? You have <strong>${quick.length} quick win${quick.length > 1 ? 's' : ''}</strong> you could knock out right now.`;
+  } else if (todos.length === 0) {
+    suggestion = 'All clear! No pending tasks. Tell Kai when you need to add something.';
+  } else {
+    suggestion = `${todos.length} tasks pending. Ask Kai to break down any long tasks into actionable steps.`;
+  }
+
+  return `
+    <div class="suggestion-box">
+      <div class="suggestion-title">💡 Kai's Suggestion</div>
+      <div class="suggestion-content">${suggestion}</div>
+    </div>
+  `;
+}
+
+async function render() {
+  const data = await loadData();
+  const dashboard = document.getElementById('dashboard');
+  const updated = document.getElementById('lastUpdated');
+
+  if (!data) {
+    dashboard.innerHTML = '<div class="error">Could not load dashboard data. Check data/todos.json.</div>';
+    return;
+  }
+
+  updated.textContent = 'Updated ' + formatUpdated(data.lastUpdated) + (data.updatedBy ? ' by ' + data.updatedBy : '');
+
+  let html = '';
+
+  // Render each enabled section
+  const sections = data.sections || [{ id: 'todos', type: 'todos', enabled: true }];
+  for (const section of sections) {
+    if (!section.enabled) continue;
+    if (section.type === 'todos') {
+      html += renderTodos(data);
+    }
+  }
+
+  // Always show suggestion
+  html += renderSuggestion(data);
+
+  dashboard.innerHTML = html;
+}
+
+// Initial render
+render();
+
+// Auto-refresh every 60 seconds
+setInterval(render, 60000);
+</script>
+
+</body>
+</html>
