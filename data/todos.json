@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-14T17:30:00+01:00",
+  "lastUpdated": "2026-02-15T00:15:00+01:00",
   "updatedBy": "Kai",
   "categories": {
     "quick": {
@@ -64,6 +64,28 @@
       "priority": "high",
       "notes": "First step of G2 — list all outstanding admin tasks so they can be categorized and tackled",
       "created": "2026-02-14",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t005",
+      "title": "Get UK passports for the children",
+      "category": "long",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Multi-step citizenship/passport process — needs action plan breakdown with PAI",
+      "created": "2026-02-15",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t006",
+      "title": "Start German citizenship application",
+      "category": "long",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Complex administrative process — needs action plan breakdown with PAI",
+      "created": "2026-02-15",
       "due": null,
       "subtasks": []
     }
