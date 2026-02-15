@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-14T13:00:00+01:00",
+  "lastUpdated": "2026-02-14T17:30:00+01:00",
   "updatedBy": "Kai",
   "categories": {
     "quick": {
@@ -40,6 +40,21 @@
       "created": "2026-02-14",
       "due": null,
       "subtasks": []
+    },
+    {
+      "id": "t004",
+      "title": "Buy Raspberry Pi 5 (8GB) for always-on PAI",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Pi 5, 8GB RAM (~€85-95). Also need: official case with fan (~€10), USB-C 27W PSU (~€12), 64GB+ microSD A2 (~€12). Total ~€120. Check berrybase.de, reichelt.de, or amazon.de. Project details: ~/voice-pipeline/projects/pai-pi/README.md",
+      "created": "2026-02-14",
+      "due": null,
+      "subtasks": [
+        {"title": "Order Pi 5 8GB + case + PSU + SD card", "done": false},
+        {"title": "Flash Raspberry Pi OS 64-bit", "done": false},
+        {"title": "Install Claude Code CLI and authenticate", "done": false}
+      ]
     },
     {
       "id": "t003",
