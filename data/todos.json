@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-15T00:15:00+01:00",
+  "lastUpdated": "2026-02-15T00:50:00+01:00",
   "updatedBy": "Kai",
   "categories": {
     "quick": {
@@ -73,10 +73,20 @@
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Multi-step citizenship/passport process — needs action plan breakdown with PAI",
+      "notes": "Children are British citizens by descent (Nick is British by birth). First-time passport application from Germany.",
       "created": "2026-02-15",
       "due": null,
-      "subtasks": []
+      "subtasks": [
+        {"title": "Gather required documents: children's German birth certificates (Geburtsurkunden)", "done": false},
+        {"title": "Get certified English translations of birth certificates (official translator)", "done": false},
+        {"title": "Locate Nick's UK birth certificate or current UK passport as proof of citizenship", "done": false},
+        {"title": "Get passport photos for each child (UK spec: 45mm x 35mm, plain light background)", "done": false},
+        {"title": "Find countersignatory (British citizen, professional, known you 2+ years, not family)", "done": false},
+        {"title": "Complete online application at gov.uk/overseas-passports for each child", "done": false},
+        {"title": "Pay fees: £57.50 per child (standard) or £135.50 (fast-track)", "done": false},
+        {"title": "Upload/send documents and photos to UK Passport Office", "done": false},
+        {"title": "Wait for processing (3 weeks standard, 1 week fast-track) and delivery", "done": false}
+      ]
     },
     {
       "id": "t006",
@@ -84,10 +94,25 @@
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Complex administrative process — needs action plan breakdown with PAI",
+      "notes": "Nick has 10 years residency (exceeds 5-year minimum), B1 certificate, and naturalization test completed. Ready to apply. Timeline: 18-24 months processing.",
       "created": "2026-02-15",
       "due": null,
-      "subtasks": []
+      "subtasks": [
+        {"title": "Identify local Einbürgerungsbehörde (naturalization office) and check appointment system", "done": false},
+        {"title": "Gather core documents: valid passport, German residence permit, birth certificate with translation", "done": false},
+        {"title": "Gather financial documents: payslips (last 6 months), employment contract, rental contract", "done": false},
+        {"title": "Gather proof of health insurance (Krankenversicherung)", "done": false},
+        {"title": "Locate B1 German language certificate (already completed)", "done": false},
+        {"title": "Locate naturalization test certificate (already completed)", "done": false},
+        {"title": "Prepare CV in German (Lebenslauf) with residency timeline", "done": false},
+        {"title": "Complete application form (Antrag auf Einbürgerung) — download from Behörde or fill at appointment", "done": false},
+        {"title": "Book appointment at Einbürgerungsbehörde to submit application", "done": false},
+        {"title": "Submit application with all documents at appointment", "done": false},
+        {"title": "Pay application fee: €255 (at appointment or after approval)", "done": false},
+        {"title": "Wait for processing (18-24 months) — may receive requests for additional documents", "done": false},
+        {"title": "Upon approval, pay certificate fee: €25", "done": false},
+        {"title": "Receive Einbürgerungsurkunde (naturalization certificate)", "done": false}
+      ]
     }
   ],
   "sections": [
