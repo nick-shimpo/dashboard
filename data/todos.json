@@ -1,6 +1,6 @@
 {
-  "lastUpdated": "2026-02-15T00:50:00+01:00",
-  "updatedBy": "Kai",
+  "lastUpdated": "2026-02-16T12:56:00+01:00",
+  "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
       "label": "Quick",
@@ -113,6 +113,116 @@
         {"title": "Upon approval, pay certificate fee: €25", "done": false},
         {"title": "Receive Einbürgerungsurkunde (naturalization certificate)", "done": false}
       ]
+    }
+    {
+      "id": "t007",
+      "title": "Buy name signs for kids bedroom doors",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Personalised door signs for the children's bedrooms",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t008",
+      "title": "Buy art for kids bedroom walls",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Wall art / prints / posters for children's bedrooms",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t009",
+      "title": "Buy brackets for under-bed drawers",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Brackets to support under-bed storage drawers",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t010",
+      "title": "Buy picture hanging wire",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t011",
+      "title": "Buy outside storage container for parking spot",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Outdoor/weatherproof storage box for the parking spot area",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t012",
+      "title": "Fix drawers",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t013",
+      "title": "Fix buffet",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t014",
+      "title": "Store sandbox",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Put sandbox into storage",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t015",
+      "title": "Sell dining table",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "List for sale — eBay Kleinanzeigen / Facebook Marketplace",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t016",
+      "title": "Sell D&D books",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "List D&D books for sale — eBay Kleinanzeigen / Facebook Marketplace / r/lfg",
+      "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
     }
   ],
   "sections": [
