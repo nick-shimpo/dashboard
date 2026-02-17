@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-16T12:56:00+01:00",
+  "lastUpdated": "2026-02-17T20:52:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -113,7 +113,7 @@
         {"title": "Upon approval, pay certificate fee: €25", "done": false},
         {"title": "Receive Einbürgerungsurkunde (naturalization certificate)", "done": false}
       ]
-    }
+    },
     {
       "id": "t007",
       "title": "Buy name signs for kids bedroom doors",
@@ -221,6 +221,17 @@
       "priority": "normal",
       "notes": "List D&D books for sale — eBay Kleinanzeigen / Facebook Marketplace / r/lfg",
       "created": "2026-02-16",
+      "due": null,
+      "subtasks": []
+    },
+    {
+      "id": "t017",
+      "title": "Cancel Foreign Affairs subscription",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Cancel the Foreign Affairs magazine/journal subscription",
+      "created": "2026-02-17",
       "due": null,
       "subtasks": []
     }
