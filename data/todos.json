@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-17T20:52:00+01:00",
+  "lastUpdated": "2026-02-20T10:00:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -45,9 +45,9 @@
       "id": "t004",
       "title": "Buy Raspberry Pi 5 (8GB) for always-on PAI",
       "category": "quick",
-      "status": "pending",
+      "status": "on-hold",
       "priority": "high",
-      "notes": "Pi 5, 8GB RAM (~€85-95). Also need: official case with fan (~€10), USB-C 27W PSU (~€12), 64GB+ microSD A2 (~€12). Total ~€120. Check berrybase.de, reichelt.de, or amazon.de. Project details: ~/voice-pipeline/projects/pai-pi/README.md",
+      "notes": "ON HOLD — pending budget review. Pi 5, 8GB RAM (~€85-95). Also need: official case with fan (~€10), USB-C 27W PSU (~€12), 64GB+ microSD A2 (~€12). Total ~€120. Check berrybase.de, reichelt.de, or amazon.de. Project details: ~/voice-pipeline/projects/pai-pi/README.md",
       "created": "2026-02-14",
       "due": null,
       "subtasks": [
@@ -69,19 +69,20 @@
     },
     {
       "id": "t005",
-      "title": "Get UK passports for the children",
+      "title": "Get UK passports for both children",
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Children are British citizens by descent (Nick is British by birth). First-time passport application from Germany.",
+      "notes": "Both children are British citizens by descent (Nick is British by birth, married to mother at time of birth — straightforward claim). Applying from Germany. Nick's UK passport and UK birth certificate are available. Countersignatory identified.",
       "created": "2026-02-15",
       "due": null,
       "subtasks": [
-        {"title": "Gather required documents: children's German birth certificates (Geburtsurkunden)", "done": false},
+        {"title": "Gather children's German birth certificates (Geburtsurkunden)", "done": false},
         {"title": "Get certified English translations of birth certificates (official translator)", "done": false},
-        {"title": "Locate Nick's UK birth certificate or current UK passport as proof of citizenship", "done": false},
+        {"title": "Nick's UK passport — AVAILABLE", "done": true},
+        {"title": "Nick's UK birth certificate — AVAILABLE", "done": true},
+        {"title": "Countersignatory — IDENTIFIED", "done": true},
         {"title": "Get passport photos for each child (UK spec: 45mm x 35mm, plain light background)", "done": false},
-        {"title": "Find countersignatory (British citizen, professional, known you 2+ years, not family)", "done": false},
         {"title": "Complete online application at gov.uk/overseas-passports for each child", "done": false},
         {"title": "Pay fees: £57.50 per child (standard) or £135.50 (fast-track)", "done": false},
         {"title": "Upload/send documents and photos to UK Passport Office", "done": false},
@@ -94,24 +95,23 @@
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Nick has 10 years residency (exceeds 5-year minimum), B1 certificate, and naturalization test completed. Ready to apply. Timeline: 18-24 months processing.",
+      "notes": "Nick lives in Götzenhain (Stadtteil of Dreieich), Kreis Offenbach. Married to German citizen. 10+ years residency (far exceeds 3-year minimum for spouses). B1 certificate and naturalization test already completed. Application goes via Kreisverwaltung Offenbach to Regierungspräsidium Darmstadt. Contact: Fachdienst Ausländerangelegenheiten, Werner-Hilpert-Str. 1, Dietzenbach, Tel: 06074 8180-1347. Fee: €255 adult. Timeline: 18-24 months processing.",
       "created": "2026-02-15",
       "due": null,
       "subtasks": [
-        {"title": "Identify local Einbürgerungsbehörde (naturalization office) and check appointment system", "done": false},
-        {"title": "Gather core documents: valid passport, German residence permit, birth certificate with translation", "done": false},
+        {"title": "Contact Kreis Offenbach Ausländerbehörde (06074 8180-1347) to confirm process and book appointment", "done": false},
+        {"title": "Gather core documents: valid UK passport, German residence permit (Aufenthaltstitel), UK birth certificate with certified translation", "done": false},
+        {"title": "Gather marriage certificate (Heiratsurkunde) proving marriage to German citizen", "done": false},
         {"title": "Gather financial documents: payslips (last 6 months), employment contract, rental contract", "done": false},
         {"title": "Gather proof of health insurance (Krankenversicherung)", "done": false},
         {"title": "Locate B1 German language certificate (already completed)", "done": false},
         {"title": "Locate naturalization test certificate (already completed)", "done": false},
         {"title": "Prepare CV in German (Lebenslauf) with residency timeline", "done": false},
-        {"title": "Complete application form (Antrag auf Einbürgerung) — download from Behörde or fill at appointment", "done": false},
-        {"title": "Book appointment at Einbürgerungsbehörde to submit application", "done": false},
-        {"title": "Submit application with all documents at appointment", "done": false},
-        {"title": "Pay application fee: €255 (at appointment or after approval)", "done": false},
-        {"title": "Wait for processing (18-24 months) — may receive requests for additional documents", "done": false},
-        {"title": "Upon approval, pay certificate fee: €25", "done": false},
-        {"title": "Receive Einbürgerungsurkunde (naturalization certificate)", "done": false}
+        {"title": "Complete application form (Antrag auf Einbürgerung)", "done": false},
+        {"title": "Submit application with all documents at Kreisverwaltung appointment", "done": false},
+        {"title": "Pay application fee: €255", "done": false},
+        {"title": "Wait for processing by Regierungspräsidium Darmstadt (18-24 months)", "done": false},
+        {"title": "Receive Einbürgerungsurkunde (naturalization certificate) at Rathaus Dreieich", "done": false}
       ]
     },
     {
