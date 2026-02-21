@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-21T08:35:00+01:00",
+  "lastUpdated": "2026-02-21T10:56:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -95,11 +95,11 @@
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Address: Schießgartenstraße 3, Götzenhain (Stadtteil of Dreieich), Kreis Offenbach. Married to German citizen. 10+ years residency (far exceeds 3-year minimum for spouses). B1 certificate and naturalization test already completed. Application goes via Kreisverwaltung Offenbach to Regierungspräsidium Darmstadt. Contact: Fachdienst Ausländerangelegenheiten, Werner-Hilpert-Str. 1, Dietzenbach, Tel: 06074 8180-1347. Fee: €255 adult. Timeline: 18-24 months processing.",
+      "notes": "Address: Schießgartenstraße 3, Götzenhain (Stadtteil of Dreieich). CORRECTED: Stadt Dreieich handles Einbürgerung directly (43,600+ residents, above 7,500 threshold). NOT Kreis Offenbach. Application goes to Stadt Dreieich → forwarded to Regierungspräsidium Darmstadt for decision. Contact: Stadt Dreieich, Hauptstraße 45, 63303 Dreieich. Email: stadt@dreieich.de. Tel: 06103 601-0. Married to German citizen. 10+ years residency (far exceeds 3-year minimum for spouses). B1 certificate and naturalization test already completed. Fee: €255 adult (collected by RP Darmstadt). Timeline: 18-24 months processing.",
       "created": "2026-02-15",
       "due": null,
       "subtasks": [
-        {"title": "Contact Kreis Offenbach Ausländerbehörde (06074 8180-1347) to confirm process and book appointment", "done": false},
+        {"title": "Email Stadt Dreieich (stadt@dreieich.de) to confirm Einbürgerung process and required documents", "done": false},
         {"title": "Gather core documents: valid UK passport, German residence permit (Aufenthaltstitel), UK birth certificate with certified translation", "done": false},
         {"title": "Gather marriage certificate (Heiratsurkunde) proving marriage to German citizen", "done": false},
         {"title": "Gather financial documents: payslips (last 6 months), employment contract, rental contract", "done": false},
