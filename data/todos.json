@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-21T10:56:00+01:00",
+  "lastUpdated": "2026-02-21T11:10:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -99,7 +99,7 @@
       "created": "2026-02-15",
       "due": null,
       "subtasks": [
-        {"title": "Email Stadt Dreieich (stadt@dreieich.de) to confirm Einbürgerung process and required documents", "done": false},
+        {"title": "Email Stadt Dreieich (stadt@dreieich.de) to confirm Einbürgerung process and required documents — SENT 2026-02-21, awaiting reply", "done": true},
         {"title": "Gather core documents: valid UK passport, German residence permit (Aufenthaltstitel), UK birth certificate with certified translation", "done": false},
         {"title": "Gather marriage certificate (Heiratsurkunde) proving marriage to German citizen", "done": false},
         {"title": "Gather financial documents: payslips (last 6 months), employment contract, rental contract", "done": false},
@@ -108,7 +108,7 @@
         {"title": "Locate naturalization test certificate (already completed)", "done": false},
         {"title": "Prepare CV in German (Lebenslauf) with residency timeline", "done": false},
         {"title": "Complete application form (Antrag auf Einbürgerung)", "done": false},
-        {"title": "Submit application with all documents at Kreisverwaltung appointment", "done": false},
+        {"title": "Submit application with all documents at Stadt Dreieich Rathaus", "done": false},
         {"title": "Pay application fee: €255", "done": false},
         {"title": "Wait for processing by Regierungspräsidium Darmstadt (18-24 months)", "done": false},
         {"title": "Receive Einbürgerungsurkunde (naturalization certificate) at Rathaus Dreieich", "done": false}
