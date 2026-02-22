@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-22T14:28:00+01:00",
+  "lastUpdated": "2026-02-22T17:30:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -266,6 +266,36 @@
       "subtasks": [
         {"title": "Check which cable came with the car (Mode 2 domestic plug or Mode 3 Type 2)", "done": false},
         {"title": "If Mode 2 only, research Mode 3 Type 2 cables for public charging", "done": false}
+      ]
+    },
+    {
+      "id": "t019",
+      "title": "Book psychiatrist appointment for repeat medication",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Repeat prescription appointment. Try to schedule on same day as neurologist (t020) to combine into one city trip.",
+      "created": "2026-02-22",
+      "due": null,
+      "subtasks": [
+        {"title": "Call psychiatrist to book appointment", "done": false},
+        {"title": "Coordinate date/time with neurologist appointment (t020) — aim for same day", "done": false},
+        {"title": "Attend appointment and get prescription", "done": false}
+      ]
+    },
+    {
+      "id": "t020",
+      "title": "Book neurologist appointment for repeat medication",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Repeat prescription appointment. Try to schedule on same day as psychiatrist (t019) to combine into one city trip.",
+      "created": "2026-02-22",
+      "due": null,
+      "subtasks": [
+        {"title": "Call neurologist to book appointment", "done": false},
+        {"title": "Coordinate date/time with psychiatrist appointment (t019) — aim for same day", "done": false},
+        {"title": "Attend appointment and get prescription", "done": false}
       ]
     },
     {
