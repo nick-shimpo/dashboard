@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-21T11:10:00+01:00",
+  "lastUpdated": "2026-02-22T12:55:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -73,7 +73,7 @@
       "category": "long",
       "status": "pending",
       "priority": "high",
-      "notes": "Both children born in Germany to German mother. Already have German passports. British citizens by descent (Nick is British by birth, married to mother at time of birth — straightforward claim). Applying for UK passports from Germany. Nick's UK passport and UK birth certificate are available. Countersignatory identified.",
+      "notes": "Both children born in Germany to German mother. Already have German passports. British citizens by descent (Nick is British by birth, married to mother at time of birth — straightforward claim). Applying for UK passports from Germany. Nick's UK passport and UK birth certificate are available. Countersignatory identified. IMPORTANT: Nick has internationale Geburtsurkunden (multilingual birth certificates) for both children. HMPO does NOT accept Multilingual Standard Forms (MSFs) since Brexit. You still need the standard German Geburtsurkunde + certified English translation. The internationale version alone will NOT be accepted.",
       "created": "2026-02-15",
       "due": null,
       "subtasks": [
@@ -223,6 +223,20 @@
       "created": "2026-02-16",
       "due": null,
       "subtasks": []
+    },
+    {
+      "id": "t018",
+      "title": "Check Ford Kuga PHEV charging cable compatibility with German public stations",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Ford Kuga 2021 full hybrid / PHEV. Check whether the included charging cable (likely Type 2 / Mennekes) works at standard German public charging points. Kuga PHEV onboard charger maxes at 3.7kW. Type 2 is the EU standard so it SHOULD be compatible, but verify the specific cable that came with the car (Mode 2 domestic vs Mode 3 public). If it's only a Mode 2 granny cable, you may need a separate Type 2-to-Type 2 Mode 3 cable for public stations (~€150-300).",
+      "created": "2026-02-22",
+      "due": null,
+      "subtasks": [
+        {"title": "Check which cable came with the car (Mode 2 domestic plug or Mode 3 Type 2)", "done": false},
+        {"title": "If Mode 2 only, research Mode 3 Type 2 cables for public charging", "done": false}
+      ]
     },
     {
       "id": "t017",
