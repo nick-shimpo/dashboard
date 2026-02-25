@@ -130,8 +130,8 @@
 
   .board {
     display: grid;
-    grid-template-columns: repeat(12, 1fr);
-    grid-template-rows: repeat(12, 1fr);
+    grid-template-columns: repeat(6, 1fr);
+    grid-template-rows: repeat(6, 1fr);
     gap: 1px;
     width: 100%;
     max-width: min(100vw - 8px, 100vh - 200px);
@@ -163,7 +163,7 @@
   .tile.has-exit-locked { }
 
   .tile-content {
-    font-size: clamp(8px, 2.5vw, 14px);
+    font-size: clamp(12px, 5vw, 24px);
     line-height: 1;
     text-align: center;
   }
@@ -171,14 +171,14 @@
     position: absolute;
     top: 1px;
     right: 2px;
-    font-size: 6px;
+    font-size: 10px;
     opacity: 0.8;
   }
   .tile-telegraph {
     position: absolute;
     bottom: 1px;
     left: 1px;
-    font-size: 5px;
+    font-size: 9px;
     color: var(--enemy);
     opacity: 0.7;
   }
@@ -390,7 +390,7 @@
 // ============================================================
 
 // --- CONSTANTS ---
-const GRID = 12;
+const GRID = 6;
 const HAND_SIZE = 5;
 const MANA_STORAGE_CAP = 5;
 const MANA_PER_ROOM = 3;
@@ -400,8 +400,8 @@ const ARCHER_RANGE = 3;
 
 // --- CARD DEFINITIONS ---
 const CARD_DEFS = {
-  march:    { name: 'March',     type: 'move',    basic: 'Move 2',          powered: 'Move 4',           basicVal: 2, poweredVal: 4 },
-  sprint:   { name: 'Sprint',    type: 'move',    basic: 'Move 3',          powered: 'Move 5',           basicVal: 3, poweredVal: 5 },
+  march:    { name: 'March',     type: 'move',    basic: 'Move 4',          powered: 'Move 8',           basicVal: 4, poweredVal: 8 },
+  sprint:   { name: 'Sprint',    type: 'move',    basic: 'Move 6',          powered: 'Move 10',          basicVal: 6, poweredVal: 10 },
   strike:   { name: 'Strike',    type: 'attack',  basic: 'Melee hit',       powered: 'Piercing melee',   subtype: 'melee' },
   shoot:    { name: 'Shoot',     type: 'attack',  basic: 'Ranged 3',        powered: 'Ranged 5',         subtype: 'ranged', basicRange: 3, poweredRange: 5 },
   block:    { name: 'Block',     type: 'defense', basic: 'Block 1 attack',  powered: 'Block all attacks' },
@@ -582,7 +582,7 @@ function generateRoom() {
       ey = Math.floor(Math.random() * GRID);
       attempts++;
     } while (attempts < 50 && (
-      dist({ x: ex, y: ey }, state.player) < 3 ||
+      dist({ x: ex, y: ey }, state.player) < 2 ||
       (ex === state.exitTile.x && ey === state.exitTile.y) ||
       (ex === state.keyTile.x && ey === state.keyTile.y) ||
       state.enemies.some(e => e.x === ex && e.y === ey)
