@@ -1,0 +1,1432 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<title>Grid Dungeon</title>
+<style>
+  :root {
+    --bg: #0a0a0f;
+    --bg-card: #14141f;
+    --bg-card-hover: #1a1a2e;
+    --border: #2a2a3a;
+    --text: #e0e0e8;
+    --text-dim: #7a7a8e;
+    --tile: #12121e;
+    --tile-hover: #1e1e30;
+    --tile-highlight: rgba(59,130,246,0.25);
+    --tile-attack: rgba(239,68,68,0.25);
+    --player: #3b82f6;
+    --enemy: #ef4444;
+    --enemy-sentinel: #f59e0b;
+    --enemy-archer: #a855f7;
+    --mana: #06b6d4;
+    --key: #fbbf24;
+    --exit: #22c55e;
+    --exit-locked: #4a4a5a;
+    --wound: #991b1b;
+    --card-move: #3b82f6;
+    --card-attack: #ef4444;
+    --card-defense: #22c55e;
+    --card-spell: #a855f7;
+    --card-utility: #f59e0b;
+    --card-wound: #4a1515;
+    --selected: #fbbf24;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  html, body {
+    width: 100%; height: 100%;
+    overflow: hidden;
+    touch-action: manipulation;
+    -webkit-user-select: none;
+    user-select: none;
+  }
+
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, 'SF Pro', system-ui, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    display: flex;
+    flex-direction: column;
+    height: 100dvh;
+  }
+
+  /* HUD */
+  .hud {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 6px 10px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    font-size: 12px;
+    flex-shrink: 0;
+  }
+  .hud-left, .hud-right { display: flex; gap: 10px; align-items: center; }
+  .hud-stat { display: flex; align-items: center; gap: 3px; }
+  .hud-label { color: var(--text-dim); }
+  .hud-value { font-weight: 700; }
+  .hud-mana { color: var(--mana); }
+  .hud-wounds { color: var(--enemy); }
+  .hud-deck { color: var(--text); }
+  .hud-phase {
+    font-weight: 700;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.05em;
+  }
+  .phase-movement { color: var(--card-move); }
+  .phase-combat { color: var(--card-attack); }
+  .phase-enemy { color: var(--enemy); }
+
+  /* Phase bar / action buttons */
+  .action-bar {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    padding: 5px 10px;
+    background: var(--bg-card);
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  .action-btn {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    padding: 5px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .action-btn:active { background: var(--bg-card-hover); }
+  .action-btn.primary {
+    background: var(--player);
+    border-color: var(--player);
+    color: white;
+  }
+  .action-btn.primary:active { opacity: 0.8; }
+  .action-btn.danger {
+    background: var(--enemy);
+    border-color: var(--enemy);
+    color: white;
+  }
+
+  /* Grid board */
+  .board-container {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 4px;
+    overflow: hidden;
+    min-height: 0;
+  }
+
+  .board {
+    display: grid;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: repeat(12, 1fr);
+    gap: 1px;
+    width: 100%;
+    max-width: min(100vw - 8px, 100vh - 200px);
+    aspect-ratio: 1;
+    background: var(--border);
+    border-radius: 4px;
+    overflow: hidden;
+  }
+
+  .tile {
+    background: var(--tile);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 10px;
+    font-weight: 700;
+    position: relative;
+    cursor: pointer;
+    touch-action: manipulation;
+    transition: background 0.1s;
+  }
+  .tile.highlight { background: var(--tile-highlight); }
+  .tile.attack-highlight { background: var(--tile-attack); }
+  .tile.has-player { background: var(--player); color: white; }
+  .tile.has-enemy { color: white; }
+  .tile.has-mana { }
+  .tile.has-key { }
+  .tile.has-exit-open { background: rgba(34,197,94,0.2); }
+  .tile.has-exit-locked { }
+
+  .tile-content {
+    font-size: clamp(8px, 2.5vw, 14px);
+    line-height: 1;
+    text-align: center;
+  }
+  .tile-tag {
+    position: absolute;
+    top: 1px;
+    right: 2px;
+    font-size: 6px;
+    opacity: 0.8;
+  }
+  .tile-telegraph {
+    position: absolute;
+    bottom: 1px;
+    left: 1px;
+    font-size: 5px;
+    color: var(--enemy);
+    opacity: 0.7;
+  }
+
+  /* Card hand */
+  .hand-container {
+    flex-shrink: 0;
+    background: var(--bg-card);
+    border-top: 1px solid var(--border);
+    padding: 4px 6px 8px;
+    min-height: 80px;
+  }
+  .hand-label {
+    font-size: 9px;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+    margin-bottom: 3px;
+    padding-left: 2px;
+  }
+  .hand {
+    display: flex;
+    gap: 4px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+    padding-bottom: 2px;
+  }
+  .hand::-webkit-scrollbar { display: none; }
+
+  .card {
+    flex-shrink: 0;
+    width: 72px;
+    min-height: 64px;
+    border-radius: 6px;
+    padding: 4px 5px;
+    font-size: 9px;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    transition: border-color 0.1s, transform 0.1s;
+  }
+  .card:active { transform: scale(0.95); }
+  .card.selected { border-color: var(--selected); transform: translateY(-4px); }
+
+  .card-move { background: rgba(59,130,246,0.15); border-color: rgba(59,130,246,0.3); }
+  .card-attack { background: rgba(239,68,68,0.15); border-color: rgba(239,68,68,0.3); }
+  .card-defense { background: rgba(34,197,94,0.15); border-color: rgba(34,197,94,0.3); }
+  .card-spell { background: rgba(168,85,247,0.15); border-color: rgba(168,85,247,0.3); }
+  .card-utility { background: rgba(245,158,11,0.15); border-color: rgba(245,158,11,0.3); }
+  .card-wound { background: rgba(74,21,21,0.4); border-color: rgba(153,27,27,0.5); opacity: 0.6; }
+
+  .card.selected.card-move { border-color: var(--selected); }
+  .card.selected.card-attack { border-color: var(--selected); }
+  .card.selected.card-defense { border-color: var(--selected); }
+  .card.selected.card-spell { border-color: var(--selected); }
+  .card.selected.card-utility { border-color: var(--selected); }
+
+  .card-name {
+    font-weight: 700;
+    font-size: 10px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .card-effect {
+    font-size: 8px;
+    color: var(--text-dim);
+    line-height: 1.3;
+  }
+  .card-powered {
+    font-size: 7px;
+    color: var(--mana);
+  }
+
+  /* Message overlay */
+  .message {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    background: rgba(10,10,15,0.95);
+    border: 1px solid var(--border);
+    border-radius: 12px;
+    padding: 24px 32px;
+    text-align: center;
+    z-index: 100;
+    max-width: 300px;
+  }
+  .message h2 {
+    font-size: 18px;
+    margin-bottom: 8px;
+  }
+  .message p {
+    font-size: 13px;
+    color: var(--text-dim);
+    margin-bottom: 16px;
+    line-height: 1.5;
+  }
+  .message button {
+    background: var(--player);
+    border: none;
+    color: white;
+    padding: 8px 24px;
+    border-radius: 6px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    touch-action: manipulation;
+  }
+  .message button:active { opacity: 0.8; }
+  .message.hidden { display: none; }
+
+  /* Card reward overlay */
+  .reward-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10,10,15,0.9);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    z-index: 90;
+    gap: 16px;
+  }
+  .reward-overlay.hidden { display: none; }
+  .reward-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--key);
+  }
+  .reward-cards {
+    display: flex;
+    gap: 10px;
+  }
+  .reward-card {
+    width: 90px;
+    min-height: 100px;
+    border-radius: 8px;
+    padding: 8px;
+    font-size: 11px;
+    cursor: pointer;
+    touch-action: manipulation;
+    border: 2px solid transparent;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .reward-card:active { transform: scale(0.95); }
+  .reward-card .card-name { font-size: 12px; }
+  .reward-card .card-effect { font-size: 9px; }
+  .reward-card .card-powered { font-size: 8px; }
+  .reward-skip {
+    color: var(--text-dim);
+    font-size: 12px;
+    cursor: pointer;
+    padding: 8px 16px;
+  }
+</style>
+</head>
+<body>
+
+<div class="hud">
+  <div class="hud-left">
+    <div class="hud-stat"><span class="hud-label">Room</span> <span class="hud-value" id="hud-room">1</span></div>
+    <div class="hud-stat"><span class="hud-label">Mana</span> <span class="hud-value hud-mana" id="hud-mana">0</span></div>
+    <div class="hud-stat"><span class="hud-label">Wounds</span> <span class="hud-value hud-wounds" id="hud-wounds">0</span></div>
+  </div>
+  <div class="hud-phase" id="hud-phase">Movement</div>
+  <div class="hud-right">
+    <div class="hud-stat"><span class="hud-label">Deck</span> <span class="hud-value hud-deck" id="hud-deck">0</span></div>
+    <div class="hud-stat"><span class="hud-label">Discard</span> <span class="hud-value" id="hud-discard">0</span></div>
+  </div>
+</div>
+
+<div class="action-bar" id="action-bar">
+  <button class="action-btn" id="btn-sideways">Sideways +1</button>
+  <button class="action-btn" id="btn-reclaim">Reclaim (1 mana)</button>
+  <button class="action-btn primary" id="btn-end-phase">End Phase</button>
+</div>
+
+<div class="board-container">
+  <div class="board" id="board"></div>
+</div>
+
+<div class="hand-container">
+  <div class="hand-label" id="hand-label">Hand (5)</div>
+  <div class="hand" id="hand"></div>
+</div>
+
+<div class="message hidden" id="message">
+  <h2 id="msg-title"></h2>
+  <p id="msg-text"></p>
+  <button id="msg-btn" onclick="dismissMessage()">OK</button>
+</div>
+
+<div class="reward-overlay hidden" id="reward-overlay">
+  <div class="reward-title">Choose a card reward</div>
+  <div class="reward-cards" id="reward-cards"></div>
+  <div class="reward-skip" id="reward-skip">Skip (no card)</div>
+</div>
+
+<script>
+// ============================================================
+// GRID DUNGEON — Prototype v0.1
+// ============================================================
+
+// --- CONSTANTS ---
+const GRID = 12;
+const HAND_SIZE = 5;
+const MANA_STORAGE_CAP = 5;
+const MANA_PER_ROOM = 3;
+const MIN_ENEMIES = 3;
+const MAX_ENEMIES = 5;
+const ARCHER_RANGE = 3;
+
+// --- CARD DEFINITIONS ---
+const CARD_DEFS = {
+  march:    { name: 'March',     type: 'move',    basic: 'Move 2',          powered: 'Move 4',           basicVal: 2, poweredVal: 4 },
+  sprint:   { name: 'Sprint',    type: 'move',    basic: 'Move 3',          powered: 'Move 5',           basicVal: 3, poweredVal: 5 },
+  strike:   { name: 'Strike',    type: 'attack',  basic: 'Melee hit',       powered: 'Piercing melee',   subtype: 'melee' },
+  shoot:    { name: 'Shoot',     type: 'attack',  basic: 'Ranged 3',        powered: 'Ranged 5',         subtype: 'ranged', basicRange: 3, poweredRange: 5 },
+  block:    { name: 'Block',     type: 'defense', basic: 'Block 1 attack',  powered: 'Block all attacks' },
+  mend:     { name: 'Mend',      type: 'utility', basic: 'Heal 1 wound',    powered: 'Heal 1 + draw 1' },
+  fireball: { name: 'Fireball',  type: 'spell',   basic: 'Needs mana',      powered: 'AoE ranged 3',     poweredRange: 3, alwaysCostsMana: true },
+  improvise:{ name: 'Improvise', type: 'utility', basic: 'Swap 1 for 1/3',  powered: 'Swap 1 for 2/5' },
+  wound:    { name: 'Wound',     type: 'wound',   basic: 'Dead weight',     powered: '' },
+};
+
+// Starting deck: card id + count
+const STARTING_DECK = [
+  ['march', 4], ['sprint', 1], ['strike', 3], ['shoot', 2],
+  ['block', 3], ['mend', 1], ['fireball', 1], ['improvise', 1],
+];
+
+// All reward cards (pool to pick from)
+const REWARD_POOL = ['march', 'sprint', 'strike', 'shoot', 'block', 'mend', 'fireball', 'improvise'];
+
+// Enemy definitions
+const ENEMY_DEFS = {
+  grunt:    { name: 'Grunt',    symbol: 'G', tags: [],         color: 'var(--enemy)',          moveType: 'chase',  attackType: 'melee' },
+  sentinel: { name: 'Sentinel', symbol: 'S', tags: ['shield'], color: 'var(--enemy-sentinel)', moveType: 'static', attackType: 'melee' },
+  archer:   { name: 'Archer',   symbol: 'A', tags: ['dodge'],  color: 'var(--enemy-archer)',   moveType: 'retreat', attackType: 'ranged' },
+};
+
+// --- GAME STATE ---
+let state = null;
+
+function createCard(defId) {
+  return { id: defId, uid: Math.random().toString(36).slice(2, 8) };
+}
+
+function initState() {
+  // Build deck
+  const deck = [];
+  for (const [id, count] of STARTING_DECK) {
+    for (let i = 0; i < count; i++) deck.push(createCard(id));
+  }
+  shuffle(deck);
+
+  state = {
+    phase: 'movement', // movement | combat | enemy | reward | gameover
+    room: 1,
+    player: { x: 0, y: GRID - 1 },
+    facing: { dx: 0, dy: -1 }, // facing up
+    mana: 0,
+    deck,
+    hand: [],
+    discard: [],
+    enemies: [],
+    manaTiles: [],
+    keyTile: null,
+    hasKey: false,
+    exitTile: { x: GRID - 1, y: 0 },
+    exitOpen: false,
+    selectedCard: null, // uid of selected card
+    movementPool: 0, // accumulated movement points this phase
+    cardsPlayedThisPhase: [], // track cards played
+    blocksThisPhase: 0, // 0 = none, 1 = block one, 99 = block all
+    pendingAttacks: [], // tiles player wants to attack
+    totalWounds: 0,
+    sidewaysMode: false,
+    messageCallback: null,
+  };
+
+  drawToHand();
+  generateRoom();
+}
+
+// --- UTILITIES ---
+function shuffle(arr) {
+  for (let i = arr.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [arr[i], arr[j]] = [arr[j], arr[i]];
+  }
+  return arr;
+}
+
+function dist(a, b) {
+  return Math.abs(a.x - b.x) + Math.abs(a.y - b.y);
+}
+
+function chebyDist(a, b) {
+  return Math.max(Math.abs(a.x - b.x), Math.abs(a.y - b.y));
+}
+
+function isAdjacent(a, b) {
+  return chebyDist(a, b) === 1;
+}
+
+function inBounds(x, y) {
+  return x >= 0 && x < GRID && y >= 0 && y < GRID;
+}
+
+function tileOccupied(x, y) {
+  if (state.player.x === x && state.player.y === y) return 'player';
+  const e = state.enemies.find(e => e.x === x && e.y === y && e.alive);
+  if (e) return e;
+  return null;
+}
+
+function lineOfSight(from, to, range) {
+  const d = dist(from, to);
+  if (d > range) return false;
+  // Simple: allow if within range (no obstacles for prototype)
+  return true;
+}
+
+// --- DECK MANAGEMENT ---
+function drawToHand() {
+  while (state.hand.length < HAND_SIZE) {
+    if (state.deck.length === 0) {
+      if (state.discard.length === 0) break; // no cards left at all
+      // Reshuffle discard into deck
+      state.deck = [...state.discard];
+      state.discard = [];
+      shuffle(state.deck);
+    }
+    state.hand.push(state.deck.pop());
+  }
+}
+
+function discardCard(card) {
+  state.hand = state.hand.filter(c => c.uid !== card.uid);
+  state.discard.push(card);
+}
+
+function removeCardFromHand(card) {
+  state.hand = state.hand.filter(c => c.uid !== card.uid);
+}
+
+// --- ROOM GENERATION ---
+function generateRoom() {
+  state.hasKey = false;
+  state.exitOpen = false;
+  state.enemies = [];
+  state.manaTiles = [];
+  state.cardsPlayedThisPhase = [];
+  state.movementPool = 0;
+  state.blocksThisPhase = 0;
+  state.selectedCard = null;
+  state.sidewaysMode = false;
+
+  // Player start
+  state.player = { x: 0, y: GRID - 1 };
+  state.exitTile = { x: GRID - 1, y: 0 };
+
+  // Key in middle third
+  const third = Math.floor(GRID / 3);
+  state.keyTile = {
+    x: third + Math.floor(Math.random() * third),
+    y: third + Math.floor(Math.random() * third),
+  };
+
+  // Mana crystals
+  for (let i = 0; i < MANA_PER_ROOM; i++) {
+    let mx, my, attempts = 0;
+    do {
+      mx = Math.floor(Math.random() * GRID);
+      my = Math.floor(Math.random() * GRID);
+      attempts++;
+    } while (attempts < 50 && (
+      (mx === state.player.x && my === state.player.y) ||
+      (mx === state.exitTile.x && my === state.exitTile.y) ||
+      (mx === state.keyTile.x && my === state.keyTile.y) ||
+      state.manaTiles.some(m => m.x === mx && m.y === my)
+    ));
+    state.manaTiles.push({ x: mx, y: my });
+  }
+
+  // Enemies
+  const numEnemies = MIN_ENEMIES + Math.floor(Math.random() * (MAX_ENEMIES - MIN_ENEMIES + 1));
+  const enemyTypes = ['grunt', 'sentinel', 'archer'];
+  for (let i = 0; i < numEnemies; i++) {
+    let ex, ey, attempts = 0;
+    do {
+      ex = Math.floor(Math.random() * GRID);
+      ey = Math.floor(Math.random() * GRID);
+      attempts++;
+    } while (attempts < 50 && (
+      dist({ x: ex, y: ey }, state.player) < 3 ||
+      (ex === state.exitTile.x && ey === state.exitTile.y) ||
+      (ex === state.keyTile.x && ey === state.keyTile.y) ||
+      state.enemies.some(e => e.x === ex && e.y === ey)
+    ));
+
+    // Weighted random: more grunts early, mix later
+    let typeId;
+    if (state.room <= 1) {
+      typeId = i === 0 ? 'sentinel' : (i === 1 && numEnemies >= 4 ? 'archer' : 'grunt');
+    } else {
+      typeId = enemyTypes[Math.floor(Math.random() * enemyTypes.length)];
+    }
+
+    const def = ENEMY_DEFS[typeId];
+    state.enemies.push({
+      typeId,
+      ...def,
+      x: ex, y: ey,
+      alive: true,
+      shieldUp: def.tags.includes('shield'),
+      telegraphTarget: null,
+    });
+  }
+
+  // Telegraph enemy moves
+  telegraphEnemies();
+}
+
+// --- ENEMY TELEGRAPHING ---
+function telegraphEnemies() {
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    e.telegraphTarget = null;
+
+    if (e.moveType === 'chase') {
+      // Move 1 toward player
+      const dx = Math.sign(state.player.x - e.x);
+      const dy = Math.sign(state.player.y - e.y);
+      let nx = e.x + dx;
+      let ny = e.y + dy;
+      if (inBounds(nx, ny)) {
+        e.telegraphTarget = { x: nx, y: ny };
+      }
+    } else if (e.moveType === 'retreat') {
+      // Will retreat if player adjacent (telegraph after player moves)
+      e.telegraphTarget = null; // dynamic
+    }
+    // static: no telegraph
+  }
+}
+
+// --- PHASE MANAGEMENT ---
+function startMovementPhase() {
+  state.phase = 'movement';
+  state.movementPool = 0;
+  state.cardsPlayedThisPhase = [];
+  state.selectedCard = null;
+  state.sidewaysMode = false;
+  telegraphEnemies();
+  render();
+}
+
+function startCombatPhase() {
+  state.phase = 'combat';
+  state.cardsPlayedThisPhase = [];
+  state.blocksThisPhase = 0;
+  state.selectedCard = null;
+  state.sidewaysMode = false;
+  render();
+}
+
+function endMovementPhase() {
+  // Check mana pickup
+  collectMana(state.player.x, state.player.y);
+  // Check key pickup
+  checkKeyPickup();
+  // Transition to combat
+  startCombatPhase();
+}
+
+function endCombatPhase() {
+  // Resolve enemy attacks
+  resolveEnemyAttacks();
+}
+
+function resolveEnemyAttacks() {
+  state.phase = 'enemy';
+  render();
+
+  let incomingAttacks = 0;
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+    if (e.attackType === 'melee' && isAdjacent(e, state.player)) {
+      incomingAttacks++;
+    } else if (e.attackType === 'ranged' && lineOfSight(e, state.player, ARCHER_RANGE)) {
+      incomingAttacks++;
+    }
+  }
+
+  let wounds = 0;
+  if (incomingAttacks > 0) {
+    if (state.blocksThisPhase >= 99) {
+      wounds = 0; // blocked all
+    } else {
+      wounds = Math.max(0, incomingAttacks - state.blocksThisPhase);
+    }
+  }
+
+  // Add wound cards
+  for (let i = 0; i < wounds; i++) {
+    state.discard.push(createCard('wound'));
+    state.totalWounds++;
+  }
+
+  // Execute enemy movement
+  executeEnemyMoves();
+
+  // Check death (all-wound hand on next draw)
+  // Draw new hand for next turn
+  drawToHand();
+
+  // Check if entire hand is wounds
+  if (state.hand.length > 0 && state.hand.every(c => c.id === 'wound')) {
+    state.phase = 'gameover';
+    showMessage('Death', `Your deck is clogged with ${state.totalWounds} wounds. The dungeon claims another soul.`, 'New Run', () => {
+      initState();
+      render();
+    });
+    render();
+    return;
+  }
+
+  // Check win condition
+  if (state.hasKey && state.player.x === state.exitTile.x && state.player.y === state.exitTile.y) {
+    // Room complete — offer reward
+    offerReward();
+    return;
+  }
+
+  // Next turn
+  startMovementPhase();
+}
+
+function executeEnemyMoves() {
+  for (const e of state.enemies) {
+    if (!e.alive) continue;
+
+    if (e.moveType === 'chase') {
+      // Move 1 toward player
+      const dx = Math.sign(state.player.x - e.x);
+      const dy = Math.sign(state.player.y - e.y);
+      let nx = e.x + dx;
+      let ny = e.y + dy;
+      if (inBounds(nx, ny) && !tileOccupied(nx, ny)) {
+        e.x = nx;
+        e.y = ny;
+      } else {
+        // Try just x or just y
+        if (dx !== 0 && inBounds(e.x + dx, e.y) && !tileOccupied(e.x + dx, e.y)) {
+          e.x += dx;
+        } else if (dy !== 0 && inBounds(e.x, e.y + dy) && !tileOccupied(e.x, e.y + dy)) {
+          e.y += dy;
+        }
+      }
+    } else if (e.moveType === 'retreat') {
+      // Retreat if player is adjacent
+      if (isAdjacent(e, state.player)) {
+        const dx = Math.sign(e.x - state.player.x);
+        const dy = Math.sign(e.y - state.player.y);
+        let nx = e.x + dx;
+        let ny = e.y + dy;
+        if (inBounds(nx, ny) && !tileOccupied(nx, ny)) {
+          e.x = nx;
+          e.y = ny;
+        }
+      }
+    }
+    // static: don't move
+
+    // Reset shield on sentinel after being hit
+    if (e.tags.includes('shield') && !e.shieldUp) {
+      // Shield stays down once broken
+    }
+  }
+}
+
+// --- MANA & KEY ---
+function collectMana(x, y) {
+  const idx = state.manaTiles.findIndex(m => m.x === x && m.y === y);
+  if (idx >= 0 && state.mana < MANA_STORAGE_CAP) {
+    state.manaTiles.splice(idx, 1);
+    state.mana++;
+  }
+}
+
+function checkKeyPickup() {
+  if (!state.hasKey && state.keyTile && state.player.x === state.keyTile.x && state.player.y === state.keyTile.y) {
+    state.hasKey = true;
+    state.exitOpen = true;
+  }
+}
+
+// --- CARD PLAY ---
+function playCardMovement(card, powered) {
+  const def = CARD_DEFS[card.id];
+  if (def.type !== 'move') return;
+
+  const points = powered ? def.poweredVal : def.basicVal;
+  if (powered) {
+    if (state.mana < 1) return;
+    state.mana--;
+  }
+
+  state.movementPool += points;
+  discardCard(card);
+  state.selectedCard = null;
+  render();
+}
+
+function playSidewaysForMovement(card) {
+  state.movementPool += 1;
+  discardCard(card);
+  state.selectedCard = null;
+  state.sidewaysMode = false;
+  render();
+}
+
+function playSidewaysForAttack(card) {
+  // +1 attack — but binary combat means this doesn't do much alone
+  // For now: sideways in combat = +1 block
+  state.blocksThisPhase += 1;
+  discardCard(card);
+  state.selectedCard = null;
+  state.sidewaysMode = false;
+  render();
+}
+
+function movePlayer(tx, ty) {
+  const d = dist(state.player, { x: tx, y: ty });
+  if (d > state.movementPool) return;
+  if (tileOccupied(tx, ty) && !(tx === state.player.x && ty === state.player.y)) return;
+
+  // Check enemies block path? Simplified: just check destination
+  const occ = tileOccupied(tx, ty);
+  if (occ && occ !== 'player') return;
+
+  state.movementPool -= d;
+  state.player.x = tx;
+  state.player.y = ty;
+
+  // Collect mana on path (simplified: just destination)
+  collectMana(tx, ty);
+  checkKeyPickup();
+
+  // Update facing toward last move direction
+  // (we'll simplify: face toward the tile you moved to from previous position)
+
+  render();
+}
+
+function tryAttack(card, targetEnemy, powered) {
+  const def = CARD_DEFS[card.id];
+
+  if (powered && !def.alwaysCostsMana) {
+    if (state.mana < 1) return false;
+  }
+  if (def.alwaysCostsMana && state.mana < 1) return false;
+
+  if (def.type === 'attack' && def.subtype === 'melee') {
+    if (!isAdjacent(state.player, targetEnemy)) return false;
+
+    if (powered || def.alwaysCostsMana) state.mana--;
+
+    // Check tags
+    if (targetEnemy.tags.includes('dodge')) {
+      // Melee misses dodge enemies
+      discardCard(card);
+      state.selectedCard = null;
+      render();
+      return true; // card spent but missed
+    }
+
+    if (targetEnemy.tags.includes('shield') && targetEnemy.shieldUp) {
+      if (powered) {
+        // Piercing — ignores shield
+        targetEnemy.alive = false;
+      } else {
+        // Break shield
+        targetEnemy.shieldUp = false;
+      }
+    } else {
+      targetEnemy.alive = false;
+    }
+
+    discardCard(card);
+    state.selectedCard = null;
+    render();
+    return true;
+  }
+
+  if (def.type === 'attack' && def.subtype === 'ranged') {
+    const range = powered ? def.poweredRange : def.basicRange;
+    if (!lineOfSight(state.player, targetEnemy, range)) return false;
+
+    if (powered) state.mana--;
+
+    // Ranged bounces off shield entirely
+    if (targetEnemy.tags.includes('shield')) {
+      discardCard(card);
+      state.selectedCard = null;
+      render();
+      return true; // bounced
+    }
+
+    // Ranged hits dodge (dodge only evades melee)
+    targetEnemy.alive = false;
+    discardCard(card);
+    state.selectedCard = null;
+    render();
+    return true;
+  }
+
+  if (def.type === 'spell') {
+    // Fireball: AoE, ignores shield
+    state.mana--;
+    const range = def.poweredRange;
+    if (!lineOfSight(state.player, targetEnemy, range)) return false;
+
+    // Kill target (ignores all tags)
+    targetEnemy.alive = false;
+
+    // AoE: also kill adjacent enemies
+    const adjacent = state.enemies.filter(e =>
+      e.alive && e !== targetEnemy && isAdjacent(e, targetEnemy)
+    );
+    for (const ae of adjacent) {
+      if (ae.tags.includes('shield') && ae.shieldUp) {
+        ae.shieldUp = false; // fireball breaks shield
+      } else {
+        ae.alive = false;
+      }
+    }
+
+    discardCard(card);
+    state.selectedCard = null;
+    render();
+    return true;
+  }
+
+  return false;
+}
+
+function playBlock(card, powered) {
+  if (powered) {
+    if (state.mana < 1) return;
+    state.mana--;
+    state.blocksThisPhase = 99; // block all
+  } else {
+    state.blocksThisPhase += 1;
+  }
+  discardCard(card);
+  state.selectedCard = null;
+  render();
+}
+
+function playMend(card, powered) {
+  const woundInHand = state.hand.find(c => c.id === 'wound');
+  if (!woundInHand) return;
+
+  if (powered) {
+    if (state.mana < 1) return;
+    state.mana--;
+  }
+
+  // Remove wound from hand entirely (not to discard)
+  removeCardFromHand(woundInHand);
+  state.totalWounds--;
+
+  if (powered) {
+    // Draw 1 extra card
+    if (state.deck.length === 0 && state.discard.length > 0) {
+      state.deck = [...state.discard];
+      state.discard = [];
+      shuffle(state.deck);
+    }
+    if (state.deck.length > 0) {
+      state.hand.push(state.deck.pop());
+    }
+  }
+
+  discardCard(card);
+  state.selectedCard = null;
+  render();
+}
+
+function playImprovise(card, powered) {
+  // Simplified for prototype: discard 1, draw 1 (basic) or draw 2 (powered)
+  if (powered) {
+    if (state.mana < 1) return;
+    state.mana--;
+  }
+
+  // Need at least 1 other card in hand to discard
+  const otherCards = state.hand.filter(c => c.uid !== card.uid);
+  if (otherCards.length === 0) return;
+
+  // For prototype: auto-discard worst card (wound if available, else last)
+  const worstCard = otherCards.find(c => c.id === 'wound') || otherCards[otherCards.length - 1];
+  discardCard(worstCard);
+
+  const drawCount = powered ? 2 : 1;
+  for (let i = 0; i < drawCount; i++) {
+    if (state.deck.length === 0 && state.discard.length > 0) {
+      state.deck = [...state.discard];
+      state.discard = [];
+      shuffle(state.deck);
+    }
+    if (state.deck.length > 0) {
+      state.hand.push(state.deck.pop());
+    }
+  }
+
+  discardCard(card);
+  state.selectedCard = null;
+  render();
+}
+
+// --- RECLAIM ---
+function reclaimCard() {
+  if (state.mana < 1) return;
+  if (state.discard.length === 0) return;
+
+  // Show discard pile — for prototype, reclaim most recently discarded non-wound
+  const nonWound = [...state.discard].reverse().find(c => c.id !== 'wound');
+  if (!nonWound) return;
+
+  state.mana--;
+  state.discard = state.discard.filter(c => c.uid !== nonWound.uid);
+  state.hand.push(nonWound);
+  render();
+}
+
+// --- REWARD ---
+function offerReward() {
+  state.phase = 'reward';
+  render();
+
+  const offered = [];
+  const poolCopy = [...REWARD_POOL];
+  shuffle(poolCopy);
+  for (let i = 0; i < 3 && i < poolCopy.length; i++) {
+    offered.push(poolCopy[i]);
+  }
+
+  renderRewardOverlay(offered);
+}
+
+function renderRewardOverlay(offered) {
+  const overlay = document.getElementById('reward-overlay');
+  const cardsDiv = document.getElementById('reward-cards');
+  overlay.classList.remove('hidden');
+
+  cardsDiv.innerHTML = offered.map(cardId => {
+    const def = CARD_DEFS[cardId];
+    const cssClass = cardCssClass(cardId);
+    return `
+      <div class="reward-card ${cssClass}" onclick="pickReward('${cardId}')">
+        <div class="card-name">${def.name}</div>
+        <div class="card-effect">${def.basic}</div>
+        <div class="card-powered">${def.powered}</div>
+      </div>
+    `;
+  }).join('');
+
+  document.getElementById('reward-skip').onclick = () => skipReward();
+}
+
+function pickReward(cardId) {
+  state.discard.push(createCard(cardId));
+  nextRoom();
+}
+
+function skipReward() {
+  nextRoom();
+}
+
+function nextRoom() {
+  document.getElementById('reward-overlay').classList.add('hidden');
+  state.room++;
+  generateRoom();
+  drawToHand();
+  startMovementPhase();
+}
+
+// --- MESSAGE ---
+function showMessage(title, text, btnText, callback) {
+  const msg = document.getElementById('message');
+  document.getElementById('msg-title').textContent = title;
+  document.getElementById('msg-text').textContent = text;
+  document.getElementById('msg-btn').textContent = btnText || 'OK';
+  msg.classList.remove('hidden');
+  state.messageCallback = callback;
+}
+
+function dismissMessage() {
+  document.getElementById('message').classList.add('hidden');
+  if (state.messageCallback) {
+    const cb = state.messageCallback;
+    state.messageCallback = null;
+    cb();
+  }
+}
+
+// --- RENDERING ---
+function cardCssClass(cardId) {
+  const def = CARD_DEFS[cardId];
+  if (!def) return '';
+  const map = { move: 'card-move', attack: 'card-attack', defense: 'card-defense', spell: 'card-spell', utility: 'card-utility', wound: 'card-wound' };
+  return map[def.type] || '';
+}
+
+function render() {
+  renderHud();
+  renderBoard();
+  renderHand();
+  renderActionBar();
+}
+
+function renderHud() {
+  document.getElementById('hud-room').textContent = state.room;
+  document.getElementById('hud-mana').textContent = state.mana;
+  document.getElementById('hud-wounds').textContent = state.totalWounds;
+  document.getElementById('hud-deck').textContent = state.deck.length;
+  document.getElementById('hud-discard').textContent = state.discard.length;
+
+  const phaseEl = document.getElementById('hud-phase');
+  if (state.phase === 'movement') {
+    phaseEl.textContent = state.movementPool > 0 ? `Move (${state.movementPool})` : 'Movement';
+    phaseEl.className = 'hud-phase phase-movement';
+  } else if (state.phase === 'combat') {
+    phaseEl.textContent = 'Combat';
+    phaseEl.className = 'hud-phase phase-combat';
+  } else if (state.phase === 'enemy') {
+    phaseEl.textContent = 'Enemy Turn';
+    phaseEl.className = 'hud-phase phase-enemy';
+  } else {
+    phaseEl.textContent = state.phase;
+    phaseEl.className = 'hud-phase';
+  }
+}
+
+function renderBoard() {
+  const board = document.getElementById('board');
+  let html = '';
+
+  // Figure out highlighted tiles
+  const highlights = new Set();
+  const attackHighlights = new Set();
+
+  if (state.phase === 'movement' && state.movementPool > 0) {
+    // Show reachable tiles
+    for (let y = 0; y < GRID; y++) {
+      for (let x = 0; x < GRID; x++) {
+        if (dist(state.player, { x, y }) <= state.movementPool) {
+          const occ = tileOccupied(x, y);
+          if (!occ || occ === 'player') {
+            highlights.add(`${x},${y}`);
+          }
+        }
+      }
+    }
+  }
+
+  if (state.phase === 'combat' && state.selectedCard) {
+    const card = state.hand.find(c => c.uid === state.selectedCard);
+    if (card) {
+      const def = CARD_DEFS[card.id];
+      if (def.type === 'attack' || def.type === 'spell') {
+        // Highlight enemies in range
+        for (const e of state.enemies) {
+          if (!e.alive) continue;
+          if (def.subtype === 'melee' && isAdjacent(state.player, e)) {
+            attackHighlights.add(`${e.x},${e.y}`);
+          } else if (def.subtype === 'ranged') {
+            const range = state.mana > 0 ? (def.poweredRange || def.basicRange) : def.basicRange;
+            if (lineOfSight(state.player, e, range)) {
+              attackHighlights.add(`${e.x},${e.y}`);
+            }
+          } else if (def.type === 'spell') {
+            const range = def.poweredRange;
+            if (state.mana > 0 && lineOfSight(state.player, e, range)) {
+              attackHighlights.add(`${e.x},${e.y}`);
+            }
+          }
+        }
+      }
+    }
+  }
+
+  for (let y = 0; y < GRID; y++) {
+    for (let x = 0; x < GRID; x++) {
+      const key = `${x},${y}`;
+      let classes = ['tile'];
+      let content = '';
+      let tag = '';
+      let telegraph = '';
+      let style = '';
+
+      const isPlayer = state.player.x === x && state.player.y === y;
+      const enemy = state.enemies.find(e => e.x === x && e.y === y && e.alive);
+      const mana = state.manaTiles.find(m => m.x === x && m.y === y);
+      const isKey = state.keyTile && state.keyTile.x === x && state.keyTile.y === y && !state.hasKey;
+      const isExit = state.exitTile.x === x && state.exitTile.y === y;
+
+      if (highlights.has(key)) classes.push('highlight');
+      if (attackHighlights.has(key)) classes.push('attack-highlight');
+
+      if (isPlayer) {
+        classes.push('has-player');
+        content = '@';
+      } else if (enemy) {
+        classes.push('has-enemy');
+        content = enemy.symbol;
+        style = `background:${enemy.color}44;`;
+        if (enemy.tags.length > 0) {
+          tag = enemy.tags.map(t => t === 'shield' ? (enemy.shieldUp ? '🛡' : '💔') : t === 'dodge' ? '💨' : t).join('');
+        }
+        // Telegraph
+        if (enemy.telegraphTarget) {
+          const dx = enemy.telegraphTarget.x - enemy.x;
+          const dy = enemy.telegraphTarget.y - enemy.y;
+          telegraph = dx > 0 ? '→' : dx < 0 ? '←' : dy > 0 ? '↓' : dy < 0 ? '↑' : '';
+        }
+        if (enemy.attackType === 'ranged' && lineOfSight(enemy, state.player, ARCHER_RANGE)) {
+          telegraph += '🎯';
+        } else if (enemy.attackType === 'melee' && isAdjacent(enemy, state.player)) {
+          telegraph += '⚔';
+        }
+      } else if (mana) {
+        content = '◆';
+        style = `color:var(--mana);`;
+      } else if (isKey) {
+        content = '🔑';
+        classes.push('has-key');
+      } else if (isExit) {
+        content = state.exitOpen ? '🚪' : '🔒';
+        classes.push(state.exitOpen ? 'has-exit-open' : 'has-exit-locked');
+      }
+
+      html += `<div class="${classes.join(' ')}" style="${style}" data-x="${x}" data-y="${y}">
+        <span class="tile-content">${content}</span>
+        ${tag ? `<span class="tile-tag">${tag}</span>` : ''}
+        ${telegraph ? `<span class="tile-telegraph">${telegraph}</span>` : ''}
+      </div>`;
+    }
+  }
+
+  board.innerHTML = html;
+}
+
+function renderHand() {
+  const hand = document.getElementById('hand');
+  const label = document.getElementById('hand-label');
+  label.textContent = `Hand (${state.hand.length})`;
+
+  hand.innerHTML = state.hand.map(card => {
+    const def = CARD_DEFS[card.id];
+    const cssClass = cardCssClass(card.id);
+    const selected = state.selectedCard === card.uid ? 'selected' : '';
+    const isWound = card.id === 'wound';
+
+    return `<div class="card ${cssClass} ${selected}" data-uid="${card.uid}" ${isWound ? '' : `onclick="selectCard('${card.uid}')"`}>
+      <div class="card-name">${def.name}</div>
+      <div class="card-effect">${def.basic}</div>
+      ${def.powered ? `<div class="card-powered">⚡ ${def.powered}</div>` : ''}
+    </div>`;
+  }).join('');
+}
+
+function renderActionBar() {
+  const bar = document.getElementById('action-bar');
+  const selectedCard = state.hand.find(c => c.uid === state.selectedCard);
+  const def = selectedCard ? CARD_DEFS[selectedCard.id] : null;
+
+  let buttons = '';
+
+  if (state.phase === 'movement') {
+    if (selectedCard && def && def.type !== 'wound') {
+      // Play card for movement
+      if (def.type === 'move') {
+        buttons += `<button class="action-btn primary" onclick="playMovementCard(false)">Basic: ${def.basic}</button>`;
+        if (state.mana > 0) {
+          buttons += `<button class="action-btn" onclick="playMovementCard(true)">⚡ ${def.powered} (1💎)</button>`;
+        }
+      }
+      buttons += `<button class="action-btn" onclick="playSideways()">Sideways +1 Move</button>`;
+    }
+
+    if (state.mana > 0 && state.discard.length > 0) {
+      buttons += `<button class="action-btn" onclick="reclaimCard()">Reclaim (1💎)</button>`;
+    }
+    buttons += `<button class="action-btn primary" onclick="endPhase()">End Movement →</button>`;
+
+  } else if (state.phase === 'combat') {
+    if (selectedCard && def && def.type !== 'wound') {
+      if (def.type === 'attack') {
+        buttons += `<button class="action-btn primary" onclick="setAttackMode(false)">Tap enemy: ${def.basic}</button>`;
+        if (def.subtype === 'melee' && state.mana > 0) {
+          buttons += `<button class="action-btn" onclick="setAttackMode(true)">⚡ Tap enemy: ${def.powered} (1💎)</button>`;
+        }
+        if (def.subtype === 'ranged' && state.mana > 0) {
+          buttons += `<button class="action-btn" onclick="setAttackMode(true)">⚡ Tap enemy: ${def.powered} (1💎)</button>`;
+        }
+      } else if (def.type === 'spell') {
+        if (state.mana > 0) {
+          buttons += `<button class="action-btn primary" onclick="setAttackMode(true)">⚡ Tap enemy: ${def.powered} (1💎)</button>`;
+        } else {
+          buttons += `<button class="action-btn" style="opacity:0.4">Needs mana</button>`;
+        }
+      } else if (def.type === 'defense') {
+        buttons += `<button class="action-btn primary" onclick="playBlockCard(false)">${def.basic}</button>`;
+        if (state.mana > 0) {
+          buttons += `<button class="action-btn" onclick="playBlockCard(true)">⚡ ${def.powered} (1💎)</button>`;
+        }
+      } else if (def.type === 'utility') {
+        if (def.name === 'Mend') {
+          const hasWound = state.hand.some(c => c.id === 'wound');
+          if (hasWound) {
+            buttons += `<button class="action-btn primary" onclick="playMendCard(false)">${def.basic}</button>`;
+            if (state.mana > 0) {
+              buttons += `<button class="action-btn" onclick="playMendCard(true)">⚡ ${def.powered} (1💎)</button>`;
+            }
+          } else {
+            buttons += `<button class="action-btn" style="opacity:0.4">No wounds in hand</button>`;
+          }
+        } else if (def.name === 'Improvise') {
+          buttons += `<button class="action-btn primary" onclick="playImproviseCard(false)">${def.basic}</button>`;
+          if (state.mana > 0) {
+            buttons += `<button class="action-btn" onclick="playImproviseCard(true)">⚡ ${def.powered} (1💎)</button>`;
+          }
+        }
+      }
+      buttons += `<button class="action-btn" onclick="playSideways()">Sideways +1 Block</button>`;
+    }
+
+    if (state.mana > 0 && state.discard.length > 0) {
+      buttons += `<button class="action-btn" onclick="reclaimCard()">Reclaim (1💎)</button>`;
+    }
+
+    const blocksText = state.blocksThisPhase >= 99 ? 'ALL' : state.blocksThisPhase;
+    buttons += `<button class="action-btn primary" onclick="endPhase()">End Combat (${blocksText} blocks) →</button>`;
+  }
+
+  bar.innerHTML = buttons;
+}
+
+// --- INPUT HANDLERS ---
+let poweredAttackMode = false;
+
+function selectCard(uid) {
+  if (state.phase === 'gameover' || state.phase === 'reward' || state.phase === 'enemy') return;
+  if (state.selectedCard === uid) {
+    state.selectedCard = null;
+  } else {
+    state.selectedCard = uid;
+  }
+  poweredAttackMode = false;
+  render();
+}
+
+function playMovementCard(powered) {
+  const card = state.hand.find(c => c.uid === state.selectedCard);
+  if (!card) return;
+  playCardMovement(card, powered);
+}
+
+function playSideways() {
+  const card = state.hand.find(c => c.uid === state.selectedCard);
+  if (!card || card.id === 'wound') return;
+  if (state.phase === 'movement') {
+    playSidewaysForMovement(card);
+  } else if (state.phase === 'combat') {
+    playSidewaysForAttack(card);
+  }
+}
+
+function setAttackMode(powered) {
+  poweredAttackMode = powered;
+  // Player now taps an enemy tile to attack
+}
+
+function playBlockCard(powered) {
+  const card = state.hand.find(c => c.uid === state.selectedCard);
+  if (!card) return;
+  playBlock(card, powered);
+}
+
+function playMendCard(powered) {
+  const card = state.hand.find(c => c.uid === state.selectedCard);
+  if (!card) return;
+  playMend(card, powered);
+}
+
+function playImproviseCard(powered) {
+  const card = state.hand.find(c => c.uid === state.selectedCard);
+  if (!card) return;
+  playImprovise(card, powered);
+}
+
+function endPhase() {
+  if (state.phase === 'movement') {
+    endMovementPhase();
+  } else if (state.phase === 'combat') {
+    endCombatPhase();
+  }
+}
+
+// Board click handler
+document.getElementById('board').addEventListener('click', (e) => {
+  const tile = e.target.closest('.tile');
+  if (!tile) return;
+  const x = parseInt(tile.dataset.x);
+  const y = parseInt(tile.dataset.y);
+
+  if (state.phase === 'movement') {
+    if (state.movementPool > 0) {
+      movePlayer(x, y);
+    }
+  } else if (state.phase === 'combat') {
+    // Check if tapping an enemy to attack
+    const enemy = state.enemies.find(e => e.x === x && e.y === y && e.alive);
+    if (enemy && state.selectedCard) {
+      const card = state.hand.find(c => c.uid === state.selectedCard);
+      if (card) {
+        tryAttack(card, enemy, poweredAttackMode);
+      }
+    }
+  }
+});
+
+// --- INIT ---
+initState();
+render();
+</script>
+
+</body>
+</html>
