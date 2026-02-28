@@ -177,6 +177,7 @@
       "due": null,
       "subtasks": [
         {"title": "Order 20x corner brackets (20mm) + short screws (≤12mm)", "done": false},
+        {"title": "Order 1.5-2mm HSS drill bit for pilot holes (if not in existing set)", "done": false},
         {"title": "Install 4 brackets per drawer (2 per side, in cam lock gap) on all 5 drawers", "done": false}
       ]
     },
@@ -318,6 +319,22 @@
       "subtasks": [
         {"title": "Request cancellation via website — DONE 2026-02-28", "done": true},
         {"title": "Receive email confirmation of cancellation", "done": false}
+      ]
+    },
+    {
+      "id": "t021",
+      "title": "Danner Mountain Light boot care",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Full-grain leather boots with Gore-Tex lining. CARE ROUTINE: (1) Clean with soft brush after each hike. (2) Condition leather every 2 months (more if heavy use). (3) Reapply waterproofing when boots start absorbing water. NEVER use mink oil or neatsfoot oil (rots natural fibers). NEVER apply heat to dry. Apply products to leather only, NOT fabric/textile panels. PRODUCT OPTIONS (amazon.de): Nikwax Conditioner For Leather: https://www.amazon.de/dp/B004VE739M — Nikwax Waterproofing Wax: https://www.amazon.de/dp/B0041DFH3C — OR Obenauf's Heavy Duty LP (beeswax, highly rated): https://www.amazon.de/dp/B0002X520S",
+      "created": "2026-02-28",
+      "due": null,
+      "subtasks": [
+        {"title": "Buy leather conditioner (Nikwax or Obenauf's)", "done": false},
+        {"title": "Buy waterproofing wax/gel", "done": false},
+        {"title": "Buy soft-bristled boot brush (if not already owned)", "done": false},
+        {"title": "Clean and condition boots", "done": false}
       ]
     }
   ],
