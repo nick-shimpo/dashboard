@@ -304,10 +304,13 @@
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "Digital subscription. Cancellation email sent 2026-02-21 to digital@foreignaffairs.customersvc.com. Awaiting confirmation.",
+      "notes": "Cancellation requested via website self-service 2026-02-28. Awaiting email confirmation. (Previous email to digital@foreignaffairs.customersvc.com failed — server timeout.)",
       "created": "2026-02-17",
       "due": null,
-      "subtasks": []
+      "subtasks": [
+        {"title": "Request cancellation via website — DONE 2026-02-28", "done": true},
+        {"title": "Receive email confirmation of cancellation", "done": false}
+      ]
     }
   ],
   "sections": [
