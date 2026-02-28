@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-22T17:30:00+01:00",
+  "lastUpdated": "2026-02-28T14:20:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -87,11 +87,11 @@
         {"title": "Make colour photocopies of ALL pages (incl blank) of: both kids' German passports, wife's German passport, Nick's UK passport", "done": false},
         {"title": "Gather 3 identity/residency docs: e.g. Aufenthaltstitel + Finanzamt letter + employer/Krankenkasse letter", "done": false},
         {"title": "PHASE 2 — TRANSLATIONS", "done": false},
-        {"title": "Find beeidigter Übersetzer (sworn translator) for English in Hessen — search Landgericht Frankfurt database", "done": false},
-        {"title": "Commission certified translation: Child 1 Geburtsurkunde (~€40-60)", "done": false},
-        {"title": "Commission certified translation: Child 2 Geburtsurkunde (~€40-60)", "done": false},
-        {"title": "Commission certified translation: Heiratsurkunde (~€40-60)", "done": false},
-        {"title": "Commission certified translation: Wife's birth certificate (~€40-60)", "done": false},
+        {"title": "Find beeidigter Übersetzer (sworn translator) — DONE: Ralph Livesey-Wardle at Linguakraft (info@linguakraft.de), local to Dreieich, €49/doc", "done": true},
+        {"title": "Commission certified translation: Child 1 Geburtsurkunde — SENT to Linguakraft 2026-02-28", "done": true},
+        {"title": "Commission certified translation: Child 2 Geburtsurkunde — SENT to Linguakraft 2026-02-28", "done": true},
+        {"title": "Commission certified translation: Heiratsurkunde — SENT to Linguakraft 2026-02-28", "done": true},
+        {"title": "Commission certified translation: Wife's birth certificate — SENT to Linguakraft 2026-02-28", "done": true},
         {"title": "PHASE 3 — PHOTOS", "done": false},
         {"title": "Take UK-spec passport photos for Child 1 (35x45mm, plain light background, digital JPEG min 600x750px). Under-6 relaxed rules: no neutral expression required", "done": false},
         {"title": "Take UK-spec passport photos for Child 2 (same specs)", "done": false},
