@@ -172,10 +172,13 @@
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "Brackets to support under-bed storage drawers",
+      "notes": "Corner brackets to reinforce under-bed drawers (daughter's bed). Drawer fronts keep coming off due to weak cam lock fasteners. SPECS: Max 15mm wide brackets, screws into 15mm deep wood. Need 4 per drawer × 5 drawers = 20 brackets + screws. Screws must be ≤12mm long (to stay within 15mm wood depth with margin).",
       "created": "2026-02-16",
       "due": null,
-      "subtasks": []
+      "subtasks": [
+        {"title": "Order 20x small corner brackets (max 15mm wide) + short screws (≤12mm)", "done": false},
+        {"title": "Install 4 brackets per drawer on all 5 drawers", "done": false}
+      ]
     },
     {
       "id": "t010",
