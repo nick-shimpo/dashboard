@@ -336,6 +336,17 @@
         {"title": "Buy soft-bristled boot brush (if not already owned)", "done": false},
         {"title": "Clean and condition boots", "done": false}
       ]
+    },
+    {
+      "id": "t022",
+      "title": "Buy camera neck strap",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Simple, cheap neck strap for camera. AMAZON: VKO Kameragurt (~€7-9, basic, adjustable): https://www.amazon.de/dp/B075WZBYPQ — Cosswe Kameragurt (~€6, cotton rope style): https://www.amazon.de/dp/B0BG7L8GMH",
+      "created": "2026-02-28",
+      "due": null,
+      "subtasks": []
     }
   ],
   "sections": [
