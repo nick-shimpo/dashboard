@@ -182,14 +182,19 @@
     },
     {
       "id": "t010",
-      "title": "Buy picture hanging wire",
+      "title": "Buy picture hanging wire + mirror mounting hardware",
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "",
+      "notes": "Mirror: 60x110x3cm, 12kg. Cannot use side hooks (water pipes behind wall). Must mount centrally with wire. D-rings already fitted by manufacturer: 6.5cm from top, 3cm from sides (54cm span). SHOPPING LIST: (1) 1.5-2mm stainless steel braided picture wire, rated 30kg+, cut ~70-75cm. (2) Fischer DuoPower 8x40 with Winkelhaken (angle hook) — standard picture hooks only rated 3-5kg, NOT enough. Drill 8mm, 50mm deep. (3) Wire crimps/ferrules 1.5-2mm if not included with wire. (4) Adhesive rubber/felt bumper pads for bottom corners. INSTALLATION: Wire sag ~5cm. Hook at ~193-194cm from floor for mirror centre at eye level. Note: D-rings near top = steep wire angle = higher tension, so 30kg+ rating is important. Est. cost: €25-40 total.",
       "created": "2026-02-16",
       "due": null,
-      "subtasks": []
+      "subtasks": [
+        {"title": "Order: stainless steel picture wire 1.5-2mm, 30kg+ rated", "done": false},
+        {"title": "Order: Fischer DuoPower 8x40 + Winkelhaken", "done": false},
+        {"title": "Order: wire crimps/ferrules + rubber bumper pads", "done": false},
+        {"title": "Install wire on mirror D-rings and mount centrally", "done": false}
+      ]
     },
     {
       "id": "t011",
