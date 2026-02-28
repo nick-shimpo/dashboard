@@ -172,12 +172,12 @@
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "Corner brackets to reinforce under-bed drawers (daughter's bed). Drawer fronts keep coming off due to weak cam lock fasteners. SPECS: Max 15mm wide brackets, screws into 15mm deep wood. Need 4 per drawer × 5 drawers = 20 brackets + screws. Screws must be ≤12mm long (to stay within 15mm wood depth with margin).",
+      "notes": "Corner brackets to reinforce under-bed drawers (daughter's bed). Drawer fronts keep coming off due to weak cam lock fasteners. REVISED APPROACH: 20mm corner brackets placed in the 4.5cm gap between the two cam lock fastenings on each side. 2 brackets per gap, 2 gaps per drawer = 4 per drawer × 5 drawers = 20 brackets total. Screws into 15mm deep wood, screws must be ≤12mm long.",
       "created": "2026-02-16",
       "due": null,
       "subtasks": [
-        {"title": "Order 20x small corner brackets (max 15mm wide) + short screws (≤12mm)", "done": false},
-        {"title": "Install 4 brackets per drawer on all 5 drawers", "done": false}
+        {"title": "Order 20x corner brackets (20mm) + short screws (≤12mm)", "done": false},
+        {"title": "Install 4 brackets per drawer (2 per side, in cam lock gap) on all 5 drawers", "done": false}
       ]
     },
     {
