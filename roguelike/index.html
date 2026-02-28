@@ -164,6 +164,8 @@ const state = {
   scale: 3,
   log: [],
   rooms: [],
+  autoWalkPath: null,  // Stored path for multi-step movement
+  autoWalkTimer: null, // Timer ID for step animation
 };
 
 // --- Canvas Setup ---
@@ -511,8 +513,19 @@ function findPath(sx, sy, tx, ty, maxLen = 30) {
 // PLAYER ACTIONS
 // ============================================================
 
+function cancelAutoWalk() {
+  if (state.autoWalkTimer) {
+    clearTimeout(state.autoWalkTimer);
+    state.autoWalkTimer = null;
+  }
+  state.autoWalkPath = null;
+}
+
 function movePlayer(tx, ty) {
   const { player, map, mobs } = state;
+
+  // Cancel any existing auto-walk
+  cancelAutoWalk();
 
   // Check if target has a mob — attack instead
   const targetMob = mobs.find(m => m.x === tx && m.y === ty && m.hp > 0);
@@ -525,15 +538,60 @@ function movePlayer(tx, ty) {
   const path = findPath(player.x, player.y, tx, ty);
   if (!path || path.length === 0) return;
 
-  // Move one step
-  const next = path[0];
+  // If path is just 1 step, move immediately
+  if (path.length === 1) {
+    stepPlayer(path[0]);
+    return;
+  }
 
-  // Check for mob in the way
+  // Multi-step path: store it and start auto-walking
+  state.autoWalkPath = path;
+  autoWalkStep();
+}
+
+function autoWalkStep() {
+  const { player, map, mobs } = state;
+  const path = state.autoWalkPath;
+
+  if (!path || path.length === 0) {
+    cancelAutoWalk();
+    return;
+  }
+
+  const next = path[0];
+  const hpBefore = player.hp;
+
+  // Check for mob blocking the next step
   const blockingMob = mobs.find(m => m.x === next.x && m.y === next.y && m.hp > 0);
   if (blockingMob) {
+    cancelAutoWalk();
     attackMob(blockingMob);
     return;
   }
+
+  // Take one step
+  stepPlayer(next);
+  path.shift();
+
+  // Interrupt auto-walk if: player took damage, path is done, or player died
+  if (player.hp < hpBefore || player.hp <= 0 || path.length === 0) {
+    cancelAutoWalk();
+    return;
+  }
+
+  // Check if a visible mob is now nearby (within 2 tiles) — interrupt for safety
+  const nearbyMob = mobs.find(m => m.hp > 0 && state.visible[idx(m.x, m.y)] && dist(player.x, player.y, m.x, m.y) <= 2);
+  if (nearbyMob) {
+    cancelAutoWalk();
+    return;
+  }
+
+  // Schedule next step with a short delay for visual feedback
+  state.autoWalkTimer = setTimeout(autoWalkStep, 120);
+}
+
+function stepPlayer(next) {
+  const { player, map } = state;
 
   player.x = next.x;
   player.y = next.y;
@@ -546,6 +604,7 @@ function movePlayer(tx, ty) {
 
   // Check exit
   if (map[idx(player.x, player.y)] === T.EXIT) {
+    cancelAutoWalk();
     state.depth++;
     document.getElementById('depth-label').textContent = `Depth ${state.depth}`;
     generateLevel();
