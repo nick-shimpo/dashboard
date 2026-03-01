@@ -1,4 +1,4 @@
-const CACHE_NAME = 'roguelike-v5';
+const CACHE_NAME = 'roguelike-v6';
 const ASSETS = [
   '/dashboard/roguelike/',
   '/dashboard/roguelike/index.html',
@@ -11,6 +11,7 @@ const ASSETS = [
   '/dashboard/roguelike/assets/sprites/skeleton.png',
   '/dashboard/roguelike/assets/sprites/items.png',
   '/dashboard/roguelike/assets/environment/tiles_sewers.png',
+  '/dashboard/roguelike/assets/environment/kenney_1bit.png',
   '/dashboard/roguelike/assets/environment/water0.png',
   '/dashboard/roguelike/assets/ui/status_pane.png',
   '/dashboard/roguelike/assets/ui/toolbar.png',

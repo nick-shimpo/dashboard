@@ -404,6 +404,7 @@ function generateLevel() {
   }
 
   state.rooms = rooms;
+  computeAutotiles();
   updateFOV();
   centerCamera();
   updateUI();
@@ -811,7 +812,7 @@ const spriteQueue = [
   { name: 'snake', src: 'assets/sprites/snake.png' },
   { name: 'crab', src: 'assets/sprites/crab.png' },
   { name: 'skeleton', src: 'assets/sprites/skeleton.png' },
-  { name: 'tiles_sewers', src: 'assets/environment/tiles_sewers.png' },
+  { name: 'kenney', src: 'assets/environment/kenney_1bit.png' },
 ];
 let spritesLoaded = 0;
 
@@ -834,8 +835,226 @@ const MOB_SPRITES = {
 };
 
 // ============================================================
+// KENNEY 1-BIT TILESET SYSTEM (ported from Pogue3)
+// Tile extraction + bitmask wall autotiling
+// Source tiles are 16x16 from monochrome-transparent_packed.png
+// ============================================================
+
+const KENNEY_TILE = 16; // source tile size in the spritesheet
+
+// Extract a 16x16 tile from the Kenney sheet into an offscreen canvas
+function extractTile(img, col, row) {
+  const c = document.createElement('canvas');
+  c.width = KENNEY_TILE;
+  c.height = KENNEY_TILE;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(img, col * KENNEY_TILE, row * KENNEY_TILE, KENNEY_TILE, KENNEY_TILE, 0, 0, KENNEY_TILE, KENNEY_TILE);
+  return c;
+}
+
+// Rotate a tile canvas clockwise by degrees (90, 180, 270)
+function rotateTile(srcCanvas, degrees) {
+  const c = document.createElement('canvas');
+  c.width = KENNEY_TILE;
+  c.height = KENNEY_TILE;
+  const ctx = c.getContext('2d');
+  ctx.translate(KENNEY_TILE / 2, KENNEY_TILE / 2);
+  ctx.rotate(degrees * Math.PI / 180);
+  ctx.drawImage(srcCanvas, -KENNEY_TILE / 2, -KENNEY_TILE / 2);
+  return c;
+}
+
+// Composite overlay onto base (non-transparent pixels overlay)
+function compositeTiles(base, overlay) {
+  const c = document.createElement('canvas');
+  c.width = KENNEY_TILE;
+  c.height = KENNEY_TILE;
+  const ctx = c.getContext('2d');
+  ctx.drawImage(base, 0, 0);
+  ctx.drawImage(overlay, 0, 0);
+  return c;
+}
+
+// All tile canvases, keyed by autotile ID
+const tiles = {};
+
+// Autotile bitmask lookup: N=8, E=4, S=2, W=1 (floor neighbors of a wall)
+const AUTOTILE_MAP = {};
+
+function buildTileAtlas() {
+  const img = sprites.kenney;
+  if (!img) return;
+
+  // --- Floor tile from (0,0) ---
+  tiles.FLOOR = extractTile(img, 0, 0);
+
+  // --- (7,3) Single wall edge on W side ---
+  const wallW = extractTile(img, 7, 3);
+  const wallN = rotateTile(wallW, 90);
+  const wallE = rotateTile(wallW, 180);
+  const wallS = rotateTile(wallW, 270);
+  tiles.WALL_W = wallW;
+  tiles.WALL_N = wallN;
+  tiles.WALL_E = wallE;
+  tiles.WALL_S = wallS;
+
+  // --- (8,3) L-corner walls on NW ---
+  const cornerNW = extractTile(img, 8, 3);
+  const cornerNE = rotateTile(cornerNW, 90);
+  const cornerSE = rotateTile(cornerNW, 180);
+  const cornerSW = rotateTile(cornerNW, 270);
+  tiles.CORNER_NW = cornerNW;
+  tiles.CORNER_NE = cornerNE;
+  tiles.CORNER_SE = cornerSE;
+  tiles.CORNER_SW = cornerSW;
+
+  // --- (9,3) Small corner fill on SW ---
+  const fillSW = extractTile(img, 9, 3);
+  const fillNW = rotateTile(fillSW, 90);
+  const fillNE = rotateTile(fillSW, 180);
+  const fillSE = rotateTile(fillSW, 270);
+  tiles.FILL_SW = fillSW;
+  tiles.FILL_NW = fillNW;
+  tiles.FILL_NE = fillNE;
+  tiles.FILL_SE = fillSE;
+
+  // --- (10,3) Double wall on E+W ---
+  const wallEW = extractTile(img, 10, 3);
+  const wallNS = rotateTile(wallEW, 90);
+  tiles.WALL_EW = wallEW;
+  tiles.WALL_NS = wallNS;
+
+  // --- (11,3) Three walls, open to N ---
+  const threeN = extractTile(img, 11, 3);
+  const threeE = rotateTile(threeN, 90);
+  const threeS = rotateTile(threeN, 180);
+  const threeW = rotateTile(threeN, 270);
+  tiles.THREE_N = threeN;
+  tiles.THREE_E = threeE;
+  tiles.THREE_S = threeS;
+  tiles.THREE_W = threeW;
+
+  // --- Pillar: composite E+W and N+S ---
+  tiles.PILLAR = compositeTiles(wallEW, wallNS);
+
+  // --- Solid wall: all four single walls composited ---
+  let solid = compositeTiles(wallN, wallE);
+  solid = compositeTiles(solid, wallS);
+  solid = compositeTiles(solid, wallW);
+  tiles.WALL_SOLID = solid;
+
+  // Build autotile lookup: bitmask -> tile canvas
+  // Bitmask: N=8, E=4, S=2, W=1 (which directions have FLOOR neighbors)
+  AUTOTILE_MAP[0b0000] = tiles.WALL_SOLID;
+  AUTOTILE_MAP[0b0001] = tiles.WALL_W;
+  AUTOTILE_MAP[0b0010] = tiles.WALL_S;
+  AUTOTILE_MAP[0b0011] = tiles.CORNER_SW;
+  AUTOTILE_MAP[0b0100] = tiles.WALL_E;
+  AUTOTILE_MAP[0b0101] = tiles.WALL_EW;
+  AUTOTILE_MAP[0b0110] = tiles.CORNER_SE;
+  AUTOTILE_MAP[0b0111] = tiles.THREE_S;
+  AUTOTILE_MAP[0b1000] = tiles.WALL_N;
+  AUTOTILE_MAP[0b1001] = tiles.CORNER_NW;
+  AUTOTILE_MAP[0b1010] = tiles.WALL_NS;
+  AUTOTILE_MAP[0b1011] = tiles.THREE_W;
+  AUTOTILE_MAP[0b1100] = tiles.CORNER_NE;
+  AUTOTILE_MAP[0b1101] = tiles.THREE_N;
+  AUTOTILE_MAP[0b1110] = tiles.THREE_E;
+  AUTOTILE_MAP[0b1111] = tiles.PILLAR;
+}
+
+// Autotile array: stores the tile canvas key for each map cell
+// Computed after dungeon generation
+const autoTileMap = new Array(MAP_W * MAP_H);
+
+function computeAutotiles() {
+  const map = state.map;
+
+  for (let y = 0; y < MAP_H; y++) {
+    for (let x = 0; x < MAP_W; x++) {
+      const i = idx(x, y);
+
+      // Floor tiles (all passable terrain)
+      if (PASSABLE.has(map[i])) {
+        autoTileMap[i] = tiles.FLOOR;
+        continue;
+      }
+
+      // Wall tiles: check cardinal floor neighbors
+      const nFloor = y > 0 && PASSABLE.has(map[idx(x, y - 1)]);
+      const sFloor = y < MAP_H - 1 && PASSABLE.has(map[idx(x, y + 1)]);
+      const eFloor = x < MAP_W - 1 && PASSABLE.has(map[idx(x + 1, y)]);
+      const wFloor = x > 0 && PASSABLE.has(map[idx(x - 1, y)]);
+
+      let mask = 0;
+      if (nFloor) mask |= 8;
+      if (eFloor) mask |= 4;
+      if (sFloor) mask |= 2;
+      if (wFloor) mask |= 1;
+
+      // Special case: no cardinal floors but diagonal floor exists -> corner fill
+      if (mask === 0) {
+        const nwFloor = x > 0 && y > 0 && PASSABLE.has(map[idx(x - 1, y - 1)]);
+        const swFloor = x > 0 && y < MAP_H - 1 && PASSABLE.has(map[idx(x - 1, y + 1)]);
+        const seFloor = x < MAP_W - 1 && y < MAP_H - 1 && PASSABLE.has(map[idx(x + 1, y + 1)]);
+        const neFloor = x < MAP_W - 1 && y > 0 && PASSABLE.has(map[idx(x + 1, y - 1)]);
+
+        if (nwFloor) { autoTileMap[i] = tiles.FILL_NW; continue; }
+        if (swFloor) { autoTileMap[i] = tiles.FILL_SW; continue; }
+        if (seFloor) { autoTileMap[i] = tiles.FILL_SE; continue; }
+        if (neFloor) { autoTileMap[i] = tiles.FILL_NE; continue; }
+      }
+
+      autoTileMap[i] = AUTOTILE_MAP[mask] || tiles.WALL_SOLID;
+    }
+  }
+}
+
+// ============================================================
 // RENDERING
 // ============================================================
+
+// Tile color config (Pogue3 palette: cool dark blue tones)
+const FLOOR_FG = [200, 200, 200];
+const FLOOR_BG = [20, 20, 30];
+const WALL_FG = [100, 100, 110];
+const WALL_BG = [30, 30, 40];
+const FLOOR_FG_DIM = [60, 60, 70];
+const FLOOR_BG_DIM = [10, 10, 15];
+const WALL_FG_DIM = [40, 40, 50];
+const WALL_BG_DIM = [15, 15, 20];
+
+// Draw a Kenney tile with foreground/background tinting
+// The Kenney 1-bit tiles are white-on-transparent, so we:
+// 1. Fill the cell with bg color
+// 2. Set globalCompositeOperation to draw the tile, then tint it
+function drawTile(tileCanvas, screenX, screenY, tileSize, fg, bg) {
+  // Background fill
+  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  ctx.fillRect(screenX, screenY, tileSize, tileSize);
+
+  if (!tileCanvas) return;
+
+  // Draw the tile sprite (white pixels on transparent)
+  // We tint by drawing it, then overlaying fg color with source-atop
+  // Use an offscreen canvas for the tinting operation
+  const tc = _tintCache;
+  const tctx = tc.getContext('2d');
+  tc.width = KENNEY_TILE;
+  tc.height = KENNEY_TILE;
+  tctx.clearRect(0, 0, KENNEY_TILE, KENNEY_TILE);
+  tctx.drawImage(tileCanvas, 0, 0);
+  tctx.globalCompositeOperation = 'source-atop';
+  tctx.fillStyle = `rgb(${fg[0]},${fg[1]},${fg[2]})`;
+  tctx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
+  tctx.globalCompositeOperation = 'source-over';
+
+  ctx.imageSmoothingEnabled = false;
+  ctx.drawImage(tc, 0, 0, KENNEY_TILE, KENNEY_TILE, screenX, screenY, tileSize, tileSize);
+}
+
+// Reusable offscreen canvas for tinting
+const _tintCache = document.createElement('canvas');
 
 function render() {
   const { map, visible, explored, player, mobs, camera, scale } = state;
@@ -849,6 +1068,8 @@ function render() {
   const endX = startX + Math.ceil(canvas.width / tileSize) + 2;
   const endY = startY + Math.ceil(canvas.height / tileSize) + 2;
 
+  const useTileset = !!tiles.FLOOR;
+
   // Tiles
   for (let y = startY; y <= endY; y++) {
     for (let x = startX; x <= endX; x++) {
@@ -856,25 +1077,39 @@ function render() {
       const i = idx(x, y);
       const screenX = Math.floor(x * tileSize - camera.x);
       const screenY = Math.floor(y * tileSize - camera.y);
+      const isFloor = PASSABLE.has(map[i]);
 
       if (visible[i]) {
-        ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
-        ctx.fillRect(screenX, screenY, tileSize, tileSize);
+        if (useTileset) {
+          const fg = isFloor ? FLOOR_FG : WALL_FG;
+          const bg = isFloor ? FLOOR_BG : WALL_BG;
+          drawTile(autoTileMap[i], screenX, screenY, tileSize, fg, bg);
+        } else {
+          ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
+          ctx.fillRect(screenX, screenY, tileSize, tileSize);
+        }
+        // Special overlays for entrance/exit/doors
         if (map[i] === T.ENTRANCE) {
-          ctx.fillStyle = '#4a4';
-          ctx.fillRect(screenX + tileSize*0.3, screenY + tileSize*0.3, tileSize*0.4, tileSize*0.4);
+          ctx.fillStyle = 'rgba(40,120,40,0.5)';
+          ctx.fillRect(screenX + tileSize*0.25, screenY + tileSize*0.25, tileSize*0.5, tileSize*0.5);
         } else if (map[i] === T.EXIT) {
-          ctx.fillStyle = '#a44';
-          ctx.fillRect(screenX + tileSize*0.3, screenY + tileSize*0.3, tileSize*0.4, tileSize*0.4);
+          ctx.fillStyle = 'rgba(120,40,40,0.5)';
+          ctx.fillRect(screenX + tileSize*0.25, screenY + tileSize*0.25, tileSize*0.5, tileSize*0.5);
         } else if (map[i] === T.DOOR) {
-          ctx.fillStyle = '#B8860B';
+          ctx.fillStyle = 'rgba(184,134,11,0.6)';
           ctx.fillRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
         }
       } else if (explored[i]) {
-        ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
-        ctx.globalAlpha = 0.35;
-        ctx.fillRect(screenX, screenY, tileSize, tileSize);
-        ctx.globalAlpha = 1.0;
+        if (useTileset) {
+          const fg = isFloor ? FLOOR_FG_DIM : WALL_FG_DIM;
+          const bg = isFloor ? FLOOR_BG_DIM : WALL_BG_DIM;
+          drawTile(autoTileMap[i], screenX, screenY, tileSize, fg, bg);
+        } else {
+          ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
+          ctx.globalAlpha = 0.35;
+          ctx.fillRect(screenX, screenY, tileSize, tileSize);
+          ctx.globalAlpha = 1.0;
+        }
       }
     }
   }
@@ -962,6 +1197,7 @@ if ('serviceWorker' in navigator) {
 
 initPlayer();
 loadSprites(() => {
+  buildTileAtlas();
   generateLevel();
   render();
   log('Tap to move. Tap enemies to attack.');
