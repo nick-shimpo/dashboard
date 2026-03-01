@@ -176,8 +176,8 @@
       "created": "2026-02-16",
       "due": null,
       "subtasks": [
-        {"title": "Order 20x corner brackets (20mm) + short screws (≤12mm)", "done": false},
-        {"title": "Order 1.5-2mm HSS drill bit for pilot holes (if not in existing set)", "done": false},
+        {"title": "Order 20x corner brackets (20mm) + short screws (≤12mm) — ORDERED 2026-03-01", "done": true},
+        {"title": "Order 1.5-2mm HSS drill bit for pilot holes (if not in existing set) — ORDERED 2026-03-01", "done": true},
         {"title": "Install 4 brackets per drawer (2 per side, in cam lock gap) on all 5 drawers", "done": false}
       ]
     },
@@ -191,9 +191,9 @@
       "created": "2026-02-16",
       "due": null,
       "subtasks": [
-        {"title": "Order: stainless steel picture wire 1.5-2mm, 30kg+ rated", "done": false},
-        {"title": "Order: Fischer DuoPower 8x40 + Winkelhaken", "done": false},
-        {"title": "Order: wire crimps/ferrules + rubber bumper pads", "done": false},
+        {"title": "Order: stainless steel picture wire 1.5-2mm, 30kg+ rated — ORDERED 2026-03-01", "done": true},
+        {"title": "Order: Fischer DuoPower 8x40 + Winkelhaken — ORDERED 2026-03-01", "done": true},
+        {"title": "Order: wire crimps/ferrules + rubber bumper pads — ORDERED 2026-03-01", "done": true},
         {"title": "Install wire on mirror D-rings and mount centrally", "done": false}
       ]
     },
@@ -331,9 +331,9 @@
       "created": "2026-02-28",
       "due": null,
       "subtasks": [
-        {"title": "Buy leather conditioner (Nikwax or Obenauf's)", "done": false},
-        {"title": "Buy waterproofing wax/gel", "done": false},
-        {"title": "Buy soft-bristled boot brush (if not already owned)", "done": false},
+        {"title": "Buy leather conditioner (Nikwax or Obenauf's) — ORDERED 2026-03-01", "done": true},
+        {"title": "Buy waterproofing wax/gel — ORDERED 2026-03-01", "done": true},
+        {"title": "Buy soft-bristled boot brush (if not already owned) — ORDERED 2026-03-01", "done": true},
         {"title": "Clean and condition boots", "done": false}
       ]
     },
@@ -343,10 +343,14 @@
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "Simple, cheap neck strap for camera. AMAZON: VKO Kameragurt (~€7-9, basic, adjustable): https://www.amazon.de/dp/B075WZBYPQ — Cosswe Kameragurt (~€6, cotton rope style): https://www.amazon.de/dp/B0BG7L8GMH",
+      "notes": "Simple, cheap neck strap for camera. ORDERED 2026-03-01.",
       "created": "2026-02-28",
       "due": null,
-      "subtasks": []
+      "status": "pending",
+      "subtasks": [
+        {"title": "Camera strap ordered — ORDERED 2026-03-01", "done": true},
+        {"title": "Attach strap to camera when delivered", "done": false}
+      ]
     }
   ],
   "sections": [
