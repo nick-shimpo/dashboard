@@ -1,4 +1,4 @@
-const CACHE_NAME = 'roguelike-v3';
+const CACHE_NAME = 'roguelike-v4';
 const ASSETS = [
   '/dashboard/roguelike/',
   '/dashboard/roguelike/index.html',
@@ -9,7 +9,11 @@ const ASSETS = [
   '/dashboard/roguelike/assets/sprites/snake.png',
   '/dashboard/roguelike/assets/sprites/crab.png',
   '/dashboard/roguelike/assets/sprites/skeleton.png',
+  '/dashboard/roguelike/assets/sprites/items.png',
   '/dashboard/roguelike/assets/environment/tiles_sewers.png',
+  '/dashboard/roguelike/assets/environment/water0.png',
+  '/dashboard/roguelike/assets/ui/status_pane.png',
+  '/dashboard/roguelike/assets/ui/toolbar.png',
 ];
 
 self.addEventListener('install', (e) => {

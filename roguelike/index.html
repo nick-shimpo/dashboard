@@ -24,169 +24,408 @@ canvas {
   image-rendering: pixelated;
   image-rendering: crisp-edges;
 }
-#ui-overlay {
+#ui-layer {
   position: fixed;
   top: 0; left: 0;
   width: 100%; height: 100%;
   pointer-events: none;
   z-index: 10;
 }
-#hp-bar {
+/* SPD-style status pane (top) */
+#status-pane {
   position: fixed;
-  top: env(safe-area-inset-top, 8px);
-  left: 8px; right: 8px;
-  height: 6px;
-  background: #333;
-  border-radius: 3px;
-  z-index: 20;
-  pointer-events: none;
-}
-#hp-fill {
-  height: 100%;
-  background: #4a2;
-  border-radius: 3px;
-  transition: width 0.3s;
-}
-#status-bar {
-  position: fixed;
-  top: calc(env(safe-area-inset-top, 8px) + 10px);
-  left: 12px; right: 12px;
-  color: #ccc;
-  font: bold 11px monospace;
+  top: env(safe-area-inset-top, 0px);
+  left: 0; right: 0;
+  height: 38px;
+  background: linear-gradient(180deg, #1a1a2e 0%, #16162a 60%, #111128 100%);
+  border-bottom: 1px solid #333;
   z-index: 20;
   pointer-events: none;
   display: flex;
-  justify-content: space-between;
+  align-items: center;
+  padding: 0 4px;
+  font-family: monospace;
 }
-#tile-board-btn {
-  position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
-  right: 12px;
-  width: 44px; height: 44px;
-  background: rgba(60,60,80,0.8);
-  border: 1px solid #666;
-  border-radius: 8px;
-  color: #fff;
-  font: bold 18px monospace;
-  z-index: 20;
-  pointer-events: auto;
+#hero-portrait {
+  width: 30px; height: 30px;
+  border: 1px solid #555;
+  border-radius: 2px;
+  background: #222;
+  margin-right: 4px;
+  overflow: hidden;
   display: flex;
   align-items: center;
   justify-content: center;
 }
+#hero-portrait canvas {
+  width: 24px; height: 24px;
+}
+#status-bars {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  gap: 1px;
+  min-width: 0;
+}
+.stat-bar {
+  height: 8px;
+  background: #222;
+  border-radius: 1px;
+  position: relative;
+  overflow: hidden;
+}
+.stat-bar-fill {
+  height: 100%;
+  border-radius: 1px;
+  transition: width 0.3s;
+  position: absolute;
+  top: 0; left: 0;
+}
+#hp-fill { background: linear-gradient(180deg, #cc3333 0%, #882222 100%); }
+#xp-fill { background: linear-gradient(180deg, #ccaa33 0%, #886622 100%); }
+.stat-bar-text {
+  position: absolute;
+  top: 0; left: 0; right: 0; bottom: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font: bold 6px monospace;
+  color: #fff;
+  text-shadow: 0 0 2px #000;
+  z-index: 1;
+}
+#status-right {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  margin-left: 4px;
+  gap: 1px;
+}
+#depth-text {
+  font: bold 9px monospace;
+  color: #ccc;
+}
+#level-text {
+  font: bold 8px monospace;
+  color: #ffaa44;
+}
+/* SPD-style toolbar (bottom) */
+#toolbar {
+  position: fixed;
+  bottom: env(safe-area-inset-bottom, 0px);
+  left: 0; right: 0;
+  height: 40px;
+  background: linear-gradient(0deg, #1a1a2e 0%, #16162a 60%, #111128 100%);
+  border-top: 1px solid #333;
+  z-index: 20;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 2px;
+  padding: 0 4px;
+}
+.tb-btn {
+  width: 36px; height: 32px;
+  background: linear-gradient(180deg, #3a3a4a 0%, #2a2a3a 100%);
+  border: 1px solid #555;
+  border-radius: 3px;
+  color: #ccc;
+  font: bold 10px monospace;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.tb-btn:active {
+  background: #4a4a5a;
+}
+#tb-inv {
+  width: 44px;
+  background: linear-gradient(180deg, #4a3a2a 0%, #3a2a1a 100%);
+  border-color: #8B6914;
+}
+/* Game log overlay */
 #log {
   position: fixed;
-  bottom: calc(env(safe-area-inset-bottom, 8px) + 60px);
-  left: 8px; right: 8px;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 44px);
+  left: 4px; right: 4px;
   color: #ddd;
-  font: 11px monospace;
+  font: 10px monospace;
   z-index: 20;
   pointer-events: none;
   text-shadow: 0 0 3px #000, 0 0 6px #000;
-  max-height: 60px;
+  max-height: 50px;
   overflow: hidden;
 }
-.log-line { opacity: 0.7; }
+.log-line { opacity: 0.6; }
 .log-line:last-child { opacity: 1; }
+/* Equipment info strip */
+#equip-strip {
+  position: fixed;
+  top: calc(env(safe-area-inset-top, 0px) + 39px);
+  left: 0; right: 0;
+  height: 16px;
+  background: rgba(0,0,0,0.6);
+  z-index: 20;
+  pointer-events: none;
+  display: flex;
+  align-items: center;
+  padding: 0 4px;
+  gap: 8px;
+  font: 8px monospace;
+  color: #aaa;
+}
+.equip-item {
+  display: flex;
+  align-items: center;
+  gap: 2px;
+}
+.equip-icon {
+  width: 12px; height: 12px;
+}
 </style>
 </head>
 <body>
 <canvas id="game"></canvas>
-<div id="hp-bar"><div id="hp-fill" style="width:100%"></div></div>
-<div id="status-bar">
-  <span id="depth-label">Depth 1</span>
-  <span id="equip-label"></span>
+
+<!-- SPD-style Status Pane -->
+<div id="status-pane">
+  <div id="hero-portrait"><canvas id="portrait-canvas" width="24" height="24"></canvas></div>
+  <div id="status-bars">
+    <div class="stat-bar">
+      <div id="hp-fill" class="stat-bar-fill" style="width:100%"></div>
+      <div class="stat-bar-text" id="hp-text">20/20</div>
+    </div>
+    <div class="stat-bar">
+      <div id="xp-fill" class="stat-bar-fill" style="width:0%"></div>
+      <div class="stat-bar-text" id="xp-text">0/5</div>
+    </div>
+  </div>
+  <div id="status-right">
+    <div id="depth-text">Depth 1</div>
+    <div id="level-text">Lv.1</div>
+  </div>
 </div>
+
+<!-- Equipment strip -->
+<div id="equip-strip">
+  <span class="equip-item" id="weapon-label"></span>
+  <span class="equip-item" id="armor-label"></span>
+  <span style="flex:1"></span>
+  <span id="str-label"></span>
+</div>
+
+<!-- Game log -->
 <div id="log"></div>
-<div id="tile-board-btn">&#9638;</div>
+
+<!-- SPD-style Toolbar -->
+<div id="toolbar">
+  <div class="tb-btn" id="tb-wait" title="Wait">Z</div>
+  <div class="tb-btn" id="tb-search" title="Search">S</div>
+  <div class="tb-btn" id="tb-inv" title="Inventory">INV</div>
+  <div class="tb-btn" id="tb-grid" title="Tile Board">&#9638;</div>
+</div>
 
 <script>
 // ============================================================
-// ROGUELIKE — Web/PWA Foundation
-// SPD-inspired dungeon crawler with tile board build system
-// Combat math, enemies, and equipment ported from SPD source
+// ROGUELIKE — Faithful SPD Visual Port
+// Sewers level with real tileset, sprites, combat, and UI
 // ============================================================
 
-// --- Constants ---
 const TILE = 16;
 const MAP_W = 32;
 const MAP_H = 32;
 
-// --- Terrain types ---
+// --- Terrain ---
 const T = {
   WALL: 0, DOOR: 1, OPEN_DOOR: 2, EMPTY: 3, GRASS: 4,
   HIGH_GRASS: 5, WATER: 6, WALL_DECO: 7, ENTRANCE: 8, EXIT: 9,
   BOOKSHELF: 10, BARRICADE: 11, EMBERS: 12, PEDESTAL: 13,
-  SECRET_DOOR: 14, TRAP: 15,
+  SECRET_DOOR: 14, TRAP: 15, EMPTY_SP: 16, EMPTY_DECO: 17,
 };
-const PASSABLE = new Set([T.EMPTY, T.GRASS, T.HIGH_GRASS, T.WATER, T.DOOR, T.OPEN_DOOR, T.ENTRANCE, T.EXIT, T.EMBERS, T.TRAP]);
+const PASSABLE = new Set([T.EMPTY, T.GRASS, T.HIGH_GRASS, T.WATER, T.DOOR, T.OPEN_DOOR, T.ENTRANCE, T.EXIT, T.EMBERS, T.TRAP, T.EMPTY_SP, T.EMPTY_DECO]);
 const BLOCKS_VISION = new Set([T.WALL, T.WALL_DECO, T.BOOKSHELF, T.BARRICADE, T.SECRET_DOOR]);
+const IS_WALL = new Set([T.WALL, T.WALL_DECO, T.SECRET_DOOR, T.BOOKSHELF]);
 
-const TILE_COLORS = {
-  [T.WALL]: '#444455', [T.DOOR]: '#8B6914', [T.OPEN_DOOR]: '#6B4914',
-  [T.EMPTY]: '#2a2a3a', [T.GRASS]: '#1a3a1a', [T.HIGH_GRASS]: '#2a5a2a',
-  [T.WATER]: '#1a2a4a', [T.WALL_DECO]: '#555566', [T.ENTRANCE]: '#2a4a2a',
-  [T.EXIT]: '#4a2a2a', [T.BOOKSHELF]: '#5a4020', [T.BARRICADE]: '#6a5030',
-  [T.EMBERS]: '#3a2020', [T.PEDESTAL]: '#3a3a4a', [T.SECRET_DOOR]: '#444455',
-  [T.TRAP]: '#3a2a2a',
+// ============================================================
+// SPD TILESET MAPPING (from DungeonTileSheet.java)
+// tiles_sewers.png is a 16-column grid, each tile 16x16px
+// xy(col, row) = row * 16 + col  (tile index)
+// ============================================================
+
+function xy(col, row) { return row * 16 + col; }
+
+const TS = {
+  // Ground tiles (row 1, starting col 1)
+  FLOOR:       xy(1, 1),
+  FLOOR_ALT:   xy(2, 1),
+  GRASS:       xy(3, 1),
+  GRASS_ALT:   xy(4, 1),
+  EMBERS:      xy(7, 1),
+  FLOOR_SP:    xy(9, 1),
+  FLOOR_DECO:  xy(5, 1),
+  ENTRANCE:    xy(1, 2),  // row 2
+  EXIT:        xy(2, 2),
+  WELL:        xy(3, 2),
+  PEDESTAL:    xy(5, 2),
+
+  // Water (row 3, col 1-16) — stitched: +1 top, +2 right, +4 bottom, +8 left
+  WATER:       xy(1, 3),
+
+  // Flat walls (row 4)
+  FLAT_WALL:       xy(1, 4),
+  FLAT_WALL_ALT:   xy(5, 4),
+  FLAT_WALL_DECO:  xy(2, 4),
+  FLAT_BOOKSHELF:  xy(3, 4),
+  FLAT_DOOR:       xy(9, 4),
+  FLAT_DOOR_OPEN:  xy(10, 4),
+
+  // Flat features (row 5)
+  FLAT_HIGH_GRASS:     xy(3, 5),
+  FLAT_HIGH_GRASS_ALT: xy(6, 5),
+
+  // Raised walls (row 6-7) — stitched: +1 open right, +2 open left
+  RAISED_WALL:      xy(1, 6),
+  RAISED_WALL_DECO: xy(5, 6),
+  RAISED_WALL_DOOR: xy(9, 6),
+
+  // Raised doors (row 8)
+  RAISED_DOOR:      xy(1, 8),
+  RAISED_DOOR_OPEN: xy(2, 8),
+
+  // Internal walls (row 10-12) — top of walls, stitched
+  WALL_INTERNAL:    xy(1, 10),
+
+  // Wall overhang (row 13-14)
+  WALL_OVERHANG:    xy(1, 13),
+
+  // Door overhang (row 15)
+  DOOR_OVERHANG:      xy(1, 15),
+  DOOR_OVERHANG_OPEN: xy(2, 15),
 };
 
+// Map terrain type to flat tile index (for simple rendering)
+function terrainToTile(terrain, pos) {
+  const variance = (pos * 31337) & 0xFF; // deterministic pseudo-random per position
+  switch (terrain) {
+    case T.EMPTY:
+    case T.TRAP:
+      return variance < 128 ? TS.FLOOR : TS.FLOOR_ALT;
+    case T.GRASS:
+      return variance < 128 ? TS.GRASS : TS.GRASS_ALT;
+    case T.EMBERS:
+      return TS.EMBERS;
+    case T.EMPTY_SP:
+      return TS.FLOOR_SP;
+    case T.EMPTY_DECO:
+      return TS.FLOOR_DECO;
+    case T.ENTRANCE:
+      return TS.ENTRANCE;
+    case T.EXIT:
+      return TS.EXIT;
+    case T.PEDESTAL:
+      return TS.PEDESTAL;
+    case T.HIGH_GRASS:
+      return variance < 128 ? TS.FLAT_HIGH_GRASS : TS.FLAT_HIGH_GRASS_ALT;
+    case T.WALL:
+    case T.SECRET_DOOR:
+      return variance < 128 ? TS.FLAT_WALL : TS.FLAT_WALL_ALT;
+    case T.WALL_DECO:
+      return TS.FLAT_WALL_DECO;
+    case T.BOOKSHELF:
+      return TS.FLAT_BOOKSHELF;
+    case T.DOOR:
+      return TS.FLAT_DOOR;
+    case T.OPEN_DOOR:
+      return TS.FLAT_DOOR_OPEN;
+    default:
+      return TS.FLOOR;
+  }
+}
+
+// Get stitched water tile index
+function getWaterTile(x, y, map) {
+  const isGround = (tx, ty) => {
+    if (tx < 0 || tx >= MAP_W || ty < 0 || ty >= MAP_H) return false;
+    const t = map[ty * MAP_W + tx];
+    return t !== T.WATER && !IS_WALL.has(t);
+  };
+  let result = 0;
+  if (isGround(x, y - 1)) result += 1;  // top
+  if (isGround(x + 1, y)) result += 2;  // right
+  if (isGround(x, y + 1)) result += 4;  // bottom
+  if (isGround(x - 1, y)) result += 8;  // left
+  return TS.WATER + result;
+}
+
+// Raised wall rendering: wall tile when there's a non-wall below
+function getRaisedWallTile(terrain, x, y, map) {
+  const below = y + 1 < MAP_H ? map[(y + 1) * MAP_W + x] : T.WALL;
+  if (IS_WALL.has(below)) return -1; // no raised wall needed
+
+  const right = x + 1 < MAP_W ? map[y * MAP_W + x + 1] : T.WALL;
+  const left = x - 1 >= 0 ? map[y * MAP_W + x - 1] : T.WALL;
+
+  let base;
+  if (below === T.DOOR || below === T.OPEN_DOOR) base = TS.RAISED_WALL_DOOR;
+  else if (terrain === T.WALL_DECO) base = TS.RAISED_WALL_DECO;
+  else base = TS.RAISED_WALL;
+
+  let stitch = 0;
+  if (!IS_WALL.has(right)) stitch += 1;
+  if (!IS_WALL.has(left)) stitch += 2;
+  return base + stitch;
+}
+
+// Wall overhang: the dark top part of walls
+function getWallOverhangTile(x, y, map) {
+  const rightBelow = (x + 1 < MAP_W && y + 1 < MAP_H) ? map[(y + 1) * MAP_W + x + 1] : T.WALL;
+  const leftBelow = (x - 1 >= 0 && y + 1 < MAP_H) ? map[(y + 1) * MAP_W + x - 1] : T.WALL;
+
+  let result = TS.WALL_OVERHANG;
+  if (!IS_WALL.has(rightBelow)) result += 1;
+  if (!IS_WALL.has(leftBelow)) result += 2;
+  return result;
+}
+
 // ============================================================
-// SPD COMBAT MATH (ported from Char.java, MeleeWeapon.java, Armor.java)
+// SPD COMBAT MATH
 // ============================================================
 
-// Bell-curve integer range (SPD's Random.NormalIntRange)
 function normalIntRange(min, max) {
   return Math.round((Math.random() + Math.random()) * (max - min) / 2 + min);
 }
 
-// SPD hit resolution: Random.Float(accuracy) >= Random.Float(evasion)
 function resolveHit(accuracy, evasion) {
   return Math.random() * accuracy >= Math.random() * evasion;
 }
 
-// ============================================================
-// EQUIPMENT SYSTEM (from SPD's MeleeWeapon.java, Armor.java)
-// ============================================================
-
-// Weapon: tier determines base stats
-// min(lvl) = tier + lvl
-// max(lvl) = 5*(tier+1) + lvl*(tier+1)
-// STRReq(lvl) = (8 + tier*2) - floor((sqrt(8*lvl+1)-1)/2)
 function makeWeapon(name, tier, level = 0) {
-  const strReq = Math.max(1, (8 + tier * 2) - Math.floor((Math.sqrt(8 * level + 1) - 1) / 2));
   return {
     name, tier, level,
     minDmg: tier + level,
     maxDmg: 5 * (tier + 1) + level * (tier + 1),
-    strReq,
-    acc: 1.0,
-    dly: 1.0,
+    strReq: Math.max(1, (8 + tier * 2) - Math.floor((Math.sqrt(8 * level + 1) - 1) / 2)),
+    acc: 1.0, dly: 1.0,
   };
 }
 
-// Armor: tier determines DR
-// DRMax(lvl) = tier * (2 + lvl)
-// DRMin(lvl) = lvl (when lvl < DRMax)
-// STRReq same formula as weapons
 function makeArmor(name, tier, level = 0) {
-  const strReq = Math.max(1, (8 + Math.round(tier * 2)) - Math.floor((Math.sqrt(8 * level + 1) - 1) / 2));
   const drMax = tier * (2 + level);
-  const drMin = level < drMax ? level : level - drMax;
   return {
     name, tier, level,
-    drMin,
+    drMin: level < drMax ? level : level - drMax,
     drMax,
-    strReq,
+    strReq: Math.max(1, (8 + Math.round(tier * 2)) - Math.floor((Math.sqrt(8 * level + 1) - 1) / 2)),
   };
 }
 
 function weaponDamageRoll(weapon, heroStr) {
   let dmg = normalIntRange(weapon.minDmg, weapon.maxDmg);
-  const excessStr = heroStr - weapon.strReq;
-  if (excessStr > 0) {
-    dmg += normalIntRange(0, excessStr);
-  }
+  const excess = heroStr - weapon.strReq;
+  if (excess > 0) dmg += normalIntRange(0, excess);
   return Math.max(0, dmg);
 }
 
@@ -195,7 +434,7 @@ function armorDR(armor) {
 }
 
 // ============================================================
-// SEWERS MOB DEFINITIONS (from SPD source)
+// MOB DEFINITIONS
 // ============================================================
 
 const MOB_DEFS = {
@@ -206,13 +445,22 @@ const MOB_DEFS = {
   skeleton: { hp: 20, atkSkill: 12, defSkill: 5,  minDmg: 2, maxDmg: 5, dr: 0,  xp: 4, speed: 1.0 },
 };
 
-// Spawn tables per depth (from SPD's MobSpawner.java)
 const SPAWN_TABLE = {
   1: ['rat', 'rat', 'rat', 'snake'],
   2: ['rat', 'rat', 'snake', 'gnoll', 'gnoll'],
   3: ['rat', 'snake', 'gnoll', 'gnoll', 'gnoll', 'crab'],
   4: ['gnoll', 'crab', 'crab', 'skeleton'],
   5: ['gnoll', 'crab', 'crab', 'skeleton', 'skeleton'],
+};
+
+// Sprite animation data (from SPD sprite classes)
+const SPRITE_DEFS = {
+  warrior:  { w: 12, h: 15, idle: [0,0,0,1], run: [2,3,4,5,6,7], attack: [13,14,15,0], die: [8,9,10,11,12,11] },
+  rat:      { w: 16, h: 15, idle: [0,0,0,1], run: [6,7,8,9,10], attack: [2,3,4,5,0], die: [11,12,13,14] },
+  gnoll:    { w: 12, h: 15, idle: [0,0,0,1,0,0,1,1], run: [4,5,6,7], attack: [2,3,0], die: [8,9,10] },
+  snake:    { w: 12, h: 11, idle: [0,0,0,1], run: [4,5,6,7], attack: [8,9,10,9,0], die: [11,12,13] },
+  crab:     { w: 16, h: 16, idle: [0,1,0,2], run: [3,4,5,6], attack: [7,8,9], die: [10,11,12,13] },
+  skeleton: { w: 12, h: 15, idle: [0,0,0,0,0,0,0,0,0,0,0,0,0,1,2,3], run: [4,5,6,7,8,9], attack: [14,15,16], die: [10,11,12,13] },
 };
 
 function spawnMobType(depth) {
@@ -223,18 +471,13 @@ function spawnMobType(depth) {
 function createMob(type, x, y) {
   const def = MOB_DEFS[type];
   return {
-    x, y,
-    name: type,
-    hp: def.hp,
-    maxHp: def.hp,
-    atkSkill: def.atkSkill,
-    defSkill: def.defSkill,
-    minDmg: def.minDmg,
-    maxDmg: def.maxDmg,
-    dr: def.dr,
-    xp: def.xp,
-    speed: def.speed,
-    actTimer: 0, // for speed system
+    x, y, name: type,
+    hp: def.hp, maxHp: def.hp,
+    atkSkill: def.atkSkill, defSkill: def.defSkill,
+    minDmg: def.minDmg, maxDmg: def.maxDmg,
+    dr: def.dr, xp: def.xp, speed: def.speed,
+    actTimer: 0,
+    animState: 'idle', animFrame: 0, animTimer: 0,
   };
 }
 
@@ -247,19 +490,13 @@ const state = {
   visible: new Uint8Array(MAP_W * MAP_H),
   explored: new Uint8Array(MAP_W * MAP_H),
   player: {
-    x: 0, y: 0,
-    hp: 20, maxHp: 20,
-    str: 10,
-    atkSkill: 10,
-    defSkill: 5,
-    xp: 0,
-    level: 1,
-    weapon: null,
-    armor: null,
+    x: 0, y: 0, hp: 20, maxHp: 20, str: 10,
+    atkSkill: 10, defSkill: 5, xp: 0, level: 1,
+    weapon: null, armor: null,
+    animState: 'idle', animFrame: 0, animTimer: 0,
   },
   mobs: [],
-  depth: 1,
-  turn: 0,
+  depth: 1, turn: 0,
   camera: { x: 0, y: 0 },
   scale: 3,
   log: [],
@@ -268,9 +505,11 @@ const state = {
   autoWalkTimer: null,
 };
 
-// --- Canvas Setup ---
+// --- Canvas ---
 const canvas = document.getElementById('game');
 const ctx = canvas.getContext('2d');
+let topInset = 55; // status pane + equip strip
+let bottomInset = 40; // toolbar
 
 function resizeCanvas() {
   canvas.width = window.innerWidth;
@@ -285,18 +524,15 @@ function idx(x, y) { return y * MAP_W + x; }
 function toXY(i) { return { x: i % MAP_W, y: Math.floor(i / MAP_W) }; }
 function dist(x1, y1, x2, y2) { return Math.abs(x1 - x2) + Math.abs(y1 - y2); }
 function rng(min, max) { return Math.floor(Math.random() * (max - min + 1)) + min; }
-function clamp(v, lo, hi) { return Math.max(lo, Math.min(hi, v)); }
 
-// --- Logging ---
 function log(msg) {
   state.log.push(msg);
   if (state.log.length > 4) state.log.shift();
-  const el = document.getElementById('log');
-  el.innerHTML = state.log.map(l => `<div class="log-line">${l}</div>`).join('');
+  document.getElementById('log').innerHTML = state.log.map(l => `<div class="log-line">${l}</div>`).join('');
 }
 
 // ============================================================
-// DUNGEON GENERATION (SPD-tuned: 5-7 rooms, Sewers feel)
+// DUNGEON GENERATION
 // ============================================================
 
 function generateLevel() {
@@ -307,49 +543,37 @@ function generateLevel() {
   state.visible.fill(0);
   state.explored.fill(0);
 
-  // SPD Sewers: 4-6 standard rooms + entrance/exit
-  const roomCount = rng(5, 7);
+  const roomCount = rng(5, 8);
   const rooms = [];
 
-  for (let attempt = 0; attempt < 200 && rooms.length < roomCount; attempt++) {
-    const w = rng(4, 8);
-    const h = rng(4, 8);
-    const x = rng(1, MAP_W - w - 2);
-    const y = rng(1, MAP_H - h - 2);
-
+  for (let attempt = 0; attempt < 300 && rooms.length < roomCount; attempt++) {
+    const w = rng(4, 9), h = rng(4, 9);
+    const x = rng(1, MAP_W - w - 2), y = rng(1, MAP_H - h - 2);
     let overlaps = false;
     for (const r of rooms) {
-      if (x - 1 < r.x + r.w && x + w + 1 > r.x &&
-          y - 1 < r.y + r.h && y + h + 1 > r.y) {
-        overlaps = true;
-        break;
+      if (x - 1 < r.x + r.w && x + w + 1 > r.x && y - 1 < r.y + r.h && y + h + 1 > r.y) {
+        overlaps = true; break;
       }
     }
-    if (!overlaps) {
-      rooms.push({ x, y, w, h, cx: Math.floor(x + w/2), cy: Math.floor(y + h/2) });
-    }
+    if (!overlaps) rooms.push({ x, y, w, h, cx: Math.floor(x + w/2), cy: Math.floor(y + h/2) });
   }
 
   // Carve rooms
   for (const r of rooms) {
-    for (let ry = r.y; ry < r.y + r.h; ry++) {
-      for (let rx = r.x; rx < r.x + r.w; rx++) {
+    for (let ry = r.y; ry < r.y + r.h; ry++)
+      for (let rx = r.x; rx < r.x + r.w; rx++)
         map[idx(rx, ry)] = T.EMPTY;
-      }
-    }
   }
 
-  // Connect rooms (nearest neighbor chain)
-  const connected = [rooms[0]];
-  const remaining = rooms.slice(1);
+  // Connect rooms
+  const connected = [rooms[0]], remaining = rooms.slice(1);
   while (remaining.length > 0) {
-    let bestDist = Infinity, bestC = null, bestR = null, bestRI = -1;
-    for (const c of connected) {
+    let bestDist = Infinity, bestC, bestR, bestRI;
+    for (const c of connected)
       for (let i = 0; i < remaining.length; i++) {
         const d = dist(c.cx, c.cy, remaining[i].cx, remaining[i].cy);
         if (d < bestDist) { bestDist = d; bestC = c; bestR = remaining[i]; bestRI = i; }
       }
-    }
     carveCorridor(map, bestC.cx, bestC.cy, bestR.cx, bestR.cy);
     connected.push(remaining.splice(bestRI, 1)[0]);
   }
@@ -357,37 +581,33 @@ function generateLevel() {
   // Doors
   for (const r of rooms) placeDoors(map, r);
 
-  // Sewers terrain: 30% water, 20% grass (from SPD SewerPainter)
+  // Sewers terrain decoration
   for (let i = 0; i < map.length; i++) {
     if (map[i] === T.EMPTY) {
       const roll = Math.random();
-      if (roll < 0.06) map[i] = T.WATER;
+      if (roll < 0.07) map[i] = T.WATER;
       else if (roll < 0.10) map[i] = T.GRASS;
-      else if (roll < 0.12) map[i] = T.HIGH_GRASS;
+      else if (roll < 0.13) map[i] = T.HIGH_GRASS;
+      else if (roll < 0.15) map[i] = T.EMPTY_DECO;
     }
   }
 
-  // Wall decorations (SPD Sewer sinks: walls adjacent to water)
-  for (let y = 1; y < MAP_H - 1; y++) {
-    for (let x = 1; x < MAP_W - 1; x++) {
-      if (map[idx(x, y)] === T.WALL && map[idx(x, y + 1)] === T.WATER) {
-        if (Math.random() < 0.25) map[idx(x, y)] = T.WALL_DECO;
-      }
-    }
-  }
+  // Wall decorations near water
+  for (let y = 1; y < MAP_H - 1; y++)
+    for (let x = 1; x < MAP_W - 1; x++)
+      if (map[idx(x, y)] === T.WALL && map[idx(x, y + 1)] === T.WATER && Math.random() < 0.3)
+        map[idx(x, y)] = T.WALL_DECO;
 
-  // Entrance and exit
-  const entrance = rooms[0];
-  const exit = rooms[rooms.length - 1];
+  // Entrance/exit
+  const entrance = rooms[0], exit = rooms[rooms.length - 1];
   map[idx(entrance.cx, entrance.cy)] = T.ENTRANCE;
   map[idx(exit.cx, exit.cy)] = T.EXIT;
 
-  // Place player
   state.player.x = entrance.cx;
   state.player.y = entrance.cy;
 
-  // Spawn mobs: SPD does ~3-5 per level, not in entrance room
-  const mobCount = rng(3, 5);
+  // Spawn mobs
+  const mobCount = rng(3, 6);
   let spawned = 0;
   for (let ri = 1; ri < rooms.length && spawned < mobCount; ri++) {
     const r = rooms[ri];
@@ -396,8 +616,7 @@ function generateLevel() {
       const mx = rng(r.x + 1, r.x + r.w - 2);
       const my = rng(r.y + 1, r.y + r.h - 2);
       if (PASSABLE.has(map[idx(mx, my)]) && !(mx === exit.cx && my === exit.cy)) {
-        const type = spawnMobType(state.depth);
-        state.mobs.push(createMob(type, mx, my));
+        state.mobs.push(createMob(spawnMobType(state.depth), mx, my));
         spawned++;
       }
     }
@@ -426,119 +645,95 @@ function placeDoors(map, room) {
   for (let x = room.x; x < room.x + room.w; x++) {
     for (const y of [room.y, room.y + room.h - 1]) {
       if (y > 0 && y < MAP_H - 1 && map[idx(x, y)] === T.EMPTY) {
-        const above = map[idx(x, y - 1)];
-        const below = map[idx(x, y + 1)];
-        if ((above === T.WALL && below !== T.WALL) || (below === T.WALL && above !== T.WALL)) {
-          if (map[idx(x, y === room.y ? y - 1 : y + 1)] === T.EMPTY) {
+        const above = map[idx(x, y - 1)], below = map[idx(x, y + 1)];
+        if ((above === T.WALL && below !== T.WALL) || (below === T.WALL && above !== T.WALL))
+          if (map[idx(x, y === room.y ? y - 1 : y + 1)] === T.EMPTY)
             map[idx(x, y)] = T.DOOR;
-          }
-        }
       }
     }
   }
   for (let y = room.y; y < room.y + room.h; y++) {
     for (const x of [room.x, room.x + room.w - 1]) {
       if (x > 0 && x < MAP_W - 1 && map[idx(x, y)] === T.EMPTY) {
-        const left = map[idx(x - 1, y)];
-        const right = map[idx(x + 1, y)];
-        if ((left === T.WALL && right !== T.WALL) || (right === T.WALL && left !== T.WALL)) {
-          if (map[idx(x === room.x ? x - 1 : x + 1, y)] === T.EMPTY) {
+        const left = map[idx(x - 1, y)], right = map[idx(x + 1, y)];
+        if ((left === T.WALL && right !== T.WALL) || (right === T.WALL && left !== T.WALL))
+          if (map[idx(x === room.x ? x - 1 : x + 1, y)] === T.EMPTY)
             map[idx(x, y)] = T.DOOR;
-          }
-        }
       }
     }
   }
 }
 
 // ============================================================
-// FOV — Shadow Casting (from SPD's ShadowCaster.java)
+// FOV — Shadow Casting
 // ============================================================
 
 function updateFOV() {
   const { x: px, y: py } = state.player;
-  const viewDist = 8;
   state.visible.fill(0);
   state.visible[idx(px, py)] = 1;
   state.explored[idx(px, py)] = 1;
-  for (let octant = 0; octant < 8; octant++) {
-    castLight(px, py, viewDist, 1, 1.0, 0.0, octant);
-  }
+  for (let oct = 0; oct < 8; oct++) castLight(px, py, 8, 1, 1.0, 0.0, oct);
 }
 
-function castLight(cx, cy, radius, row, startSlope, endSlope, octant) {
+function castLight(cx, cy, rad, row, startSlope, endSlope, oct) {
   if (startSlope < endSlope) return;
   let newStart = startSlope;
-  for (let j = row; j <= radius; j++) {
+  for (let j = row; j <= rad; j++) {
     let blocked = false;
     for (let dx = -j; dx <= 0; dx++) {
       const dy = -j;
       let mx, my;
-      switch (octant) {
-        case 0: mx = cx + dx; my = cy + dy; break;
-        case 1: mx = cx + dy; my = cy + dx; break;
-        case 2: mx = cx - dy; my = cy + dx; break;
-        case 3: mx = cx - dx; my = cy + dy; break;
-        case 4: mx = cx - dx; my = cy - dy; break;
-        case 5: mx = cx - dy; my = cy - dx; break;
-        case 6: mx = cx + dy; my = cy - dx; break;
-        case 7: mx = cx + dx; my = cy - dy; break;
+      switch (oct) {
+        case 0: mx=cx+dx; my=cy+dy; break; case 1: mx=cx+dy; my=cy+dx; break;
+        case 2: mx=cx-dy; my=cy+dx; break; case 3: mx=cx-dx; my=cy+dy; break;
+        case 4: mx=cx-dx; my=cy-dy; break; case 5: mx=cx-dy; my=cy-dx; break;
+        case 6: mx=cx+dy; my=cy-dx; break; case 7: mx=cx+dx; my=cy-dy; break;
       }
-      if (mx < 0 || mx >= MAP_W || my < 0 || my >= MAP_H) continue;
-      const leftSlope = (dx - 0.5) / (dy + 0.5);
-      const rightSlope = (dx + 0.5) / (dy - 0.5);
-      if (startSlope < rightSlope) continue;
-      if (endSlope > leftSlope) break;
-      if (dx * dx + dy * dy <= radius * radius) {
-        state.visible[idx(mx, my)] = 1;
-        state.explored[idx(mx, my)] = 1;
-      }
-      const isBlocking = BLOCKS_VISION.has(state.map[idx(mx, my)]);
-      if (blocked) {
-        if (isBlocking) { newStart = rightSlope; }
-        else { blocked = false; startSlope = newStart; }
-      } else if (isBlocking && j < radius) {
-        blocked = true;
-        castLight(cx, cy, radius, j + 1, startSlope, leftSlope, octant);
-        newStart = rightSlope;
-      }
+      if (mx<0||mx>=MAP_W||my<0||my>=MAP_H) continue;
+      const ls=(dx-0.5)/(dy+0.5), rs=(dx+0.5)/(dy-0.5);
+      if (startSlope < rs) continue;
+      if (endSlope > ls) break;
+      if (dx*dx+dy*dy <= rad*rad) { state.visible[idx(mx,my)]=1; state.explored[idx(mx,my)]=1; }
+      const isBlock = BLOCKS_VISION.has(state.map[idx(mx,my)]);
+      if (blocked) { if (isBlock) newStart=rs; else { blocked=false; startSlope=newStart; } }
+      else if (isBlock && j<rad) { blocked=true; castLight(cx,cy,rad,j+1,startSlope,ls,oct); newStart=rs; }
     }
     if (blocked) break;
   }
 }
 
 // ============================================================
-// PATHFINDING — A*
+// PATHFINDING
 // ============================================================
 
 function findPath(sx, sy, tx, ty, maxLen = 30) {
   if (sx === tx && sy === ty) return [];
   const open = [], closed = new Set(), gScore = new Map(), parent = new Map();
-  const startKey = idx(sx, sy), endKey = idx(tx, ty);
-  gScore.set(startKey, 0);
-  open.push({ key: startKey, f: dist(sx, sy, tx, ty) });
+  const sk = idx(sx,sy), ek = idx(tx,ty);
+  gScore.set(sk, 0);
+  open.push({ key: sk, f: dist(sx,sy,tx,ty) });
   while (open.length > 0) {
-    open.sort((a, b) => a.f - b.f);
-    const current = open.shift();
-    if (current.key === endKey) {
-      const path = []; let k = endKey;
-      while (k !== startKey) { path.unshift(toXY(k)); k = parent.get(k); }
+    open.sort((a,b) => a.f - b.f);
+    const cur = open.shift();
+    if (cur.key === ek) {
+      const path = []; let k = ek;
+      while (k !== sk) { path.unshift(toXY(k)); k = parent.get(k); }
       return path;
     }
-    closed.add(current.key);
-    const { x: cx, y: cy } = toXY(current.key);
-    for (const [dx, dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
-      const nx = cx + dx, ny = cy + dy;
-      if (nx < 0 || nx >= MAP_W || ny < 0 || ny >= MAP_H) continue;
-      const nKey = idx(nx, ny);
-      if (closed.has(nKey) || !PASSABLE.has(state.map[nKey])) continue;
-      if (nKey !== endKey && state.mobs.some(m => m.x === nx && m.y === ny && m.hp > 0)) continue;
-      const tentG = gScore.get(current.key) + 1;
-      if (tentG > maxLen) continue;
-      if (!gScore.has(nKey) || tentG < gScore.get(nKey)) {
-        gScore.set(nKey, tentG);
-        parent.set(nKey, current.key);
-        open.push({ key: nKey, f: tentG + dist(nx, ny, tx, ty) });
+    closed.add(cur.key);
+    const {x:cx,y:cy} = toXY(cur.key);
+    for (const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+      const nx=cx+dx, ny=cy+dy;
+      if (nx<0||nx>=MAP_W||ny<0||ny>=MAP_H) continue;
+      const nk = idx(nx,ny);
+      if (closed.has(nk)||!PASSABLE.has(state.map[nk])) continue;
+      if (nk !== ek && state.mobs.some(m => m.x===nx && m.y===ny && m.hp>0)) continue;
+      const tG = gScore.get(cur.key) + 1;
+      if (tG > maxLen) continue;
+      if (!gScore.has(nk) || tG < gScore.get(nk)) {
+        gScore.set(nk, tG); parent.set(nk, cur.key);
+        open.push({ key: nk, f: tG + dist(nx,ny,tx,ty) });
       }
     }
   }
@@ -546,7 +741,7 @@ function findPath(sx, sy, tx, ty, maxLen = 30) {
 }
 
 // ============================================================
-// PLAYER ACTIONS (with SPD combat math)
+// PLAYER ACTIONS
 // ============================================================
 
 function cancelAutoWalk() {
@@ -555,18 +750,12 @@ function cancelAutoWalk() {
 }
 
 function movePlayer(tx, ty) {
-  const { player, mobs } = state;
   cancelAutoWalk();
-
-  const targetMob = mobs.find(m => m.x === tx && m.y === ty && m.hp > 0);
-  if (targetMob && dist(player.x, player.y, tx, ty) === 1) {
-    attackMob(targetMob);
-    return;
-  }
-
+  const { player, mobs } = state;
+  const mob = mobs.find(m => m.x===tx && m.y===ty && m.hp>0);
+  if (mob && dist(player.x, player.y, tx, ty) === 1) { attackMob(mob); return; }
   const path = findPath(player.x, player.y, tx, ty);
   if (!path || path.length === 0) return;
-
   if (path.length === 1) { stepPlayer(path[0]); return; }
   state.autoWalkPath = path;
   autoWalkStep();
@@ -576,126 +765,80 @@ function autoWalkStep() {
   const { player, mobs } = state;
   const path = state.autoWalkPath;
   if (!path || path.length === 0) { cancelAutoWalk(); return; }
-
-  const next = path[0];
-  const hpBefore = player.hp;
-
-  const blockingMob = mobs.find(m => m.x === next.x && m.y === next.y && m.hp > 0);
-  if (blockingMob) { cancelAutoWalk(); attackMob(blockingMob); return; }
-
+  const next = path[0], hpBefore = player.hp;
+  const blocker = mobs.find(m => m.x===next.x && m.y===next.y && m.hp>0);
+  if (blocker) { cancelAutoWalk(); attackMob(blocker); return; }
   stepPlayer(next);
   path.shift();
-
   if (player.hp < hpBefore || player.hp <= 0 || path.length === 0) { cancelAutoWalk(); return; }
-
-  const nearbyMob = mobs.find(m => m.hp > 0 && state.visible[idx(m.x, m.y)] && dist(player.x, player.y, m.x, m.y) <= 2);
-  if (nearbyMob) { cancelAutoWalk(); return; }
-
+  if (mobs.find(m => m.hp>0 && state.visible[idx(m.x,m.y)] && dist(player.x,player.y,m.x,m.y)<=2)) {
+    cancelAutoWalk(); return;
+  }
   state.autoWalkTimer = setTimeout(autoWalkStep, 120);
 }
 
 function stepPlayer(next) {
   const { player, map } = state;
-  player.x = next.x;
-  player.y = next.y;
-
-  if (map[idx(player.x, player.y)] === T.DOOR) {
-    map[idx(player.x, player.y)] = T.OPEN_DOOR;
-    log('You open the door.');
-  }
-
+  player.x = next.x; player.y = next.y;
+  if (map[idx(player.x, player.y)] === T.DOOR) { map[idx(player.x, player.y)] = T.OPEN_DOOR; log('You open the door.'); }
+  if (map[idx(player.x, player.y)] === T.HIGH_GRASS) { map[idx(player.x, player.y)] = T.GRASS; log('You trample the high grass.'); }
   if (map[idx(player.x, player.y)] === T.EXIT) {
-    cancelAutoWalk();
-    state.depth++;
-    document.getElementById('depth-label').textContent = `Depth ${state.depth}`;
-    generateLevel();
-    return;
+    cancelAutoWalk(); state.depth++;
+    document.getElementById('depth-text').textContent = `Depth ${state.depth}`;
+    generateLevel(); return;
   }
-
   endTurn();
 }
 
-// SPD combat: hero attacks mob
 function attackMob(mob) {
   const { player } = state;
-  const weapon = player.weapon;
-
-  // Hit resolution (from SPD Char.java)
-  // Hero accuracy: attackSkill * weapon.acc (encumbrance not relevant at STR 10 + tier 1)
-  const heroAccuracy = player.atkSkill * (weapon ? weapon.acc : 1);
-
-  if (!resolveHit(heroAccuracy, mob.defSkill)) {
-    log(`You miss the ${mob.name}.`);
-    endTurn();
-    return;
-  }
-
-  // Damage roll
-  let dmg = weapon ? weaponDamageRoll(weapon, player.str) : normalIntRange(1, 4);
-
-  // Mob DR
-  const mobDR = normalIntRange(0, mob.dr);
-  dmg = Math.max(0, dmg - mobDR);
-
+  const heroAcc = player.atkSkill * (player.weapon ? player.weapon.acc : 1);
+  if (!resolveHit(heroAcc, mob.defSkill)) { log(`You miss the ${mob.name}.`); endTurn(); return; }
+  let dmg = player.weapon ? weaponDamageRoll(player.weapon, player.str) : normalIntRange(1, 4);
+  dmg = Math.max(0, dmg - normalIntRange(0, mob.dr));
   mob.hp -= dmg;
-
-  if (dmg > 0) {
-    log(`You hit the ${mob.name} for ${dmg}.`);
-  } else {
-    log(`You hit the ${mob.name} but deal no damage.`);
-  }
-
-  if (mob.hp <= 0) {
-    log(`The ${mob.name} is defeated!`);
-    gainXP(mob.xp);
-  }
-
+  if (dmg > 0) log(`You hit the ${mob.name} for ${dmg}.`);
+  else log(`You hit the ${mob.name} but deal no damage.`);
+  if (mob.hp <= 0) { log(`The ${mob.name} is defeated!`); gainXP(mob.xp); }
   endTurn();
 }
 
-// SPD combat: mob attacks hero
 function mobAttackHero(mob) {
   const { player } = state;
-  const armor = player.armor;
-
-  // Mob accuracy vs hero evasion
-  if (!resolveHit(mob.atkSkill, player.defSkill)) {
-    log(`The ${mob.name} misses you.`);
-    return;
-  }
-
+  if (!resolveHit(mob.atkSkill, player.defSkill)) { log(`The ${mob.name} misses you.`); return; }
   let dmg = normalIntRange(mob.minDmg, mob.maxDmg);
-
-  // Hero armor DR
-  if (armor) {
-    const dr = armorDR(armor);
-    dmg = Math.max(0, dmg - dr);
-  }
-
+  if (player.armor) dmg = Math.max(0, dmg - armorDR(player.armor));
   player.hp -= dmg;
+  if (dmg > 0) log(`The ${mob.name} hits you for ${dmg}!`);
+  else log(`The ${mob.name} hits but your armor absorbs it.`);
+}
 
-  if (dmg > 0) {
-    log(`The ${mob.name} hits you for ${dmg}!`);
-  } else {
-    log(`The ${mob.name} hits you but your armor absorbs it.`);
+function gainXP(amount) {
+  const p = state.player;
+  p.xp += amount;
+  const needed = p.level * 5;
+  if (p.xp >= needed) {
+    p.xp -= needed; p.level++;
+    p.atkSkill++; p.defSkill++;
+    p.maxHp += 5; p.hp = Math.min(p.hp + 5, p.maxHp);
+    log(`You reach level ${p.level}!`);
   }
 }
 
-// XP and leveling (simplified from SPD)
-function gainXP(amount) {
-  const { player } = state;
-  player.xp += amount;
-  // SPD leveling thresholds roughly: level * (level - 1) / 2 * 5
-  const xpToLevel = player.level * 5;
-  if (player.xp >= xpToLevel) {
-    player.xp -= xpToLevel;
-    player.level++;
-    player.atkSkill++;
-    player.defSkill++;
-    player.maxHp += 5;
-    player.hp = Math.min(player.hp + 5, player.maxHp);
-    log(`You reach level ${player.level}!`);
+function waitTurn() { cancelAutoWalk(); endTurn(); }
+
+function searchAction() {
+  cancelAutoWalk();
+  // Reveal secret doors adjacent
+  const {x, y} = state.player;
+  for (const [dx,dy] of [[0,-1],[1,0],[0,1],[-1,0]]) {
+    const nx = x+dx, ny = y+dy;
+    if (nx>=0 && nx<MAP_W && ny>=0 && ny<MAP_H && state.map[idx(nx,ny)] === T.SECRET_DOOR) {
+      state.map[idx(nx,ny)] = T.DOOR;
+      log('You found a hidden door!');
+    }
   }
+  endTurn();
 }
 
 function endTurn() {
@@ -709,83 +852,58 @@ function endTurn() {
 
 function mobTurns() {
   const { player, mobs } = state;
-
   for (const mob of mobs) {
-    if (mob.hp <= 0) continue;
-    if (!state.visible[idx(mob.x, mob.y)]) continue;
-
-    // Speed system: fast mobs (crab speed=2) act more often
-    // Each mob accumulates action points; acts when >= 1.0
+    if (mob.hp <= 0 || !state.visible[idx(mob.x, mob.y)]) continue;
     mob.actTimer += mob.speed;
     while (mob.actTimer >= 1.0) {
       mob.actTimer -= 1.0;
-
       if (mob.hp <= 0) break;
-
       const d = dist(mob.x, mob.y, player.x, player.y);
-
-      if (d === 1) {
-        mobAttackHero(mob);
-      } else if (d <= 6) {
+      if (d === 1) { mobAttackHero(mob); }
+      else if (d <= 6) {
         const path = findPath(mob.x, mob.y, player.x, player.y, 10);
         if (path && path.length > 0) {
           const next = path[0];
-          if (!mobs.some(m => m !== mob && m.x === next.x && m.y === next.y && m.hp > 0)) {
-            mob.x = next.x;
-            mob.y = next.y;
+          if (!mobs.some(m => m !== mob && m.x===next.x && m.y===next.y && m.hp>0)) {
+            mob.x = next.x; mob.y = next.y;
           }
         }
       }
     }
   }
-
-  // Player death
   if (player.hp <= 0) {
     log('You have been defeated...');
-    setTimeout(() => {
-      initPlayer();
-      state.depth = 1;
-      document.getElementById('depth-label').textContent = 'Depth 1';
-      generateLevel();
-      render();
-    }, 1500);
+    setTimeout(() => { initPlayer(); state.depth = 1; generateLevel(); render(); }, 1500);
   }
 }
 
-// ============================================================
-// PLAYER INITIALIZATION (Warrior class from SPD)
-// ============================================================
-
 function initPlayer() {
   const p = state.player;
-  p.hp = 20;
-  p.maxHp = 20;
-  p.str = 10;
-  p.atkSkill = 10;
-  p.defSkill = 5;
-  p.xp = 0;
-  p.level = 1;
-  // Warrior starts with Worn Shortsword (tier 1) and Cloth Armor (tier 1)
+  p.hp = 20; p.maxHp = 20; p.str = 10;
+  p.atkSkill = 10; p.defSkill = 5;
+  p.xp = 0; p.level = 1;
   p.weapon = makeWeapon('Worn Shortsword', 1, 0);
   p.armor = makeArmor('Cloth Armor', 1, 0);
 }
 
 // ============================================================
-// UI
+// UI UPDATE
 // ============================================================
 
 function updateUI() {
-  const { player } = state;
-  const pct = Math.max(0, player.hp / player.maxHp * 100);
-  const fill = document.getElementById('hp-fill');
-  fill.style.width = pct + '%';
-  fill.style.background = pct > 50 ? '#4a2' : pct > 25 ? '#a82' : '#a22';
-
-  // Equipment display
-  const wName = player.weapon ? player.weapon.name : 'Fists';
-  const aName = player.armor ? player.armor.name : 'None';
-  const equipLabel = document.getElementById('equip-label');
-  equipLabel.textContent = `STR:${player.str} Lv${player.level} | ${wName} | ${aName}`;
+  const p = state.player;
+  const hpPct = Math.max(0, p.hp / p.maxHp * 100);
+  document.getElementById('hp-fill').style.width = hpPct + '%';
+  document.getElementById('hp-text').textContent = `${p.hp}/${p.maxHp}`;
+  const xpNeeded = p.level * 5;
+  const xpPct = Math.max(0, p.xp / xpNeeded * 100);
+  document.getElementById('xp-fill').style.width = xpPct + '%';
+  document.getElementById('xp-text').textContent = `${p.xp}/${xpNeeded}`;
+  document.getElementById('depth-text').textContent = `Depth ${state.depth}`;
+  document.getElementById('level-text').textContent = `Lv.${p.level}`;
+  document.getElementById('weapon-label').textContent = p.weapon ? `[${p.weapon.name}]` : '[Fists]';
+  document.getElementById('armor-label').textContent = p.armor ? `[${p.armor.name}]` : '[None]';
+  document.getElementById('str-label').textContent = `STR:${p.str}`;
 }
 
 // ============================================================
@@ -794,9 +912,9 @@ function updateUI() {
 
 function centerCamera() {
   const { player, scale } = state;
-  const tileSize = TILE * scale;
-  state.camera.x = player.x * tileSize - canvas.width / 2 + tileSize / 2;
-  state.camera.y = player.y * tileSize - canvas.height / 2 + tileSize / 2;
+  const ts = TILE * scale;
+  state.camera.x = player.x * ts - canvas.width / 2 + ts / 2;
+  state.camera.y = player.y * ts - canvas.height / 2 + ts / 2;
 }
 
 // ============================================================
@@ -811,11 +929,15 @@ const spriteQueue = [
   { name: 'snake', src: 'assets/sprites/snake.png' },
   { name: 'crab', src: 'assets/sprites/crab.png' },
   { name: 'skeleton', src: 'assets/sprites/skeleton.png' },
-  { name: 'tiles_sewers', src: 'assets/environment/tiles_sewers.png' },
+  { name: 'tiles', src: 'assets/environment/tiles_sewers.png' },
+  { name: 'terrain_features', src: 'assets/environment/terrain_features.png' },
+  { name: 'items', src: 'assets/sprites/items.png' },
+  { name: 'water', src: 'assets/environment/water0.png' },
 ];
 let spritesLoaded = 0;
 
 function loadSprites(callback) {
+  if (spriteQueue.length === 0) { callback(); return; }
   for (const s of spriteQueue) {
     const img = new Image();
     img.onload = () => { sprites[s.name] = img; if (++spritesLoaded === spriteQueue.length) callback(); };
@@ -824,89 +946,125 @@ function loadSprites(callback) {
   }
 }
 
-const MOB_SPRITES = {
-  warrior:  { w: 12, h: 15, row: 0, col: 0 },
-  rat:      { w: 16, h: 15, row: 0, col: 0 },
-  gnoll:    { w: 12, h: 15, row: 0, col: 0 },
-  snake:    { w: 12, h: 15, row: 0, col: 0 },
-  crab:     { w: 16, h: 15, row: 0, col: 0 },
-  skeleton: { w: 12, h: 15, row: 0, col: 0 },
-};
+// ============================================================
+// RENDERING — SPD TILESET
+// ============================================================
 
-// ============================================================
-// RENDERING
-// ============================================================
+// Draw a tile from the tileset by its tile index
+function drawTile(tileIdx, screenX, screenY, scale) {
+  if (!sprites.tiles) return;
+  const cols = 16; // tiles_sewers.png is 16 columns wide
+  const sx = (tileIdx % cols) * TILE;
+  const sy = Math.floor(tileIdx / cols) * TILE;
+  ctx.drawImage(sprites.tiles, sx, sy, TILE, TILE, screenX, screenY, TILE * scale, TILE * scale);
+}
+
+// Draw a sprite frame from a character spritesheet
+function drawSprite(spriteName, frameIdx, screenX, screenY, scale) {
+  const img = sprites[spriteName];
+  const def = SPRITE_DEFS[spriteName];
+  if (!img || !def) return;
+  const cols = Math.floor(img.width / def.w);
+  const sx = (frameIdx % cols) * def.w;
+  const sy = Math.floor(frameIdx / cols) * def.h;
+  const dw = def.w * scale, dh = def.h * scale;
+  const ts = TILE * scale;
+  ctx.drawImage(img, sx, sy, def.w, def.h,
+    screenX + (ts - dw) / 2, screenY + (ts - dh), dw, dh);
+}
 
 function render() {
   const { map, visible, explored, player, mobs, camera, scale } = state;
-  const tileSize = TILE * scale;
+  const ts = TILE * scale;
 
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = false;
 
-  const startX = Math.floor(camera.x / tileSize) - 1;
-  const startY = Math.floor(camera.y / tileSize) - 1;
-  const endX = startX + Math.ceil(canvas.width / tileSize) + 2;
-  const endY = startY + Math.ceil(canvas.height / tileSize) + 2;
+  const startX = Math.floor(camera.x / ts) - 1;
+  const startY = Math.floor(camera.y / ts) - 1;
+  const endX = startX + Math.ceil(canvas.width / ts) + 2;
+  const endY = startY + Math.ceil(canvas.height / ts) + 2;
 
-  // Tiles
+  // --- LAYER 1: Ground tiles ---
   for (let y = startY; y <= endY; y++) {
     for (let x = startX; x <= endX; x++) {
       if (x < 0 || x >= MAP_W || y < 0 || y >= MAP_H) continue;
       const i = idx(x, y);
-      const screenX = Math.floor(x * tileSize - camera.x);
-      const screenY = Math.floor(y * tileSize - camera.y);
+      if (!visible[i] && !explored[i]) continue;
 
-      if (visible[i]) {
-        ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
-        ctx.fillRect(screenX, screenY, tileSize, tileSize);
-        if (map[i] === T.ENTRANCE) {
-          ctx.fillStyle = '#4a4';
-          ctx.fillRect(screenX + tileSize*0.3, screenY + tileSize*0.3, tileSize*0.4, tileSize*0.4);
-        } else if (map[i] === T.EXIT) {
-          ctx.fillStyle = '#a44';
-          ctx.fillRect(screenX + tileSize*0.3, screenY + tileSize*0.3, tileSize*0.4, tileSize*0.4);
-        } else if (map[i] === T.DOOR) {
-          ctx.fillStyle = '#B8860B';
-          ctx.fillRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
+      const screenX = Math.floor(x * ts - camera.x);
+      const screenY = Math.floor(y * ts - camera.y);
+      const terrain = map[i];
+
+      if (!visible[i]) ctx.globalAlpha = 0.35;
+
+      if (terrain === T.WATER) {
+        // Draw water with stitching
+        const waterIdx = getWaterTile(x, y, map);
+        drawTile(waterIdx, screenX, screenY, scale);
+      } else if (IS_WALL.has(terrain)) {
+        // Walls: draw raised wall (bottom part) if non-wall below
+        const raised = getRaisedWallTile(terrain, x, y, map);
+        if (raised >= 0) {
+          drawTile(raised, screenX, screenY, scale);
+        } else {
+          // Wall with wall below — draw the "internal wall" (top face)
+          drawTile(terrainToTile(terrain, i), screenX, screenY, scale);
         }
-      } else if (explored[i]) {
-        ctx.fillStyle = TILE_COLORS[map[i]] || '#000';
-        ctx.globalAlpha = 0.35;
-        ctx.fillRect(screenX, screenY, tileSize, tileSize);
-        ctx.globalAlpha = 1.0;
+      } else {
+        // Standard ground tile
+        drawTile(terrainToTile(terrain, i), screenX, screenY, scale);
+      }
+
+      if (!visible[i]) ctx.globalAlpha = 1.0;
+    }
+  }
+
+  // --- LAYER 2: Wall overhangs (drawn on top of ground, on the row BELOW the wall) ---
+  for (let y = startY; y <= endY; y++) {
+    for (let x = startX; x <= endX; x++) {
+      if (x < 0 || x >= MAP_W || y < 0 || y >= MAP_H) continue;
+      const i = idx(x, y);
+      if (!visible[i] && !explored[i]) continue;
+
+      // Check if tile ABOVE is a wall that has a non-wall below (i.e., this tile)
+      if (y > 0 && IS_WALL.has(map[idx(x, y - 1)]) && !IS_WALL.has(map[i])) {
+        const screenX = Math.floor(x * ts - camera.x);
+        const screenY = Math.floor(y * ts - camera.y);
+
+        if (!visible[i]) ctx.globalAlpha = 0.35;
+
+        // Draw overhang on the TOP portion of this tile
+        const ohTile = getWallOverhangTile(x, y - 1, map);
+        // Overhang covers top ~6px of the tile below the wall
+        const ohHeight = Math.floor(6 * scale);
+        const cols = 16;
+        const sx = (ohTile % cols) * TILE;
+        const sy = Math.floor(ohTile / cols) * TILE;
+        ctx.drawImage(sprites.tiles, sx, sy + 10, TILE, 6,
+          screenX, screenY, ts, ohHeight);
+
+        if (!visible[i]) ctx.globalAlpha = 1.0;
       }
     }
   }
 
-  // Mobs
+  // --- LAYER 3: Mobs ---
   for (const mob of mobs) {
     if (mob.hp <= 0 || !visible[idx(mob.x, mob.y)]) continue;
-    const screenX = Math.floor(mob.x * tileSize - camera.x);
-    const screenY = Math.floor(mob.y * tileSize - camera.y);
-    const spriteImg = sprites[mob.name];
-    const def = MOB_SPRITES[mob.name];
-
-    if (spriteImg && def) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(spriteImg,
-        def.col * def.w, def.row * def.h, def.w, def.h,
-        screenX + (tileSize - def.w * scale) / 2,
-        screenY + (tileSize - def.h * scale) / 2,
-        def.w * scale, def.h * scale
-      );
-    } else {
-      ctx.fillStyle = '#c44';
-      ctx.beginPath();
-      ctx.arc(screenX + tileSize/2, screenY + tileSize/2, tileSize*0.35, 0, Math.PI*2);
-      ctx.fill();
+    const screenX = Math.floor(mob.x * ts - camera.x);
+    const screenY = Math.floor(mob.y * ts - camera.y);
+    const def = SPRITE_DEFS[mob.name];
+    if (def) {
+      const frames = def.idle;
+      const frameIdx = frames[Math.floor(state.turn / 2) % frames.length];
+      drawSprite(mob.name, frameIdx, screenX, screenY, scale);
     }
-
-    // Mob HP bar
+    // HP bar
     if (mob.hp < mob.maxHp) {
-      const barW = tileSize * 0.8, barH = 3;
-      const barX = screenX + (tileSize - barW) / 2;
-      const barY = screenY - barH - 2;
+      const barW = ts * 0.8, barH = Math.max(2, scale);
+      const barX = screenX + (ts - barW) / 2, barY = screenY - barH - 1;
       ctx.fillStyle = '#600';
       ctx.fillRect(barX, barY, barW, barH);
       ctx.fillStyle = '#c44';
@@ -914,26 +1072,32 @@ function render() {
     }
   }
 
-  // Player
+  // --- LAYER 4: Player ---
   {
-    const screenX = Math.floor(player.x * tileSize - camera.x);
-    const screenY = Math.floor(player.y * tileSize - camera.y);
-    const spriteImg = sprites.warrior;
-    const def = MOB_SPRITES.warrior;
-    if (spriteImg && def) {
-      ctx.imageSmoothingEnabled = false;
-      ctx.drawImage(spriteImg,
-        def.col * def.w, def.row * def.h, def.w, def.h,
-        screenX + (tileSize - def.w * scale) / 2,
-        screenY + (tileSize - def.h * scale) / 2,
-        def.w * scale, def.h * scale
-      );
-    } else {
-      ctx.fillStyle = '#4af';
-      ctx.beginPath();
-      ctx.arc(screenX + tileSize/2, screenY + tileSize/2, tileSize*0.4, 0, Math.PI*2);
-      ctx.fill();
-    }
+    const screenX = Math.floor(player.x * ts - camera.x);
+    const screenY = Math.floor(player.y * ts - camera.y);
+    const def = SPRITE_DEFS.warrior;
+    const frames = def.idle;
+    const frameIdx = frames[Math.floor(state.turn / 2) % frames.length];
+    drawSprite('warrior', frameIdx, screenX, screenY, scale);
+  }
+
+  // --- FOG: dark overlay on explored-but-not-visible ---
+  // (Already handled by alpha in layer 1)
+}
+
+// ============================================================
+// PORTRAIT
+// ============================================================
+
+function drawPortrait() {
+  const pCanvas = document.getElementById('portrait-canvas');
+  const pCtx = pCanvas.getContext('2d');
+  pCtx.imageSmoothingEnabled = false;
+  pCtx.clearRect(0, 0, 24, 24);
+  if (sprites.warrior) {
+    const def = SPRITE_DEFS.warrior;
+    pCtx.drawImage(sprites.warrior, 0, 0, def.w, def.h, 6, 4, def.w, def.h);
   }
 }
 
@@ -943,14 +1107,30 @@ function render() {
 
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
-  const { camera, scale } = state;
-  const tileSize = TILE * scale;
-  const tx = Math.floor((e.clientX + camera.x) / tileSize);
-  const ty = Math.floor((e.clientY + camera.y) / tileSize);
+  const ts = TILE * state.scale;
+  const tx = Math.floor((e.clientX + state.camera.x) / ts);
+  const ty = Math.floor((e.clientY + state.camera.y) / ts);
   if (tx < 0 || tx >= MAP_W || ty < 0 || ty >= MAP_H) return;
   if (!state.visible[idx(tx, ty)]) return;
   movePlayer(tx, ty);
 });
+
+// Toolbar buttons
+document.getElementById('tb-wait').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); waitTurn(); });
+document.getElementById('tb-search').addEventListener('pointerdown', (e) => { e.preventDefault(); e.stopPropagation(); searchAction(); });
+
+// ============================================================
+// ANIMATION LOOP
+// ============================================================
+
+let lastTime = 0;
+function gameLoop(time) {
+  const dt = time - lastTime;
+  lastTime = time;
+  // Re-render periodically for animation (every 500ms turn-based idle anim)
+  render();
+  requestAnimationFrame(gameLoop);
+}
 
 // ============================================================
 // INIT
@@ -963,7 +1143,9 @@ if ('serviceWorker' in navigator) {
 initPlayer();
 loadSprites(() => {
   generateLevel();
+  drawPortrait();
   render();
+  requestAnimationFrame(gameLoop);
   log('Tap to move. Tap enemies to attack.');
 });
 
