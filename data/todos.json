@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-02T10:45:00+01:00",
+  "lastUpdated": "2026-03-02T11:20:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -380,6 +380,17 @@
         {"title": "Confirm landlord/building management approval if needed (Hausverwaltung)", "done": false},
         {"title": "Schedule installation", "done": false}
       ]
+    },
+    {
+      "id": "t025",
+      "title": "Reply to Alberto's email",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Sensitive — Nick handling this personally. Just a reminder to reply.",
+      "created": "2026-03-02",
+      "due": "2026-03-03",
+      "subtasks": []
     }
   ],
   "sections": [
