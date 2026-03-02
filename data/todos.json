@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-02T11:20:00+01:00",
+  "lastUpdated": "2026-03-02T12:25:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -391,6 +391,20 @@
       "created": "2026-03-02",
       "due": "2026-03-03",
       "subtasks": []
+    },
+    {
+      "id": "t026",
+      "title": "Call gym to book first session",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Call tomorrow (3 March) to book first session. Ideal time: Wednesday 5 March at 17:00.",
+      "created": "2026-03-02",
+      "due": "2026-03-03",
+      "subtasks": [
+        {"title": "Call gym to book first session for Wednesday 5 March at 17:00", "done": false},
+        {"title": "Attend first session", "done": false}
+      ]
     }
   ],
   "sections": [
