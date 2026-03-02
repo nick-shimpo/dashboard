@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-02-28T14:20:00+01:00",
+  "lastUpdated": "2026-03-02T09:10:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -350,6 +350,34 @@
       "subtasks": [
         {"title": "Camera strap ordered — ORDERED 2026-03-01", "done": true},
         {"title": "Attach strap to camera when delivered", "done": false}
+      ]
+    },
+    {
+      "id": "t023",
+      "title": "Buy washi tape for kids crafting",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Big multi-pack of washi tape for the kids to craft with. Check amazon.de for variety packs.",
+      "created": "2026-03-02",
+      "due": null,
+      "subtasks": [
+        {"title": "Find and order washi tape variety pack on amazon.de", "done": false}
+      ]
+    },
+    {
+      "id": "t024",
+      "title": "Find local electrician for external power outlet",
+      "category": "quick",
+      "status": "pending",
+      "priority": "normal",
+      "notes": "Need an external AC power outlet on the side of the building next to the parking spot, for charging the Ford Kuga PHEV. Does NOT need a wallbox or high-power charger — just a regular household socket (Schuko) mounted outside in a weatherproof enclosure. The PHEV only charges at 3.7kW max so a standard 230V/16A circuit is sufficient. LOCAL OPTIONS FOUND: (1) Elektro Thuy GmbH — Siemensstraße 20, 63303 Dreieich. Tel: 06103-98440. Email: kontakt@elektro-thuy.de. Meisterbetrieb, full electrical installation services. (2) Elektrobau Schneider GmbH — Lise-Meitner-Straße 1, 63303 Dreieich. Electrical installations, E-CHECK, smart home. (3) Jochen Gerhardt Elektroinstallation — Theodor-Heuss-Str. 32, 63303 Dreieich. Tel: 06103 2703559. Web: elektroservice-gerhardt.de. Open for jobs. All three are based in Dreieich.",
+      "created": "2026-03-02",
+      "due": null,
+      "subtasks": [
+        {"title": "Contact electrician(s) to request a site visit and quote for external Schuko outlet", "done": false},
+        {"title": "Confirm landlord/building management approval if needed (Hausverwaltung)", "done": false},
+        {"title": "Schedule installation", "done": false}
       ]
     }
   ],
