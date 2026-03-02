@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PAI Finance — Authorization Callback</title>
+<style>
+  body { font-family: -apple-system, sans-serif; max-width: 640px; margin: 2rem auto; padding: 0 1rem; color: #e2e4e9; background: #0f1117; line-height: 1.6; }
+  h1 { margin-bottom: 1rem; color: #3b82f6; }
+  .code-box { background: #1a1d27; border: 1px solid #3b82f6; border-radius: 8px; padding: 1rem; margin: 1rem 0; word-break: break-all; font-family: monospace; font-size: 0.9rem; cursor: pointer; position: relative; }
+  .code-box:hover { border-color: #60a5fa; }
+  .copied { position: absolute; top: 0.5rem; right: 0.5rem; background: #22c55e; color: #fff; padding: 0.2rem 0.5rem; border-radius: 4px; font-size: 0.75rem; display: none; }
+  .label { color: #8b8fa3; font-size: 0.85rem; margin-bottom: 0.25rem; }
+  .error { color: #ef4444; }
+  .success { color: #22c55e; }
+  .instructions { background: #1a1d27; border: 1px solid #2a2d3a; border-radius: 8px; padding: 1rem; margin: 1.5rem 0; }
+  .instructions ol { padding-left: 1.5rem; }
+  .instructions li { margin-bottom: 0.5rem; }
+</style>
+</head>
+<body>
+<h1>Authorization Callback</h1>
+<div id="content"></div>
+<script>
+  const params = new URLSearchParams(window.location.search);
+  const code = params.get('code');
+  const state = params.get('state');
+  const error = params.get('error');
+  const content = document.getElementById('content');
+
+  if (error) {
+    content.innerHTML = `<p class="error">Authorization failed: ${error}</p><p>${params.get('error_description') || ''}</p>`;
+  } else if (code) {
+    content.innerHTML = `
+      <p class="success">Authorization successful.</p>
+      <div class="label">Authorization code (click to copy):</div>
+      <div class="code-box" id="code-box" onclick="copyCode()">${code}<span class="copied" id="copied">Copied</span></div>
+      ${state ? `<div class="label">State:</div><div class="code-box" onclick="copyText(this)">${state}<span class="copied">Copied</span></div>` : ''}
+      <div class="instructions">
+        <p>Paste this code into your terminal where <code>connect.ts</code> is waiting:</p>
+        <ol>
+          <li>Switch to your terminal</li>
+          <li>Paste the authorization code when prompted</li>
+          <li>Press Enter</li>
+        </ol>
+      </div>
+    `;
+  } else {
+    content.innerHTML = '<p class="error">No authorization code received. Check the URL parameters.</p>';
+  }
+
+  function copyCode() {
+    navigator.clipboard.writeText(code).then(() => {
+      const el = document.getElementById('copied');
+      el.style.display = 'block';
+      setTimeout(() => el.style.display = 'none', 2000);
+    });
+  }
+
+  function copyText(el) {
+    const text = el.childNodes[0].textContent;
+    navigator.clipboard.writeText(text).then(() => {
+      const badge = el.querySelector('.copied');
+      badge.style.display = 'block';
+      setTimeout(() => badge.style.display = 'none', 2000);
+    });
+  }
+</script>
+</body>
+</html>
