@@ -289,7 +289,7 @@
       "subtasks": [
         {"title": "Email Vitos to request appointment — SENT 2026-02-28", "done": true},
         {"title": "Confirm appointment date/time — CONFIRMED Fri 06.03 at 11:30, reply sent 2026-03-02", "done": true},
-        {"title": "Add to Google Calendar (Quick Add blocked by hook — add manually)", "done": false},
+        {"title": "Add to Google Calendar — DONE 2026-03-02", "done": true},
         {"title": "Attend appointment and get prescription", "done": false}
       ]
     },
