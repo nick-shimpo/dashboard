@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-02T09:10:00+01:00",
+  "lastUpdated": "2026-03-02T10:45:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -283,12 +283,13 @@
       "category": "quick",
       "status": "pending",
       "priority": "high",
-      "notes": "Repeat prescription appointment. Email sent 2026-02-28 to ambulanz-kpp.frankfurt@vitos-hochtaunus.de requesting KW 10 or KW 11. Awaiting reply.",
+      "notes": "Repeat prescription appointment. CONFIRMED: Friday 6 March 2026 at 11:30. Dr. Benilov, Vitos psychiatrische Ambulanz Frankfurt. Reply sent 2026-03-02 to ambulanz-kpp.frankfurt.hts@vitos.de (La Toya Jones). Bring Versichertenkarte.",
       "created": "2026-02-22",
-      "due": null,
+      "due": "2026-03-06",
       "subtasks": [
         {"title": "Email Vitos to request appointment — SENT 2026-02-28", "done": true},
-        {"title": "Confirm appointment date/time when they reply", "done": false},
+        {"title": "Confirm appointment date/time — CONFIRMED Fri 06.03 at 11:30, reply sent 2026-03-02", "done": true},
+        {"title": "Add to Google Calendar (Quick Add blocked by hook — add manually)", "done": false},
         {"title": "Attend appointment and get prescription", "done": false}
       ]
     },
