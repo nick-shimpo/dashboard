@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-03T12:58:00+01:00",
+  "lastUpdated": "2026-03-03T13:45:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -404,6 +404,20 @@
       "subtasks": [
         {"title": "Call gym to book first session — DONE 2026-03-03", "done": true},
         {"title": "Attend first session Wed 4 March at 17:00", "done": false}
+      ]
+    },
+    {
+      "id": "t027",
+      "title": "Reply to Linguakraft to arrange document collection",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Email Ralph Livesey-Wardle at info@linguakraft.de to arrange pickup of certified translations (4 docs). Payment: €196 cash on collection.",
+      "created": "2026-03-03",
+      "due": "2026-03-04",
+      "subtasks": [
+        {"title": "Email Linguakraft to arrange collection time", "done": false},
+        {"title": "Collect translations and pay €196 cash", "done": false}
       ]
     }
   ],
