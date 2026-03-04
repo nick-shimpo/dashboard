@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-03T13:45:00+01:00",
+  "lastUpdated": "2026-03-04T06:36:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -299,7 +299,7 @@
       "category": "quick",
       "status": "pending",
       "priority": "high",
-      "notes": "Repeat prescription appointment. Try to schedule on same day as psychiatrist (t019) to combine into one city trip.",
+      "notes": "Repeat prescription appointment. Neuro.MVZ 24 March at 16:00 CONFIRMED (Herr Wagner). Calendar event added. Local neurologist search deprioritised — earliest local availability is late April, so sticking with Frankfurt appointment for now. May revisit later.",
       "created": "2026-02-22",
       "due": null,
       "subtasks": [
@@ -412,7 +412,7 @@
       "category": "quick",
       "status": "pending",
       "priority": "high",
-      "notes": "Email Ralph Livesey-Wardle at info@linguakraft.de to arrange pickup of certified translations (4 docs). Payment: €196 cash on collection.",
+      "notes": "Nick handling directly — do NOT send on his behalf. Arrange pickup of certified translations (4 docs) from Ralph Livesey-Wardle at Linguakraft (info@linguakraft.de). Payment: €196 cash on collection.",
       "created": "2026-03-03",
       "due": "2026-03-04",
       "subtasks": [
