@@ -295,13 +295,13 @@ async function loadData() {
 
 function fmtEur(n) {
   if (n == null) return '—';
-  return n.toLocaleString('de-DE', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+  return n.toLocaleString('en-GB', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function fmtDate(s) {
   if (!s) return '';
   const d = new Date(s);
-  return d.toLocaleDateString('de-DE', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
+  return d.toLocaleDateString('en-GB', { day: 'numeric', month: 'short', year: 'numeric', hour: '2-digit', minute: '2-digit', timeZone: 'Europe/Berlin' });
 }
 
 function statusColor(s) {
@@ -315,7 +315,7 @@ function render(snap) {
   const b = snap.balance;
 
   // Updated timestamp
-  document.getElementById('updatedAt').textContent = 'Aktualisiert: ' + fmtDate(snap.generatedAt);
+  document.getElementById('updatedAt').textContent = 'Updated: ' + fmtDate(snap.generatedAt);
 
   // Summary cards
   const totalBudgeted = snap.variableBuckets
@@ -326,19 +326,19 @@ function render(snap) {
   let html = `
     <div class="summary-row">
       <div class="summary-card">
-        <div class="summary-label">Kontostand</div>
+        <div class="summary-label">Balance</div>
         <div class="summary-value">${fmtEur(b.current)}</div>
         <div class="summary-sub">EUR</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Ausgegeben</div>
+        <div class="summary-label">Spent</div>
         <div class="summary-value">${fmtEur(totalVariableSpent)}</div>
-        <div class="summary-sub">von ${fmtEur(totalBudgeted)} Budget</div>
+        <div class="summary-sub">of ${fmtEur(totalBudgeted)} budget</div>
       </div>
       <div class="summary-card">
-        <div class="summary-label">Zyklus</div>
-        <div class="summary-value">Tag ${c.daysPassed}</div>
-        <div class="summary-sub">von ${c.daysTotal} Tagen</div>
+        <div class="summary-label">Cycle</div>
+        <div class="summary-value">Day ${c.daysPassed}</div>
+        <div class="summary-sub">of ${c.daysTotal} days</div>
       </div>
     </div>
   `;
@@ -348,8 +348,8 @@ function render(snap) {
   html += `
     <div class="cycle-bar">
       <div class="cycle-labels">
-        <span>Zyklusstart: ${snap.cycle.startDate}</span>
-        <span>${c.percentElapsed}% vergangen</span>
+        <span>Cycle start: ${snap.cycle.startDate}</span>
+        <span>${c.percentElapsed}% elapsed</span>
       </div>
       <div class="progress-track">
         <div class="progress-fill" style="width:${Math.min(100, c.percentElapsed)}%;background:${pctColor}"></div>
@@ -363,9 +363,9 @@ function render(snap) {
     html += '<div class="warnings">';
     for (const w of warnings) {
       if (w.status === 'over_budget') {
-        html += `<div class="warning-item over">&#x26A0; <strong>${w.name}</strong> ist ${fmtEur(Math.abs(w.remaining))} EUR ueber Budget</div>`;
+        html += `<div class="warning-item over">&#x26A0; <strong>${w.name}</strong> is ${fmtEur(Math.abs(w.remaining))} EUR over budget</div>`;
       } else {
-        html += `<div class="warning-item caution">&#x26A0; <strong>${w.name}</strong> bei ${w.percentUsed}% — bitte einteilen</div>`;
+        html += `<div class="warning-item caution">&#x26A0; <strong>${w.name}</strong> at ${w.percentUsed}% — pace spending</div>`;
       }
     }
     html += '</div>';
@@ -374,13 +374,13 @@ function render(snap) {
   // Monthly budgets
   const monthly = snap.variableBuckets.filter(v => v.budget !== null && !v.accumulates);
   if (monthly.length > 0) {
-    html += '<div class="section"><div class="section-title">Monatliche Budgets</div>';
+    html += '<div class="section"><div class="section-title">Monthly Budgets</div>';
     for (const v of monthly) {
       const col = statusColor(v.status);
       const pct = Math.min(100, v.percentUsed || 0);
       const barColor = col === 'red' ? 'var(--red)' : col === 'amber' ? 'var(--amber)' : 'var(--green)';
       const pace = v.dailyPaceAllowed != null && v.dailyPaceAllowed > 0
-        ? `${fmtEur(v.dailyPaceAllowed)}/Tag uebrig`
+        ? `${fmtEur(v.dailyPaceAllowed)}/day remaining`
         : '';
       html += `
         <div class="budget-row">
@@ -390,7 +390,7 @@ function render(snap) {
           </div>
           <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <div class="budget-detail">
-            <span>${v.transactionCount} Transaktionen</span>
+            <span>${v.transactionCount} transactions</span>
             <span>${pace}</span>
           </div>
         </div>
@@ -402,7 +402,7 @@ function render(snap) {
   // Wallet budgets (accumulating)
   const wallets = snap.variableBuckets.filter(v => v.accumulates);
   if (wallets.length > 0) {
-    html += '<div class="section"><div class="section-title">Spartoepfe (kumulierend)</div>';
+    html += '<div class="section"><div class="section-title">Savings Pots (accumulating)</div>';
     for (const v of wallets) {
       const col = statusColor(v.status);
       const pct = Math.min(100, v.percentUsed || 0);
@@ -415,8 +415,8 @@ function render(snap) {
           </div>
           <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <div class="budget-detail">
-            <span>${v.transactionCount} Transaktionen</span>
-            <span>Restguthaben: ${fmtEur(v.remaining)}</span>
+            <span>${v.transactionCount} transactions</span>
+            <span>Remaining: ${fmtEur(v.remaining)}</span>
           </div>
         </div>
       `;
@@ -427,7 +427,7 @@ function render(snap) {
   // Unbudgeted variable spending
   const unbudgeted = snap.variableBuckets.filter(v => v.budget === null && v.spent > 0);
   if (unbudgeted.length > 0) {
-    html += '<div class="section"><div class="section-title">Sonstige Ausgaben</div>';
+    html += '<div class="section"><div class="section-title">Other Spending</div>';
     for (const v of unbudgeted) {
       html += `
         <div class="budget-row">
@@ -436,7 +436,7 @@ function render(snap) {
             <div class="budget-amounts"><strong>${fmtEur(v.spent)}</strong></div>
           </div>
           <div class="budget-detail">
-            <span>${v.transactionCount} Transaktionen</span>
+            <span>${v.transactionCount} transactions</span>
             <span></span>
           </div>
         </div>
@@ -455,9 +455,9 @@ function render(snap) {
     }
     html += `
       <div class="section">
-        <div class="section-title">Fixkosten</div>
+        <div class="section-title">Fixed Costs</div>
         <div class="fixed-summary">
-          <span class="fixed-label">${snap.fixedCosts.items.length} Posten diesen Zyklus</span>
+          <span class="fixed-label">${snap.fixedCosts.items.length} items this cycle</span>
           <span class="fixed-amount">${fmtEur(snap.fixedCosts.total)} EUR</span>
         </div>
         <div class="fixed-breakdown">
@@ -470,17 +470,17 @@ function render(snap) {
   // Total summary
   html += `
     <div class="section">
-      <div class="section-title">Zusammenfassung</div>
+      <div class="section-title">Summary</div>
       <div class="fixed-summary">
-        <span class="fixed-label">Variable Ausgaben</span>
+        <span class="fixed-label">Variable Spending</span>
         <span class="fixed-amount">${fmtEur(snap.summary.totalVariable)} EUR</span>
       </div>
       <div class="fixed-summary" style="border-top:1px solid var(--border)">
-        <span class="fixed-label">Fixkosten</span>
+        <span class="fixed-label">Fixed Costs</span>
         <span class="fixed-amount">${fmtEur(snap.summary.totalFixed)} EUR</span>
       </div>
       <div class="fixed-summary" style="border-top:1px solid var(--border)">
-        <span class="fixed-label"><strong>Gesamt ausgegeben</strong></span>
+        <span class="fixed-label"><strong>Total Spent</strong></span>
         <span class="fixed-amount"><strong>${fmtEur(snap.summary.totalSpent)} EUR</strong></span>
       </div>
     </div>
@@ -492,7 +492,7 @@ function render(snap) {
 async function init() {
   const data = await loadData();
   if (!data) {
-    document.getElementById('page').innerHTML = '<div class="error">Budget-Daten konnten nicht geladen werden.</div>';
+    document.getElementById('page').innerHTML = '<div class="error">Could not load budget data.</div>';
     return;
   }
   render(data);
