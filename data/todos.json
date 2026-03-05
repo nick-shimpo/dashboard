@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-05T07:35:00+01:00",
+  "lastUpdated": "2026-03-05T13:55:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -289,7 +289,7 @@
       "subtasks": [
         {"title": "Email Vitos to request appointment — SENT 2026-02-28", "done": true},
         {"title": "Confirm appointment date/time — CONFIRMED Fri 06.03 at 11:30, reply sent 2026-03-02", "done": true},
-        {"title": "Add to Google Calendar — DONE 2026-03-02", "done": true},
+        {"title": "Add to Google Calendar — DONE 2026-03-05", "done": true},
         {"title": "Attend appointment and get prescription", "done": false}
       ]
     },
