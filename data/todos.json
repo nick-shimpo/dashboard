@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-05T13:55:00+01:00",
+  "lastUpdated": "2026-03-06T11:40:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -418,6 +418,20 @@
       "subtasks": [
         {"title": "Email Linguakraft to arrange collection time", "done": true},
         {"title": "Collect translations and pay €196 cash — DONE 2026-03-05", "done": true}
+      ]
+    },
+    {
+      "id": "t029",
+      "title": "Get Überweisung for psychiatrist from Hausärztin",
+      "category": "quick",
+      "status": "pending",
+      "priority": "high",
+      "notes": "Need a new referral (Überweisung) from Hausärztin for the psychiatrist (Vitos).",
+      "created": "2026-03-06",
+      "due": null,
+      "subtasks": [
+        {"title": "Book appointment or walk in at Hausärztin", "done": false},
+        {"title": "Collect Überweisung for psychiatrist", "done": false}
       ]
     },
     {
