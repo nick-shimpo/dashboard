@@ -1,5 +1,5 @@
 {
-  "generatedAt": "2026-03-06T05:00:21.496Z",
+  "generatedAt": "2026-03-06T06:32:58.096Z",
   "cycle": {
     "startDate": "2026-02-25",
     "daysPassed": 9,
@@ -21,6 +21,8 @@
       "remaining": 138.04,
       "percentUsed": 31,
       "dailyPaceAllowed": 7.27,
+      "paceRatio": 0.97,
+      "paceStatus": "green",
       "transactionCount": 3,
       "status": "on_track"
     },
@@ -32,6 +34,8 @@
       "remaining": 592.52,
       "percentUsed": 21,
       "dailyPaceAllowed": 31.19,
+      "paceRatio": 0.66,
+      "paceStatus": "green",
       "transactionCount": 4,
       "status": "on_track"
     },
@@ -43,6 +47,8 @@
       "remaining": -14.2,
       "percentUsed": 128,
       "dailyPaceAllowed": -0.75,
+      "paceRatio": 4,
+      "paceStatus": "red",
       "transactionCount": 6,
       "status": "over_budget"
     },
@@ -54,6 +60,8 @@
       "remaining": 129.8,
       "percentUsed": 19,
       "dailyPaceAllowed": 6.83,
+      "paceRatio": 0.59,
+      "paceStatus": "green",
       "transactionCount": 1,
       "status": "on_track"
     },
@@ -65,6 +73,8 @@
       "remaining": 20,
       "percentUsed": 0,
       "dailyPaceAllowed": 1.05,
+      "paceRatio": 0,
+      "paceStatus": "green",
       "transactionCount": 0,
       "status": "on_track"
     },
@@ -76,6 +86,8 @@
       "remaining": 75,
       "percentUsed": 25,
       "dailyPaceAllowed": 3.95,
+      "paceRatio": 0.78,
+      "paceStatus": "green",
       "transactionCount": 1,
       "status": "on_track"
     },
@@ -87,6 +99,8 @@
       "remaining": 100,
       "percentUsed": 0,
       "dailyPaceAllowed": 5.26,
+      "paceRatio": 0,
+      "paceStatus": "green",
       "transactionCount": 0,
       "status": "on_track"
     },
@@ -94,11 +108,13 @@
       "id": "subscriptions",
       "name": "Subscriptions",
       "budget": 100,
-      "spent": 222.67,
-      "remaining": -122.67,
-      "percentUsed": 223,
-      "dailyPaceAllowed": -6.46,
-      "transactionCount": 6,
+      "spent": 141.82,
+      "remaining": -41.82,
+      "percentUsed": 142,
+      "dailyPaceAllowed": -2.2,
+      "paceRatio": 4.44,
+      "paceStatus": "red",
+      "transactionCount": 5,
       "status": "over_budget"
     },
     {
@@ -109,6 +125,8 @@
       "remaining": -64.94,
       "percentUsed": 230,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 2,
       "status": "over_budget",
       "accumulates": true,
@@ -122,6 +140,8 @@
       "remaining": 50,
       "percentUsed": 0,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
@@ -135,6 +155,8 @@
       "remaining": 75,
       "percentUsed": 0,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
@@ -148,6 +170,8 @@
       "remaining": 40,
       "percentUsed": 0,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
@@ -161,6 +185,8 @@
       "remaining": 62.48,
       "percentUsed": 22,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 1,
       "status": "on_track",
       "accumulates": true,
@@ -174,10 +200,25 @@
       "remaining": 30,
       "percentUsed": 0,
       "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
       "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
       "walletBalance": 30
+    },
+    {
+      "id": "amazon_shopping",
+      "name": "Amazon Shopping",
+      "budget": null,
+      "spent": 80.85,
+      "remaining": null,
+      "percentUsed": null,
+      "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
+      "transactionCount": 1,
+      "status": "no_budget"
     }
   ],
   "fixedCosts": {
@@ -276,20 +317,14 @@
     ]
   },
   "unclassified": {
-    "count": 1,
-    "totalAmount": 518,
-    "items": [
-      {
-        "creditor": "Bundesagentur fur Arbeit - Familienkasse",
-        "amount": 518,
-        "date": "2026-03-06"
-      }
-    ]
+    "count": 0,
+    "totalAmount": 0,
+    "items": []
   },
   "summary": {
-    "totalSpent": 3962.61,
+    "totalSpent": 3444.61,
     "totalFixed": 2750.64,
     "totalVariable": 693.97,
-    "totalUnclassified": 518
+    "totalUnclassified": 0
   }
 }
