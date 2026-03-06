@@ -358,14 +358,19 @@ function render(snap) {
   `;
 
   // Warnings
-  const warnings = snap.variableBuckets.filter(v => v.status === 'over_budget' || v.status === 'warning');
+  // Show warnings for over-budget AND for pace issues (amber/red)
+  const warnings = snap.variableBuckets.filter(v =>
+    v.status === 'over_budget' || v.paceStatus === 'red' || v.paceStatus === 'amber'
+  );
   if (warnings.length > 0) {
     html += '<div class="warnings">';
     for (const w of warnings) {
       if (w.status === 'over_budget') {
         html += `<div class="warning-item over">&#x26A0; <strong>${w.name}</strong> is ${fmtEur(Math.abs(w.remaining))} EUR over budget</div>`;
-      } else {
-        html += `<div class="warning-item caution">&#x26A0; <strong>${w.name}</strong> at ${w.percentUsed}% — pace spending</div>`;
+      } else if (w.paceStatus === 'red') {
+        html += `<div class="warning-item over">&#x26A0; <strong>${w.name}</strong> at ${w.paceRatio}x pace — spending too fast</div>`;
+      } else if (w.paceStatus === 'amber') {
+        html += `<div class="warning-item caution">&#x26A0; <strong>${w.name}</strong> at ${w.paceRatio}x pace — watch spending</div>`;
       }
     }
     html += '</div>';
@@ -376,12 +381,19 @@ function render(snap) {
   if (monthly.length > 0) {
     html += '<div class="section"><div class="section-title">Monthly Budgets</div>';
     for (const v of monthly) {
-      const col = statusColor(v.status);
+      // Use pace status for color when available, fall back to budget status
+      const paceCol = v.paceStatus || statusColor(v.status);
+      const col = paceCol === 'red' ? 'red' : paceCol === 'amber' ? 'amber' : 'green';
       const pct = Math.min(100, v.percentUsed || 0);
       const barColor = col === 'red' ? 'var(--red)' : col === 'amber' ? 'var(--amber)' : 'var(--green)';
-      const pace = v.dailyPaceAllowed != null && v.dailyPaceAllowed > 0
-        ? `${fmtEur(v.dailyPaceAllowed)}/day remaining`
-        : '';
+
+      let paceText = '';
+      if (v.paceRatio != null) {
+        if (v.paceRatio <= 1.0) paceText = 'On track';
+        else if (v.paceRatio <= 1.25) paceText = `${v.paceRatio}x pace — watch it`;
+        else paceText = `${v.paceRatio}x pace — slow down`;
+      }
+
       html += `
         <div class="budget-row">
           <div class="budget-top">
@@ -391,7 +403,7 @@ function render(snap) {
           <div class="budget-bar"><div class="budget-fill" style="width:${pct}%;background:${barColor}"></div></div>
           <div class="budget-detail">
             <span>${v.transactionCount} transactions</span>
-            <span>${pace}</span>
+            <span>${paceText}</span>
           </div>
         </div>
       `;
