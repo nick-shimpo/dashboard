@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-06T11:40:00+01:00",
+  "lastUpdated": "2026-03-08T16:50:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -43,17 +43,20 @@
     },
     {
       "id": "t004",
-      "title": "Buy Raspberry Pi 5 (8GB) for always-on PAI",
+      "title": "Buy always-on mini PC for PAI",
       "category": "quick",
       "status": "on-hold",
       "priority": "high",
-      "notes": "ON HOLD — pending budget review. Pi 5, 8GB RAM (~€85-95). Also need: official case with fan (~€10), USB-C 27W PSU (~€12), 64GB+ microSD A2 (~€12). Total ~€120. Check berrybase.de, reichelt.de, or amazon.de. Project details: ~/voice-pipeline/projects/pai-pi/README.md",
+      "notes": "ON HOLD — pending budget review. RESEARCH (2026-03-08): Intel N100 mini PC beats Raspberry Pi on price AND performance. Pi prices surged ~30% due to global RAM crisis (Pi 5 8GB now ~€128 board only, ~€160-170 all-in). N100 ships complete (case+PSU+SSD+WiFi). VERIFIED PRICES: Geizhals DE shows N100 8GB systems from €200, Beelink S12 Pro 16GB/500GB ~€179 on sale. Kleinanzeigen: BMAX B4 16GB/512GB for €100 in Herten (needs shipping). KEY ADVANTAGES of N100: (1) x86 = native Whisper support, 2-3x faster transcription vs Pi 5, (2) SSD not microSD = more reliable, (3) No WSL needed — native Linux, native systemd, (4) Can run Whisper small model without Hailo accelerator. RECOMMENDATION: Beelink S12 Pro ~€179 (best value new) or hunt Kleinanzeigen for used ~€100-130. Search amazon.de for 'Intel N100 Mini PC 8GB'. Project details: ~/voice-pipeline/projects/pai-pi/README.md",
       "created": "2026-02-14",
       "due": null,
       "subtasks": [
-        {"title": "Order Pi 5 8GB + case + PSU + SD card", "done": false},
-        {"title": "Flash Raspberry Pi OS 64-bit", "done": false},
-        {"title": "Install Claude Code CLI and authenticate", "done": false}
+        {"title": "Research complete: N100 mini PC chosen over Raspberry Pi — 2026-03-08", "done": true},
+        {"title": "Find and order N100 mini PC (check Kleinanzeigen + amazon.de)", "done": false},
+        {"title": "Install Ubuntu Server 24.04", "done": false},
+        {"title": "Install bun, claude CLI, whisper.cpp", "done": false},
+        {"title": "Authenticate Claude with Max subscription (SSH tunnel for initial OAuth)", "done": false},
+        {"title": "Migrate ~/.claude config + repos + systemd services", "done": false}
       ]
     },
     {
