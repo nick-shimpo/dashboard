@@ -1,29 +1,29 @@
 {
-  "generatedAt": "2026-03-07T05:00:25.651Z",
+  "generatedAt": "2026-03-08T05:00:17.137Z",
   "cycle": {
     "startDate": "2026-02-25",
-    "daysPassed": 10,
-    "daysRemaining": 18,
+    "daysPassed": 11,
+    "daysRemaining": 17,
     "daysTotal": 28,
-    "percentElapsed": 36
+    "percentElapsed": 39
   },
   "balance": {
-    "current": 2212.81,
+    "current": 2182.91,
     "currency": "EUR",
-    "asOf": "2026-03-07"
+    "asOf": "2026-03-08"
   },
   "variableBuckets": [
     {
       "id": "petrol_parking",
       "name": "Petrol & Parking",
       "budget": 200,
-      "spent": 106.93,
-      "remaining": 93.07,
-      "percentUsed": 53,
-      "dailyPaceAllowed": 5.17,
-      "paceRatio": 1.47,
+      "spent": 136.83,
+      "remaining": 63.17,
+      "percentUsed": 68,
+      "dailyPaceAllowed": 3.72,
+      "paceRatio": 1.74,
       "paceStatus": "red",
-      "transactionCount": 4,
+      "transactionCount": 5,
       "status": "on_track"
     },
     {
@@ -33,8 +33,8 @@
       "spent": 192.97,
       "remaining": 557.03,
       "percentUsed": 26,
-      "dailyPaceAllowed": 30.95,
-      "paceRatio": 0.72,
+      "dailyPaceAllowed": 32.77,
+      "paceRatio": 0.67,
       "paceStatus": "green",
       "transactionCount": 5,
       "status": "on_track"
@@ -46,8 +46,8 @@
       "spent": 64.2,
       "remaining": -14.2,
       "percentUsed": 128,
-      "dailyPaceAllowed": -0.79,
-      "paceRatio": 3.56,
+      "dailyPaceAllowed": -0.84,
+      "paceRatio": 3.28,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "over_budget"
@@ -59,8 +59,8 @@
       "spent": 30.2,
       "remaining": 129.8,
       "percentUsed": 19,
-      "dailyPaceAllowed": 7.21,
-      "paceRatio": 0.53,
+      "dailyPaceAllowed": 7.64,
+      "paceRatio": 0.49,
       "paceStatus": "green",
       "transactionCount": 1,
       "status": "on_track"
@@ -72,7 +72,7 @@
       "spent": 0,
       "remaining": 20,
       "percentUsed": 0,
-      "dailyPaceAllowed": 1.11,
+      "dailyPaceAllowed": 1.18,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -85,8 +85,8 @@
       "spent": 25,
       "remaining": 75,
       "percentUsed": 25,
-      "dailyPaceAllowed": 4.17,
-      "paceRatio": 0.69,
+      "dailyPaceAllowed": 4.41,
+      "paceRatio": 0.64,
       "paceStatus": "green",
       "transactionCount": 1,
       "status": "on_track"
@@ -98,7 +98,7 @@
       "spent": 0,
       "remaining": 100,
       "percentUsed": 0,
-      "dailyPaceAllowed": 5.56,
+      "dailyPaceAllowed": 5.88,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -111,8 +111,8 @@
       "spent": 141.82,
       "remaining": -41.82,
       "percentUsed": 142,
-      "dailyPaceAllowed": -2.32,
-      "paceRatio": 3.94,
+      "dailyPaceAllowed": -2.46,
+      "paceRatio": 3.64,
       "paceStatus": "red",
       "transactionCount": 5,
       "status": "over_budget"
@@ -322,9 +322,9 @@
     "items": []
   },
   "summary": {
-    "totalSpent": 3525.07,
+    "totalSpent": 3554.97,
     "totalFixed": 2750.64,
-    "totalVariable": 774.43,
+    "totalVariable": 804.33,
     "totalUnclassified": 0
   }
 }
