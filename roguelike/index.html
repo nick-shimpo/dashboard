@@ -88,6 +88,142 @@ canvas {
 }
 .log-line { opacity: 0.7; }
 .log-line:last-child { opacity: 1; }
+
+/* ── Panel Overlay ── */
+#panel-overlay {
+  position: fixed;
+  top: 0; left: 0;
+  width: 100%; height: 100%;
+  background: rgba(0,0,0,0.75);
+  z-index: 30;
+  display: none;
+  align-items: center;
+  justify-content: center;
+  pointer-events: auto;
+}
+#panel-overlay.open { display: flex; }
+
+#panel {
+  width: min(340px, 90vw);
+  background: #0c0c12;
+  border: 2px solid #64646e;
+  border-radius: 4px;
+  font: 14px/1.4 monospace;
+  color: #b4b4b8;
+  padding: 0;
+  max-height: 80vh;
+  overflow-y: auto;
+}
+
+/* ── Tab Bar ── */
+#panel-tabs {
+  display: flex;
+  border-bottom: 1px solid #64646e;
+}
+.panel-tab {
+  flex: 1;
+  padding: 10px 0;
+  text-align: center;
+  color: #646470;
+  background: none;
+  border: none;
+  font: bold 13px monospace;
+  letter-spacing: 1px;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
+}
+.panel-tab.active {
+  color: #c8c8d0;
+  border-bottom: 2px solid #c8c8d0;
+}
+
+/* ── Tab Content ── */
+.tab-content { display: none; padding: 12px; }
+.tab-content.active { display: block; }
+
+/* ── Equipment Slots ── */
+.equip-slot {
+  border: 1px solid #3c3c4e;
+  border-radius: 3px;
+  padding: 8px 10px;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.equip-slot .slot-icon {
+  font-size: 20px;
+  width: 28px;
+  text-align: center;
+  color: #8888a0;
+}
+.equip-slot .slot-info { flex: 1; }
+.equip-slot .slot-label {
+  font-size: 10px;
+  color: #5a5a6e;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+}
+.equip-slot .slot-name {
+  color: #c8c8d0;
+  font-size: 13px;
+}
+.equip-slot .slot-stats {
+  font-size: 11px;
+  color: #7a7a8e;
+}
+
+/* ── Tile Board Grid ── */
+.tile-board-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 6px;
+  max-width: 260px;
+  margin: 8px auto;
+}
+.board-cell {
+  aspect-ratio: 1;
+  border: 1px dashed #3c3c4e;
+  border-radius: 3px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 24px;
+  color: #2a2a3a;
+  background: #10101a;
+  position: relative;
+}
+.board-cell.filled {
+  border-style: solid;
+  border-color: #64646e;
+  color: #c8c8d0;
+  background: #1a1a28;
+}
+.board-cell .cell-label {
+  position: absolute;
+  top: 2px; left: 4px;
+  font-size: 9px;
+  color: #3c3c4e;
+}
+.board-status {
+  text-align: center;
+  font-size: 11px;
+  color: #5a5a6e;
+  margin-top: 8px;
+}
+
+/* ── Close Button ── */
+#panel-close {
+  position: absolute;
+  top: 8px; right: 12px;
+  background: none;
+  border: none;
+  color: #646470;
+  font: bold 18px monospace;
+  cursor: pointer;
+  z-index: 31;
+  -webkit-tap-highlight-color: transparent;
+}
 </style>
 </head>
 <body>
@@ -99,6 +235,59 @@ canvas {
 </div>
 <div id="log"></div>
 <div id="tile-board-btn">&#9638;</div>
+
+<div id="panel-overlay">
+  <div id="panel" style="position:relative;">
+    <button id="panel-close">&times;</button>
+    <div id="panel-tabs">
+      <button class="panel-tab active" data-tab="equip">EQUIP</button>
+      <button class="panel-tab" data-tab="board">BOARD</button>
+    </div>
+    <div id="tab-equip" class="tab-content active">
+      <div id="equip-weapon" class="equip-slot">
+        <div class="slot-icon">&#9876;</div>
+        <div class="slot-info">
+          <div class="slot-label">Weapon</div>
+          <div class="slot-name">—</div>
+          <div class="slot-stats"></div>
+        </div>
+      </div>
+      <div id="equip-armor" class="equip-slot">
+        <div class="slot-icon">&#128737;</div>
+        <div class="slot-info">
+          <div class="slot-label">Armor</div>
+          <div class="slot-name">—</div>
+          <div class="slot-stats"></div>
+        </div>
+      </div>
+      <div style="border-top:1px solid #3c3c4e; margin:12px 0 8px; padding-top:10px;">
+        <div style="font-size:11px; color:#5a5a6e; margin-bottom:6px;">STATS</div>
+        <div id="stats-grid" style="display:grid; grid-template-columns:1fr 1fr; gap:4px 16px; font-size:12px;">
+          <div>&#9829; HP: <span id="stat-hp"></span></div>
+          <div>&#9733; STR: <span id="stat-str"></span></div>
+          <div>&#9876; ATK: <span id="stat-atk"></span></div>
+          <div>&#128737; DEF: <span id="stat-def"></span></div>
+          <div>&#9670; LVL: <span id="stat-lvl"></span></div>
+          <div>&#9672; XP: <span id="stat-xp"></span></div>
+        </div>
+      </div>
+    </div>
+    <div id="tab-board" class="tab-content">
+      <div class="tile-board-grid">
+        <div class="board-cell" data-slot="0"><span class="cell-label">1</span>&#183;</div>
+        <div class="board-cell" data-slot="1"><span class="cell-label">2</span>&#183;</div>
+        <div class="board-cell" data-slot="2"><span class="cell-label">3</span>&#183;</div>
+        <div class="board-cell" data-slot="3"><span class="cell-label">4</span>&#183;</div>
+        <div class="board-cell" data-slot="4"><span class="cell-label">5</span>&#183;</div>
+        <div class="board-cell" data-slot="5"><span class="cell-label">6</span>&#183;</div>
+        <div class="board-cell" data-slot="6"><span class="cell-label">7</span>&#183;</div>
+        <div class="board-cell" data-slot="7"><span class="cell-label">8</span>&#183;</div>
+        <div class="board-cell" data-slot="8"><span class="cell-label">9</span>&#183;</div>
+      </div>
+      <div class="board-status">No tiles placed yet. Find tiles in the dungeon.</div>
+    </div>
+  </div>
+</div>
 
 <script>
 // ============================================================
@@ -787,6 +976,9 @@ function updateUI() {
   const aName = player.armor ? player.armor.name : 'None';
   const equipLabel = document.getElementById('equip-label');
   equipLabel.textContent = `STR:${player.str} Lv${player.level} | ${wName} | ${aName}`;
+
+  // Refresh panel if open
+  if (panelOpen) updatePanelContents();
 }
 
 // ============================================================
@@ -1173,11 +1365,133 @@ function render() {
 }
 
 // ============================================================
+// TILE BOARD STATE
+// ============================================================
+
+// 3x3 board — each slot is null or a tile object
+// Tile objects will be: { id, name, icon, unpowered, powered, connectors: [N,E,S,W], rotation }
+state.tileBoard = [null, null, null, null, null, null, null, null, null];
+
+// ============================================================
+// PANEL UI
+// ============================================================
+
+const panelOverlay = document.getElementById('panel-overlay');
+const panelTabs = document.querySelectorAll('.panel-tab');
+const tabContents = document.querySelectorAll('.tab-content');
+const tileBoardBtn = document.getElementById('tile-board-btn');
+const panelClose = document.getElementById('panel-close');
+
+let panelOpen = false;
+
+function openPanel() {
+  panelOpen = true;
+  panelOverlay.classList.add('open');
+  updatePanelContents();
+}
+
+function closePanel() {
+  panelOpen = false;
+  panelOverlay.classList.remove('open');
+}
+
+function switchTab(tabName) {
+  panelTabs.forEach(t => t.classList.toggle('active', t.dataset.tab === tabName));
+  tabContents.forEach(tc => tc.classList.toggle('active', tc.id === `tab-${tabName}`));
+}
+
+// Tab switching
+panelTabs.forEach(tab => {
+  tab.addEventListener('pointerdown', (e) => {
+    e.stopPropagation();
+    switchTab(tab.dataset.tab);
+  });
+});
+
+// Open/close
+tileBoardBtn.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  if (panelOpen) closePanel(); else openPanel();
+});
+
+panelClose.addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  closePanel();
+});
+
+// Close on overlay background tap
+panelOverlay.addEventListener('pointerdown', (e) => {
+  if (e.target === panelOverlay) closePanel();
+});
+
+function updatePanelContents() {
+  const { player } = state;
+
+  // Equipment tab
+  const wSlot = document.querySelector('#equip-weapon');
+  const aSlot = document.querySelector('#equip-armor');
+
+  if (player.weapon) {
+    wSlot.querySelector('.slot-name').textContent = player.weapon.name;
+    wSlot.querySelector('.slot-stats').textContent =
+      `${player.weapon.minDmg}-${player.weapon.maxDmg} dmg  STR:${player.weapon.strReq}`;
+  } else {
+    wSlot.querySelector('.slot-name').textContent = 'Fists';
+    wSlot.querySelector('.slot-stats').textContent = '1-4 dmg';
+  }
+
+  if (player.armor) {
+    aSlot.querySelector('.slot-name').textContent = player.armor.name;
+    aSlot.querySelector('.slot-stats').textContent =
+      `${player.armor.drMin}-${player.armor.drMax} DR  STR:${player.armor.strReq}`;
+  } else {
+    aSlot.querySelector('.slot-name').textContent = 'None';
+    aSlot.querySelector('.slot-stats').textContent = '';
+  }
+
+  // Stats
+  document.getElementById('stat-hp').textContent = `${player.hp}/${player.maxHp}`;
+  document.getElementById('stat-str').textContent = player.str;
+  document.getElementById('stat-atk').textContent = player.atkSkill;
+  document.getElementById('stat-def').textContent = player.defSkill;
+  document.getElementById('stat-lvl').textContent = player.level;
+  document.getElementById('stat-xp').textContent = `${player.xp}/${player.level * 5}`;
+
+  // Tile board tab
+  const cells = document.querySelectorAll('.board-cell');
+  const board = state.tileBoard;
+  let filledCount = 0;
+
+  cells.forEach((cell, i) => {
+    const tile = board[i];
+    if (tile) {
+      cell.classList.add('filled');
+      cell.innerHTML = `<span class="cell-label">${i + 1}</span>${tile.icon || '?'}`;
+      filledCount++;
+    } else {
+      cell.classList.remove('filled');
+      cell.innerHTML = `<span class="cell-label">${i + 1}</span>\u00B7`;
+    }
+  });
+
+  const statusEl = document.querySelector('.board-status');
+  if (filledCount === 0) {
+    statusEl.textContent = 'No tiles placed yet. Find tiles in the dungeon.';
+  } else if (filledCount === 9) {
+    statusEl.textContent = 'Board complete!';
+  } else {
+    statusEl.textContent = `${filledCount}/9 tiles placed.`;
+  }
+}
+
+// ============================================================
 // INPUT
 // ============================================================
 
 canvas.addEventListener('pointerdown', (e) => {
   e.preventDefault();
+  if (panelOpen) return; // Don't process game input while panel is open
   const { camera, scale } = state;
   const tileSize = TILE * scale;
   const tx = Math.floor((e.clientX + camera.x) / tileSize);
