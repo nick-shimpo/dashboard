@@ -1,0 +1,795 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GM SCREEN — ANOTHER BUG HUNT — SESSION PREP</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #0a0a0c;
+    --panel-bg: #0f1114;
+    --border: #1a2332;
+    --border-bright: #2a3a4a;
+    --text: #c8d0d8;
+    --text-dim: #6a7a8a;
+    --text-bright: #e8f0f8;
+    --accent-red: #ff3344;
+    --accent-amber: #ffaa22;
+    --accent-green: #22dd66;
+    --accent-blue: #3388ff;
+    --accent-cyan: #22cccc;
+    --danger: #ff2233;
+    --warn: #cc8800;
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 8.5pt;
+    line-height: 1.35;
+  }
+
+  /* ===== PRINT SETUP ===== */
+  @page {
+    size: A4 landscape;
+    margin: 8mm;
+  }
+
+  .page {
+    width: 277mm;
+    height: 190mm;
+    padding: 4mm;
+    page-break-after: always;
+    overflow: hidden;
+    position: relative;
+  }
+
+  .page::before {
+    content: '';
+    position: absolute;
+    top: 0; left: 0; right: 0; bottom: 0;
+    background: repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(255,255,255,0.008) 2px,
+      rgba(255,255,255,0.008) 4px
+    );
+    pointer-events: none;
+    z-index: 100;
+  }
+
+  /* ===== PAGE 1: AT-A-GLANCE ===== */
+  .page-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 2px solid var(--accent-red);
+    padding-bottom: 3mm;
+    margin-bottom: 3mm;
+  }
+
+  .page-header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 14pt;
+    color: var(--accent-red);
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+
+  .page-header .subtitle {
+    font-size: 7pt;
+    color: var(--text-dim);
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+
+  .page-header .session-id {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 8pt;
+    color: var(--accent-amber);
+    text-align: right;
+  }
+
+  /* Grid layouts */
+  .grid-3col {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 3mm;
+  }
+
+  .grid-2col {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3mm;
+  }
+
+  .grid-top {
+    display: grid;
+    grid-template-columns: 2fr 1fr;
+    gap: 3mm;
+    margin-bottom: 3mm;
+  }
+
+  /* Panels */
+  .panel {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    padding: 2.5mm;
+    position: relative;
+  }
+
+  .panel-header {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding-bottom: 1.5mm;
+    margin-bottom: 1.5mm;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 2mm;
+  }
+
+  .panel-header .icon {
+    font-size: 9pt;
+  }
+
+  .panel-header.red { color: var(--accent-red); border-color: var(--accent-red); }
+  .panel-header.amber { color: var(--accent-amber); border-color: var(--accent-amber); }
+  .panel-header.green { color: var(--accent-green); border-color: var(--accent-green); }
+  .panel-header.blue { color: var(--accent-blue); border-color: var(--accent-blue); }
+  .panel-header.cyan { color: var(--accent-cyan); border-color: var(--accent-cyan); }
+
+  .panel.danger { border-color: var(--danger); }
+  .panel.warn { border-color: var(--warn); }
+
+  /* Compact list styling */
+  .info-row {
+    display: flex;
+    gap: 2mm;
+    padding: 0.5mm 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+  }
+  .info-row:last-child { border-bottom: none; }
+
+  .info-label {
+    color: var(--text-dim);
+    min-width: 18mm;
+    flex-shrink: 0;
+    font-size: 7pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .info-value {
+    color: var(--text-bright);
+    font-size: 8pt;
+  }
+
+  .status-critical {
+    color: var(--accent-red);
+    font-weight: bold;
+  }
+
+  .status-warn {
+    color: var(--accent-amber);
+  }
+
+  .status-ok {
+    color: var(--accent-green);
+  }
+
+  /* Bullet lists */
+  .compact-list {
+    list-style: none;
+    padding-left: 0;
+  }
+
+  .compact-list li {
+    padding: 0.5mm 0;
+    padding-left: 3mm;
+    position: relative;
+    font-size: 8pt;
+  }
+
+  .compact-list li::before {
+    content: '>';
+    position: absolute;
+    left: 0;
+    color: var(--text-dim);
+  }
+
+  .compact-list li.critical::before {
+    content: '!';
+    color: var(--accent-red);
+  }
+
+  .compact-list li.warn::before {
+    content: '*';
+    color: var(--accent-amber);
+  }
+
+  /* Tag styling */
+  .tag {
+    display: inline-block;
+    padding: 0.3mm 1.5mm;
+    border-radius: 1px;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    font-weight: bold;
+  }
+
+  .tag-red { background: rgba(255,51,68,0.15); color: var(--accent-red); border: 1px solid rgba(255,51,68,0.3); }
+  .tag-amber { background: rgba(255,170,34,0.15); color: var(--accent-amber); border: 1px solid rgba(255,170,34,0.3); }
+  .tag-green { background: rgba(34,221,102,0.15); color: var(--accent-green); border: 1px solid rgba(34,221,102,0.3); }
+  .tag-blue { background: rgba(51,136,255,0.15); color: var(--accent-blue); border: 1px solid rgba(51,136,255,0.3); }
+
+  /* Divider */
+  .divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 2mm 0;
+  }
+
+  /* Small text */
+  .small { font-size: 7pt; color: var(--text-dim); }
+  .tiny { font-size: 6pt; color: var(--text-dim); }
+
+  .highlight { color: var(--text-bright); }
+  .red { color: var(--accent-red); }
+  .amber { color: var(--accent-amber); }
+  .green { color: var(--accent-green); }
+  .blue { color: var(--accent-blue); }
+  .cyan { color: var(--accent-cyan); }
+
+  /* Oracle tables */
+  .oracle-grid {
+    display: grid;
+    grid-template-columns: repeat(6, 1fr);
+    gap: 0;
+    font-size: 7pt;
+  }
+
+  .oracle-cell {
+    padding: 0.8mm 1mm;
+    border: 1px solid var(--border);
+    text-align: center;
+  }
+
+  .oracle-cell.header {
+    background: rgba(255,255,255,0.03);
+    color: var(--text-dim);
+    font-size: 6pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  .oracle-cell.num {
+    color: var(--text-dim);
+    font-size: 6pt;
+  }
+
+  /* Word bank */
+  .word-bank {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1mm;
+  }
+
+  .word-bank span {
+    font-size: 7pt;
+    color: var(--text);
+    padding: 0.3mm 1mm;
+    border: 1px solid var(--border);
+    border-radius: 1px;
+  }
+
+  /* Environment cards */
+  .env-card {
+    background: var(--panel-bg);
+    border: 1px solid var(--border);
+    padding: 2mm;
+    margin-bottom: 2mm;
+  }
+
+  .env-card h4 {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 7.5pt;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-bottom: 1mm;
+  }
+
+  .env-detail {
+    font-size: 7.5pt;
+    padding: 0.3mm 0;
+  }
+
+  .env-detail .label {
+    font-weight: bold;
+    font-size: 6.5pt;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+
+  /* NPC compact */
+  .npc-row {
+    display: flex;
+    gap: 2mm;
+    padding: 0.5mm 0;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+    font-size: 7.5pt;
+  }
+
+  .npc-name {
+    color: var(--accent-cyan);
+    font-weight: bold;
+    min-width: 16mm;
+  }
+
+  .npc-loc {
+    color: var(--text-dim);
+    min-width: 20mm;
+  }
+
+  /* Page 2 specific */
+  .grid-page2 {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 3mm;
+    height: calc(100% - 14mm);
+  }
+
+  .col-left, .col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 2mm;
+  }
+
+  .flex-grow { flex-grow: 1; }
+
+  /* Print overrides */
+  @media print {
+    body { background: #000; -webkit-print-color-adjust: exact; print-color-adjust: exact; }
+    .page { page-break-inside: avoid; }
+    .no-print { display: none; }
+  }
+
+  /* Screen preview */
+  @media screen {
+    body { padding: 10mm; }
+    .page {
+      margin: 0 auto 10mm auto;
+      border: 1px solid var(--border-bright);
+      border-radius: 3px;
+    }
+  }
+</style>
+</head>
+<body>
+
+<!-- ============================================================ -->
+<!-- PAGE 1: AT-A-GLANCE — The stuff you need INSTANTLY            -->
+<!-- ============================================================ -->
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h1>Another Bug Hunt</h1>
+      <div class="subtitle">Scenario 2: Hard Choices &mdash; Heron Terraforming Station</div>
+    </div>
+    <div class="session-id">
+      MOTHERSHIP 1E<br>
+      <span class="small">GM SCREEN</span>
+    </div>
+  </div>
+
+  <!-- TOP ROW: Starting Position + Pressure Dials -->
+  <div class="grid-top">
+
+    <!-- Starting Position -->
+    <div class="panel danger">
+      <div class="panel-header red"><span class="icon">&#x25B6;</span> Starting Position — Party Split</div>
+
+      <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 2mm;">
+        <!-- Team Alpha -->
+        <div style="border-right: 1px solid var(--border); padding-right: 2mm;">
+          <div style="font-size: 7pt; color: var(--accent-amber); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1mm;">Team Alpha — Chimney</div>
+          <ul class="compact-list">
+            <li class="critical"><span class="status-critical">BUD</span> — Teamster — <span class="tag tag-red">BLEEDING OUT</span> speared in leg</li>
+            <li><span class="highlight">RICK</span> — Marine — traumatized (sister killed), wants vengeance</li>
+            <li><span class="highlight">TANDY</span> — Scientist — smart, field medicine possible</li>
+          </ul>
+          <div class="small" style="margin-top: 1mm;">With Valdez's Hog Squad at chimney entrance. Carcinid ambush just happened.</div>
+        </div>
+        <!-- Team Beta -->
+        <div style="padding-left: 2mm;">
+          <div style="font-size: 7pt; color: var(--accent-blue); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 1mm;">Team Beta — Edem's Lab</div>
+          <ul class="compact-list">
+            <li><span class="highlight">WILLIS</span> — Teamster — John McClane archetype, jaded</li>
+            <li class="warn"><span class="status-warn">SHAW</span> — Android — <span class="tag tag-amber">PRIMED</span> Company programming</li>
+          </ul>
+          <div class="small" style="margin-top: 1mm;">Just arrived in lab. Calm before the storm. Shaw + Willis + Edem isolated.</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Pressure Dials -->
+    <div class="panel">
+      <div class="panel-header amber"><span class="icon">&#x23F1;</span> Pressure — Dial Up/Down</div>
+      <ul class="compact-list">
+        <li class="critical">Storm closing evac window + killing comms</li>
+        <li class="critical">Bud bleeding out — hours, not days</li>
+        <li class="warn">Shaw's hidden programming — ticking bomb</li>
+        <li>Radio: NPCs report carcinids breaking through section by section</li>
+      </ul>
+      <div class="tiny" style="margin-top: 1mm;">Radio reports = flexible GM tool. Dial intensity with NPC voices on comms.</div>
+    </div>
+
+  </div>
+
+  <!-- MIDDLE ROW: Revelations + Threats + Interactables -->
+  <div class="grid-3col" style="margin-bottom: 3mm;">
+
+    <!-- Revelations -->
+    <div class="panel">
+      <div class="panel-header cyan"><span class="icon">&#x1F441;</span> Revelations — Two Truths</div>
+
+      <div style="margin-bottom: 1.5mm;">
+        <div class="small amber" style="text-transform: uppercase;">1. Carcinid Intelligence</div>
+        <ul class="compact-list">
+          <li>Carcinids herd tactically — emergent hive behavior</li>
+          <li>Funneling humans toward reactor = birthing chamber</li>
+          <li>Mother carcinid fused with reactor infrastructure</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="small red" style="text-transform: uppercase;">2. Shaw's Betrayal</div>
+        <ul class="compact-list">
+          <li>Trigger: Edem reveals cure potential</li>
+          <li>Company needs carcinisation controllable, NOT curable</li>
+          <li>Sudden violence (Ash-style) — kills Edem instantly</li>
+          <li>"I suggest you leave now." No warning, no monologue.</li>
+        </ul>
+      </div>
+
+      <hr class="divider">
+      <div class="tiny">RESERVE: Hinton saboteur (Franco), full Company conspiracy, hive coordination</div>
+    </div>
+
+    <!-- Threats -->
+    <div class="panel">
+      <div class="panel-header red"><span class="icon">&#x2620;</span> Threats</div>
+
+      <div style="margin-bottom: 1.5mm;">
+        <div class="small amber" style="text-transform: uppercase;">Mother Carcinid (Reactor)</div>
+        <ul class="compact-list">
+          <li>Immobile factory fused with reactor — NOT a fighter</li>
+          <li>Marines cocooned in walls, still alive, slowly changing</li>
+          <li>The horror is witnessing the process</li>
+          <li class="warn">Crabsong held in reserve — escalation if players linger</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="small red" style="text-transform: uppercase;">Shaw (Internal Threat)</div>
+        <ul class="compact-list">
+          <li>Becomes long-term NPC antagonist</li>
+          <li>Willis can't fight an android — must flee</li>
+          <li>Cure survival = play to find out</li>
+        </ul>
+      </div>
+
+      <hr class="divider">
+      <div class="tiny">NO boss fight. NO predetermined escape route. Define spaces, not decisions.</div>
+    </div>
+
+    <!-- Interactables -->
+    <div class="panel">
+      <div class="panel-header green"><span class="icon">&#x270B;</span> Interactables</div>
+
+      <div style="margin-bottom: 1.5mm;">
+        <div class="small amber" style="text-transform: uppercase;">Team Alpha</div>
+        <ul class="compact-list">
+          <li>Valdez's medkit — patches Bud (hours, not days)</li>
+          <li>Creates fork: press on / go back / split further?</li>
+          <li>Reactor med unit — Valdez knows protocol (med at reactor level)</li>
+          <li class="warn">Incentive to push DEEPER toward the horror</li>
+        </ul>
+      </div>
+
+      <div style="margin-bottom: 1.5mm;">
+        <div class="small blue" style="text-transform: uppercase;">Team Beta (Edem's Lab)</div>
+        <ul class="compact-list">
+          <li>Edem's research — improvise form at table</li>
+          <li>Reward clever grabs if Willis's player tries</li>
+        </ul>
+      </div>
+
+      <div>
+        <div class="small cyan" style="text-transform: uppercase;">Reactor — Back Pocket</div>
+        <ul class="compact-list">
+          <li>Coolant purge valve — dumps coolant, hurts mother (fused to pipes)</li>
+          <li>Containment bulkhead seal — traps mother permanently, cuts off hive</li>
+        </ul>
+        <div class="tiny">Deploy IF players look for ways to use reactor against mother. Hurt vs Contain.</div>
+      </div>
+    </div>
+
+  </div>
+
+  <!-- BOTTOM ROW: NPCs + Key Secrets -->
+  <div class="grid-2col">
+
+    <!-- Active NPCs -->
+    <div class="panel">
+      <div class="panel-header blue"><span class="icon">&#x1F464;</span> Active NPCs</div>
+
+      <div class="npc-row">
+        <span class="npc-name">Valdez</span>
+        <span class="npc-loc">Chimney (Alpha)</span>
+        <span>Marine Sgt. Allied. Leading Hog Squad. Has medkit. Knows reactor layout.</span>
+      </div>
+      <div class="npc-row">
+        <span class="npc-name">Dr. Edem</span>
+        <span class="npc-loc">Lab (Beta)</span>
+        <span>Researcher. Allied. Has cure data. <span class="red">Shaw's target.</span> Acid kills carcinids.</span>
+      </div>
+      <div class="npc-row">
+        <span class="npc-name">Shaw</span>
+        <span class="npc-loc">Lab (Beta)</span>
+        <span>Android. <span class="amber">COMPANY PROGRAMMED.</span> Trigger = Edem reveals cure.</span>
+      </div>
+      <div class="npc-row">
+        <span class="npc-name">Franco</span>
+        <span class="npc-loc">Reactor (below)</span>
+        <span>Marine. Traumatized. Delivers Hinton reveal: "It was Hinton all along."</span>
+      </div>
+      <div class="npc-row">
+        <span class="npc-name">Maas</span>
+        <span class="npc-loc">Ship (orbit)</span>
+        <span>Company rep. Listening to broadcasts. <span class="red">INFECTED.</span> Save for Scenario 4.</span>
+      </div>
+    </div>
+
+    <!-- Secrets & Reserves -->
+    <div class="panel">
+      <div class="panel-header amber"><span class="icon">&#x1F512;</span> What I'm NOT Revealing Yet</div>
+
+      <div style="display: grid; grid-template-columns: auto 1fr; gap: 1mm 3mm; font-size: 7.5pt;">
+        <span class="tag tag-red">HIDDEN</span> <span>Hinton as saboteur — Franco delivers this at reactor</span>
+        <span class="tag tag-red">HIDDEN</span> <span>Full Company conspiracy — breadcrumbs only via Shaw</span>
+        <span class="tag tag-red">HIDDEN</span> <span>Maas's infection — Scenario 4 payoff</span>
+        <span class="tag tag-amber">PARTIAL</span> <span>Hive intelligence — show tactical behavior, don't confirm coordination</span>
+        <span class="tag tag-amber">PARTIAL</span> <span>Crabsong mechanics — reserve for escalation</span>
+        <span class="tag tag-green">DECIDED</span> <span>Carcinid herding = emergent, NOT Hinton-directed</span>
+        <span class="tag tag-green">DECIDED</span> <span>Hinton pursuing own ascension independently in mountains</span>
+      </div>
+
+      <hr class="divider">
+      <div class="tiny">
+        PHILOSOPHY: Willis journey = dread not combat. Reactor reveal is the payoff. Define spaces, not routes. Play to find out.
+      </div>
+    </div>
+
+  </div>
+
+</div>
+
+<!-- ============================================================ -->
+<!-- PAGE 2: DEEP REFERENCE — Environments, Oracle, Word Bank      -->
+<!-- ============================================================ -->
+<div class="page">
+
+  <div class="page-header">
+    <div>
+      <h1>Deep Reference</h1>
+      <div class="subtitle">Environments &bull; Oracle Tables &bull; Descriptors</div>
+    </div>
+    <div class="session-id">
+      HERON STATION<br>
+      <span class="small">PAGE 2 / 2</span>
+    </div>
+  </div>
+
+  <div class="grid-page2">
+
+    <!-- LEFT COLUMN: Environments -->
+    <div class="col-left">
+
+      <div class="env-card" style="border-left: 3px solid var(--accent-blue);">
+        <h4 class="blue">&#x1F4A7; Spillway</h4>
+        <div class="env-detail"><span class="label amber">Unsettling:</span> Flooded with torrential stormwater. Ceiling maintenance ladder is the only route. Everything coated in sticky organic slick — wrong texture, clings to hands.</div>
+        <div class="env-detail"><span class="label green">Useful:</span> Bypasses carcinid-choked corridors above. Alternate route down.</div>
+        <div class="env-detail"><span class="label red">Dangerous:</span> Aquatic-adapted carcinid in the water. Human DNA — swims with legs instead of scuttling with claws. Moves <em>wrong</em>.</div>
+        <div class="tiny" style="margin-top: 1mm;">SENSORY: Tactile/Visual. Slick on skin, water, shape in the murk.</div>
+      </div>
+
+      <div class="env-card" style="border-left: 3px solid var(--accent-amber);">
+        <h4 class="amber">&#x1F50A; Stairwell</h4>
+        <div class="env-detail"><span class="label amber">Unsettling:</span> Vertical echo chamber. Clicking sounds funnel from above and below — impossible to locate source. Every landing is a blind corner.</div>
+        <div class="env-detail"><span class="label green">Useful:</span> Vertical access between station levels. Direct route.</div>
+        <div class="env-detail"><span class="label red">Dangerous:</span> Ambush geometry + echoing clicks. <span class="highlight">BUT NO ACTUAL ENCOUNTER.</span> Psychological threat only. Willis's journey is DREAD, not combat.</div>
+        <div class="tiny" style="margin-top: 1mm;">SENSORY: Audio. Echoes, clicks, anticipation of what's around each corner.</div>
+      </div>
+
+      <div class="env-card" style="border-left: 3px solid var(--accent-green);">
+        <h4 class="green">&#x1F327; Outdoors / Jungle</h4>
+        <div class="env-detail"><span class="label amber">Unsettling:</span> Dead silence. No wildlife, no insects — just storm and water. The jungle is holding its breath.</div>
+        <div class="env-detail"><span class="label green">Useful:</span> Alternative route between buildings. Connects to chimney (Alpha) or steep path to dam base. Willis's escape valve.</div>
+        <div class="env-detail"><span class="label red">Dangerous:</span> Terrain: steep, muddy, zero visibility. One slip on the dam path and you're falling. No carcinids — just gravity and rain.</div>
+        <div class="tiny" style="margin-top: 1mm;">SENSORY: Absence. Silence where there should be life. Blindness. Isolation.</div>
+      </div>
+
+      <div class="env-card" style="border-left: 3px solid var(--accent-red);">
+        <h4 class="red">&#x2622; Reactor (Mother's Chamber)</h4>
+        <div class="env-detail"><span class="label amber">Unsettling:</span> Warm, humid air that smells organic and sweet. Cocoons visible in flashlight beams. Marines in the walls — still alive, slowly changing. The mother is fused with infrastructure. A factory, not a creature.</div>
+        <div class="env-detail"><span class="label green">Useful:</span> Emergency med unit here. Franco is here (Hinton reveal). Reactor controls.</div>
+        <div class="env-detail"><span class="label red">Dangerous:</span> The horror is WITNESSING THE PROCESS. No boss fight. Crabsong escalation in reserve if they linger.</div>
+        <div class="tiny" style="margin-top: 1mm;">THIS IS THE PAYOFF. Everything before builds to this reveal.</div>
+      </div>
+
+    </div>
+
+    <!-- RIGHT COLUMN: Oracle + Word Bank -->
+    <div class="col-right">
+
+      <!-- Oracle: Action + Theme (Ironsworn-style) -->
+      <div class="panel" style="flex-grow: 0;">
+        <div class="panel-header cyan"><span class="icon">&#x1F3B2;</span> Oracle — Action + Theme (Roll d20 for each)</div>
+        <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 3mm;">
+
+          <div>
+            <div class="small cyan" style="text-transform: uppercase; margin-bottom: 1mm;">Action (d20)</div>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5mm 2mm; font-size: 7pt;">
+              <span class="tiny">1</span><span>Seal</span>
+              <span class="tiny">2</span><span>Breach</span>
+              <span class="tiny">3</span><span>Sabotage</span>
+              <span class="tiny">4</span><span>Protect</span>
+              <span class="tiny">5</span><span>Abandon</span>
+              <span class="tiny">6</span><span>Reveal</span>
+              <span class="tiny">7</span><span>Consume</span>
+              <span class="tiny">8</span><span>Isolate</span>
+              <span class="tiny">9</span><span>Transform</span>
+              <span class="tiny">10</span><span>Overwhelm</span>
+              <span class="tiny">11</span><span>Contain</span>
+              <span class="tiny">12</span><span>Corrupt</span>
+              <span class="tiny">13</span><span>Salvage</span>
+              <span class="tiny">14</span><span>Collapse</span>
+              <span class="tiny">15</span><span>Awaken</span>
+              <span class="tiny">16</span><span>Suppress</span>
+              <span class="tiny">17</span><span>Infest</span>
+              <span class="tiny">18</span><span>Fortify</span>
+              <span class="tiny">19</span><span>Betray</span>
+              <span class="tiny">20</span><span>Escape</span>
+            </div>
+          </div>
+
+          <div>
+            <div class="small cyan" style="text-transform: uppercase; margin-bottom: 1mm;">Theme (d20)</div>
+            <div style="display: grid; grid-template-columns: auto 1fr; gap: 0.5mm 2mm; font-size: 7pt;">
+              <span class="tiny">1</span><span>Communication</span>
+              <span class="tiny">2</span><span>Trust</span>
+              <span class="tiny">3</span><span>Power</span>
+              <span class="tiny">4</span><span>Biology</span>
+              <span class="tiny">5</span><span>Authority</span>
+              <span class="tiny">6</span><span>Memory</span>
+              <span class="tiny">7</span><span>Survival</span>
+              <span class="tiny">8</span><span>Identity</span>
+              <span class="tiny">9</span><span>Sacrifice</span>
+              <span class="tiny">10</span><span>Knowledge</span>
+              <span class="tiny">11</span><span>Territory</span>
+              <span class="tiny">12</span><span>Infection</span>
+              <span class="tiny">13</span><span>Resource</span>
+              <span class="tiny">14</span><span>Loyalty</span>
+              <span class="tiny">15</span><span>Evolution</span>
+              <span class="tiny">16</span><span>Isolation</span>
+              <span class="tiny">17</span><span>Offspring</span>
+              <span class="tiny">18</span><span>Protocol</span>
+              <span class="tiny">19</span><span>Signal</span>
+              <span class="tiny">20</span><span>Ruin</span>
+            </div>
+          </div>
+
+        </div>
+        <div class="tiny" style="margin-top: 1.5mm;">Roll one from each column, combine: "Sabotage + Trust" = someone undermines an alliance. "Consume + Memory" = something familiar is being digested.</div>
+      </div>
+
+      <!-- Descriptor Banks -->
+      <div class="panel" style="flex-grow: 1;">
+        <div class="panel-header amber"><span class="icon">&#x270D;</span> Descriptor Banks — Evocative Language</div>
+
+        <div style="margin-bottom: 2mm;">
+          <div class="small red" style="text-transform: uppercase; margin-bottom: 1mm;">Carcinid Descriptors</div>
+          <div class="word-bank">
+            <span>chitinous</span><span>clicking</span><span>scuttling</span><span>wet</span><span>segmented</span>
+            <span>barbed</span><span>translucent</span><span>pulsing</span><span>folded</span><span>wrong</span>
+            <span>twitching</span><span>glistening</span><span>serrated</span><span>eyeless</span><span>patient</span>
+            <span>boneless</span><span>distended</span><span>articulated</span><span>human-shaped</span><span>uncoiling</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2mm;">
+          <div class="small blue" style="text-transform: uppercase; margin-bottom: 1mm;">Environment / Station</div>
+          <div class="word-bank">
+            <span>corroded</span><span>humming</span><span>dripping</span><span>flickering</span><span>buckled</span>
+            <span>pressurized</span><span>flooded</span><span>stagnant</span><span>rusted</span><span>dark</span>
+            <span>cramped</span><span>echoing</span><span>sealed</span><span>breached</span><span>listing</span>
+            <span>slick</span><span>warm</span><span>groaning</span><span>abandoned</span><span>sterile</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2mm;">
+          <div class="small amber" style="text-transform: uppercase; margin-bottom: 1mm;">Body Horror / Infection</div>
+          <div class="word-bank">
+            <span>splitting</span><span>budding</span><span>oozing</span><span>calcifying</span><span>bloating</span>
+            <span>bristling</span><span>molting</span><span>extruding</span><span>fusing</span><span>rippling</span>
+            <span>organic</span><span>sweetish</span><span>fibrous</span><span>membranous</span><span>vestigial</span>
+            <span>peeling</span><span>throbbing</span><span>asymmetric</span><span>recognizable</span><span>almost-human</span>
+          </div>
+        </div>
+
+        <div style="margin-bottom: 2mm;">
+          <div class="small green" style="text-transform: uppercase; margin-bottom: 1mm;">Sound / Atmosphere</div>
+          <div class="word-bank">
+            <span>clicking</span><span>droning</span><span>scraping</span><span>hissing</span><span>silence</span>
+            <span>distant</span><span>rhythmic</span><span>muffled</span><span>subsonic</span><span>keening</span>
+            <span>static</span><span>gurgling</span><span>creaking</span><span>whining</span><span>breath-like</span>
+            <span>wet snapping</span><span>skittering</span><span>resonant</span><span>hollow</span><span>wrong-pitch</span>
+          </div>
+        </div>
+
+        <div>
+          <div class="small cyan" style="text-transform: uppercase; margin-bottom: 1mm;">Emotional / Tonal</div>
+          <div class="word-bank">
+            <span>dread</span><span>wrongness</span><span>claustrophobic</span><span>vertiginous</span><span>nauseating</span>
+            <span>inevitable</span><span>futile</span><span>disorienting</span><span>suffocating</span><span>primal</span>
+            <span>uncanny</span><span>intimate</span><span>relentless</span><span>degrading</span><span>irreversible</span>
+          </div>
+        </div>
+
+      </div>
+
+      <!-- Quick Reference -->
+      <div class="panel" style="flex-grow: 0;">
+        <div class="panel-header green"><span class="icon">&#x26A1;</span> Quick Rules Reminders</div>
+        <div style="font-size: 7pt;">
+          <div class="info-row">
+            <span class="info-label">Panic Check</span>
+            <span class="info-value">2d10 + Stress. If ≥ Panic threshold, roll on Panic table.</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Wound</span>
+            <span class="info-value">Bleeding: lose 1 HP/round until First Aid (Body save) or bandaged.</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Suit Comms</span>
+            <span class="info-value">Safe. Radio broadcast = shriek transmission risk.</span>
+          </div>
+          <div class="info-row">
+            <span class="info-label">Acid</span>
+            <span class="info-value">Hydrofluoric acid kills carcinids. Edem knows this.</span>
+          </div>
+        </div>
+      </div>
+
+    </div>
+
+  </div>
+
+</div>
+
+</body>
+</html>
