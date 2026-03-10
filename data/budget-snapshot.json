@@ -1,29 +1,29 @@
 {
-  "generatedAt": "2026-03-09T05:00:18.017Z",
+  "generatedAt": "2026-03-10T05:00:43.915Z",
   "cycle": {
     "startDate": "2026-02-25",
-    "daysPassed": 12,
-    "daysRemaining": 16,
+    "daysPassed": 13,
+    "daysRemaining": 15,
     "daysTotal": 28,
-    "percentElapsed": 43
+    "percentElapsed": 46
   },
   "balance": {
-    "current": 2027.73,
+    "current": 1909.13,
     "currency": "EUR",
-    "asOf": "2026-03-09"
+    "asOf": "2026-03-10"
   },
   "variableBuckets": [
     {
       "id": "petrol_parking",
       "name": "Petrol & Parking",
       "budget": 200,
-      "spent": 136.83,
-      "remaining": 63.17,
-      "percentUsed": 68,
-      "dailyPaceAllowed": 3.95,
-      "paceRatio": 1.58,
+      "spent": 146.83,
+      "remaining": 53.17,
+      "percentUsed": 73,
+      "dailyPaceAllowed": 3.54,
+      "paceRatio": 1.59,
       "paceStatus": "red",
-      "transactionCount": 5,
+      "transactionCount": 6,
       "status": "on_track"
     },
     {
@@ -33,8 +33,8 @@
       "spent": 192.97,
       "remaining": 557.03,
       "percentUsed": 26,
-      "dailyPaceAllowed": 34.81,
-      "paceRatio": 0.6,
+      "dailyPaceAllowed": 37.14,
+      "paceRatio": 0.57,
       "paceStatus": "green",
       "transactionCount": 5,
       "status": "on_track"
@@ -46,8 +46,8 @@
       "spent": 64.2,
       "remaining": -14.2,
       "percentUsed": 128,
-      "dailyPaceAllowed": -0.89,
-      "paceRatio": 2.98,
+      "dailyPaceAllowed": -0.95,
+      "paceRatio": 2.78,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "over_budget"
@@ -56,13 +56,13 @@
       "id": "drugstore",
       "name": "Drugstore (DM)",
       "budget": 160,
-      "spent": 30.2,
-      "remaining": 129.8,
-      "percentUsed": 19,
-      "dailyPaceAllowed": 8.11,
-      "paceRatio": 0.44,
-      "paceStatus": "green",
-      "transactionCount": 1,
+      "spent": 104.23,
+      "remaining": 55.77,
+      "percentUsed": 65,
+      "dailyPaceAllowed": 3.72,
+      "paceRatio": 1.41,
+      "paceStatus": "red",
+      "transactionCount": 4,
       "status": "on_track"
     },
     {
@@ -72,7 +72,7 @@
       "spent": 0,
       "remaining": 20,
       "percentUsed": 0,
-      "dailyPaceAllowed": 1.25,
+      "dailyPaceAllowed": 1.33,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -85,8 +85,8 @@
       "spent": 25,
       "remaining": 75,
       "percentUsed": 25,
-      "dailyPaceAllowed": 4.69,
-      "paceRatio": 0.58,
+      "dailyPaceAllowed": 5,
+      "paceRatio": 0.54,
       "paceStatus": "green",
       "transactionCount": 1,
       "status": "on_track"
@@ -98,7 +98,7 @@
       "spent": 0,
       "remaining": 100,
       "percentUsed": 0,
-      "dailyPaceAllowed": 6.25,
+      "dailyPaceAllowed": 6.67,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -111,8 +111,8 @@
       "spent": 141.82,
       "remaining": -41.82,
       "percentUsed": 142,
-      "dailyPaceAllowed": -2.61,
-      "paceRatio": 3.3,
+      "dailyPaceAllowed": -2.79,
+      "paceRatio": 3.09,
       "paceStatus": "red",
       "transactionCount": 5,
       "status": "over_budget"
@@ -151,13 +151,13 @@
       "id": "clothing_kids",
       "name": "Clothing Kids",
       "budget": 75,
-      "spent": 0,
-      "remaining": 75,
-      "percentUsed": 0,
+      "spent": 14.99,
+      "remaining": 60.01,
+      "percentUsed": 20,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 0,
+      "transactionCount": 1,
       "status": "on_track",
       "accumulates": true,
       "walletBalance": 75
@@ -222,7 +222,7 @@
     }
   ],
   "fixedCosts": {
-    "total": 2905.82,
+    "total": 3750.82,
     "items": [
       {
         "name": "Housing",
@@ -325,6 +325,12 @@
         "amount": 1750,
         "creditor": "Alexandra Orsi",
         "date": "2026-03-03"
+      },
+      {
+        "name": "Children's Savings",
+        "amount": 845,
+        "creditor": "Alexandra Orsi",
+        "date": "2026-03-09"
       }
     ]
   },
@@ -334,9 +340,9 @@
     "items": []
   },
   "summary": {
-    "totalSpent": 3710.15,
-    "totalFixed": 2905.82,
-    "totalVariable": 804.33,
+    "totalSpent": 4654.17,
+    "totalFixed": 3750.82,
+    "totalVariable": 903.35,
     "totalUnclassified": 0
   }
 }
