@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-08T16:50:00+01:00",
+  "lastUpdated": "2026-03-10T15:52:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -284,16 +284,16 @@
       "id": "t019",
       "title": "Book psychiatrist appointment for repeat medication",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
-      "notes": "Repeat prescription appointment. CONFIRMED: Friday 6 March 2026 at 11:30. Dr. Benilov, Vitos psychiatrische Ambulanz Frankfurt. Reply sent 2026-03-02 to ambulanz-kpp.frankfurt.hts@vitos.de (La Toya Jones). Bring Versichertenkarte.",
+      "notes": "DONE — Attended 6 March 2026 at 11:30, Dr. Benilov, Vitos psychiatrische Ambulanz Frankfurt.",
       "created": "2026-02-22",
       "due": "2026-03-06",
       "subtasks": [
         {"title": "Email Vitos to request appointment — SENT 2026-02-28", "done": true},
         {"title": "Confirm appointment date/time — CONFIRMED Fri 06.03 at 11:30, reply sent 2026-03-02", "done": true},
         {"title": "Add to Google Calendar — DONE 2026-03-05", "done": true},
-        {"title": "Attend appointment and get prescription", "done": false}
+        {"title": "Attend appointment and get prescription — DONE 2026-03-06", "done": true}
       ]
     },
     {
@@ -399,14 +399,14 @@
       "id": "t026",
       "title": "First session at AI Fitness Dreieich",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
-      "notes": "BOOKED: Wednesday 4 March 2026 at 17:00. AI Fitness, Frankfurter Str. 70-72, 63303 Dreieich. First session — body measurements and program setup. Calendar event added.",
+      "notes": "DONE — Attended first session 4 March 2026 at 17:00. AI Fitness, Frankfurter Str. 70-72, 63303 Dreieich.",
       "created": "2026-03-02",
       "due": "2026-03-04",
       "subtasks": [
         {"title": "Call gym to book first session — DONE 2026-03-03", "done": true},
-        {"title": "Attend first session Wed 4 March at 17:00", "done": false}
+        {"title": "Attend first session Wed 4 March at 17:00 — DONE 2026-03-04", "done": true}
       ]
     },
     {
