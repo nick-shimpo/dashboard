@@ -74,6 +74,27 @@ canvas {
   align-items: center;
   justify-content: center;
 }
+#held-tile {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
+  left: 12px;
+  background: rgba(20,30,50,0.9);
+  border: 1px solid #4af;
+  border-radius: 6px;
+  color: #8cf;
+  font: 12px monospace;
+  z-index: 20;
+  pointer-events: auto;
+  padding: 6px 10px;
+  display: none;
+  align-items: center;
+  gap: 6px;
+  max-width: 200px;
+}
+#held-tile.has-tile { display: flex; }
+#held-tile .held-icon { font-size: 20px; }
+#held-tile .held-name { color: #cdf; font-weight: bold; font-size: 11px; }
+#held-tile .held-hint { color: #668; font-size: 10px; }
 #log {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom, 8px) + 60px);
@@ -192,6 +213,8 @@ canvas {
   color: #2a2a3a;
   background: #10101a;
   position: relative;
+  cursor: pointer;
+  -webkit-tap-highlight-color: transparent;
 }
 .board-cell.filled {
   border-style: solid;
@@ -199,18 +222,74 @@ canvas {
   color: #c8c8d0;
   background: #1a1a28;
 }
+.board-cell.powered {
+  border-color: #4af;
+  background: #1a2040;
+  box-shadow: 0 0 6px rgba(68,170,255,0.3);
+}
+.board-cell.placeable {
+  border-color: #4a4;
+  border-style: dashed;
+  animation: pulse-border 1.2s infinite;
+}
+@keyframes pulse-border {
+  0%, 100% { border-color: #4a4; }
+  50% { border-color: #8f8; }
+}
 .board-cell .cell-label {
   position: absolute;
   top: 2px; left: 4px;
   font-size: 9px;
   color: #3c3c4e;
 }
+.board-cell .cell-name {
+  position: absolute;
+  bottom: 2px;
+  font-size: 8px;
+  color: #666;
+  width: 100%;
+  text-align: center;
+  overflow: hidden;
+  white-space: nowrap;
+}
+/* Connector dots on board cells */
+.connector { position: absolute; width: 6px; height: 6px; border-radius: 50%; background: #555; }
+.connector.active { background: #4af; }
+.connector.connected { background: #4f4; }
+.connector.top { top: 1px; left: 50%; transform: translateX(-50%); }
+.connector.right { right: 1px; top: 50%; transform: translateY(-50%); }
+.connector.bottom { bottom: 1px; left: 50%; transform: translateX(-50%); }
+.connector.left { left: 1px; top: 50%; transform: translateY(-50%); }
 .board-status {
   text-align: center;
   font-size: 11px;
   color: #5a5a6e;
   margin-top: 8px;
 }
+.tile-detail {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #3c3c4e;
+  border-radius: 3px;
+  background: #10101a;
+  font-size: 11px;
+}
+.tile-detail .td-name { color: #cdf; font-weight: bold; font-size: 13px; margin-bottom: 4px; }
+.tile-detail .td-type { color: #668; font-size: 10px; text-transform: uppercase; }
+.tile-detail .td-ability { color: #aab; margin: 4px 0; }
+.tile-detail .td-powered { color: #4af; margin: 4px 0; }
+.tile-detail .td-duo { color: #fa4; margin: 4px 0; font-style: italic; }
+.held-preview {
+  margin-top: 10px;
+  padding: 8px;
+  border: 1px solid #4af;
+  border-radius: 3px;
+  background: #0c1020;
+  font-size: 11px;
+}
+.held-preview .hp-label { color: #4af; font-weight: bold; font-size: 12px; margin-bottom: 4px; }
+.held-preview .hp-ability { color: #aab; }
+.held-preview .hp-connectors { color: #668; font-size: 10px; margin-top: 4px; }
 
 /* ── Close Button ── */
 #panel-close {
@@ -234,6 +313,13 @@ canvas {
   <span id="equip-label"></span>
 </div>
 <div id="log"></div>
+<div id="held-tile">
+  <span class="held-icon"></span>
+  <div>
+    <div class="held-name"></div>
+    <div class="held-hint">Tap BOARD to place</div>
+  </div>
+</div>
 <div id="tile-board-btn">&#9638;</div>
 
 <div id="panel-overlay">
@@ -592,6 +678,22 @@ function generateLevel() {
     }
   }
 
+  // Spawn tile drops in rooms (1-2 per level, not in entrance room)
+  state.floorItems = [];
+  const tileDropCount = rng(1, 2);
+  let dropsPlaced = 0;
+  for (let ri = 1; ri < rooms.length && dropsPlaced < tileDropCount; ri++) {
+    if (Math.random() < 0.5 && ri < rooms.length - 1) continue; // skip some rooms
+    const r = rooms[ri];
+    const fx = rng(r.x + 1, r.x + r.w - 2);
+    const fy = rng(r.y + 1, r.y + r.h - 2);
+    if (PASSABLE.has(map[idx(fx, fy)]) && !(fx === exit.cx && fy === exit.cy)) {
+      const tile = generateTile(state.depth);
+      state.floorItems.push({ x: fx, y: fy, type: 'tile', tile });
+      dropsPlaced++;
+    }
+  }
+
   state.rooms = rooms;
   computeAutotiles();
   updateFOV();
@@ -794,6 +896,26 @@ function stepPlayer(next) {
     log('You open the door.');
   }
 
+  // Pick up floor items (tile drops)
+  const itemIdx = state.floorItems.findIndex(it => it.x === player.x && it.y === player.y);
+  if (itemIdx !== -1) {
+    const item = state.floorItems[itemIdx];
+    if (item.type === 'tile') {
+      if (state.heldTile) {
+        log(`Swapped ${state.heldTile.name} for ${item.tile.name}.`);
+      } else {
+        log(`Picked up ${item.tile.name} tile!`);
+      }
+      const prevHeld = state.heldTile;
+      state.heldTile = item.tile;
+      state.floorItems.splice(itemIdx, 1);
+      // Drop previously held tile on the ground
+      if (prevHeld) {
+        state.floorItems.push({ x: player.x, y: player.y, type: 'tile', tile: prevHeld });
+      }
+    }
+  }
+
   if (map[idx(player.x, player.y)] === T.EXIT) {
     cancelAutoWalk();
     state.depth++;
@@ -805,27 +927,195 @@ function stepPlayer(next) {
   endTurn();
 }
 
+// ============================================================
+// TILE ABILITY HOOKS
+// These functions check placed tiles and apply ability effects
+// ============================================================
+
+// Check if player is "behind" a mob (approaching from opposite of mob's last move)
+function isPlayerBehindMob(mob) {
+  // Simple: player is behind if the mob hasn't moved toward the player
+  // We approximate: if mob is adjacent and not facing player, count as behind
+  // For now: 50% chance if mob wasn't the one to initiate melee this turn (not adjacent before)
+  // More robust: track mob facing. For now, check if player moved to mob, not mob to player.
+  return state.playerInitiatedAttack;
+}
+
+// Get all active abilities from placed tiles (checking powered state)
+function getActiveAbilities() {
+  const abilities = [];
+  for (let i = 0; i < 9; i++) {
+    const tile = state.tileBoard[i];
+    if (!tile) continue;
+    const connections = getConnections(i);
+    const isPowered = connections.length > 0;
+    abilities.push({
+      id: tile.abilityId,
+      tile,
+      slot: i,
+      isPowered,
+      effect: isPowered ? tile.powered : tile.unpowered,
+    });
+  }
+  return abilities;
+}
+
+// Apply on-hit effects (called when player successfully damages a mob)
+function applyOnHitEffects(mob, baseDmg) {
+  const abilities = getActiveAbilities();
+  let totalBonusDmg = 0;
+  let healAmount = 0;
+
+  for (const ab of abilities) {
+    switch (ab.id) {
+      case 'backstab':
+        if (isPlayerBehindMob(mob)) {
+          if (ab.isPowered) {
+            totalBonusDmg += baseDmg; // 2x total (base + bonus = 2x)
+            log('Backstab! Double damage!');
+          } else {
+            totalBonusDmg += baseDmg; // 2x total
+            log('Backstab! Double damage!');
+          }
+        }
+        break;
+
+      case 'arc': {
+        // Chain to adjacent enemies
+        const { player, mobs } = state;
+        const adjMobs = mobs.filter(m =>
+          m !== mob && m.hp > 0 &&
+          dist(mob.x, mob.y, m.x, m.y) === 1
+        );
+        if (adjMobs.length > 0) {
+          if (ab.isPowered) {
+            // Chain to ALL adj, +20% per chain
+            let chainBonus = 0;
+            adjMobs.forEach((am, ci) => {
+              const chainDmg = Math.max(1, Math.floor(baseDmg * (0.5 + 0.2 * ci)));
+              am.hp -= chainDmg;
+              chainBonus++;
+              if (am.hp <= 0) {
+                log(`Arc chains and kills the ${am.name}!`);
+                gainXP(am.xp);
+              } else {
+                log(`Arc chains to ${am.name} for ${chainDmg}.`);
+              }
+            });
+          } else {
+            // Chain to 1 adj for 50%
+            const target = adjMobs[0];
+            const chainDmg = Math.max(1, Math.floor(baseDmg * 0.5));
+            target.hp -= chainDmg;
+            if (target.hp <= 0) {
+              log(`Arc chains and kills the ${target.name}!`);
+              gainXP(target.xp);
+            } else {
+              log(`Arc chains to ${target.name} for ${chainDmg}.`);
+            }
+          }
+        }
+        break;
+      }
+
+      case 'drain':
+        if (ab.isPowered) {
+          // Heal 15% + overheal as shield (not implemented shield yet, just heal more)
+          healAmount += Math.max(1, Math.floor(baseDmg * 0.20));
+          // One-hit kill bonus
+          if (mob.hp - baseDmg <= 0) {
+            healAmount += Math.floor(state.player.maxHp * 0.5);
+            log('Drain: one-hit kill heals 50% max HP!');
+          }
+        } else {
+          // Heal 15% of damage dealt
+          healAmount += Math.max(1, Math.floor(baseDmg * 0.15));
+        }
+        break;
+    }
+  }
+
+  // Apply healing
+  if (healAmount > 0) {
+    state.player.hp = Math.min(state.player.maxHp, state.player.hp + healAmount);
+    log(`Drain heals you for ${healAmount}.`);
+  }
+
+  return totalBonusDmg;
+}
+
+// Apply when-hit effects (called when mob damages the player)
+function applyWhenHitEffects(mob, dmgTaken) {
+  const abilities = getActiveAbilities();
+  state.hitsTakenThisTurn = (state.hitsTakenThisTurn || 0) + 1;
+
+  for (const ab of abilities) {
+    if (ab.id === 'thorns') {
+      const reflected = Math.max(1, Math.floor(dmgTaken * 0.3));
+      mob.hp -= reflected;
+      log(`Thorns reflect ${reflected} damage!`);
+      if (mob.hp <= 0) {
+        log(`Thorns kill the ${mob.name}!`);
+        gainXP(mob.xp);
+      }
+      // Powered: 3+ hits this turn = nova
+      if (ab.isPowered && state.hitsTakenThisTurn >= 3) {
+        const { mobs } = state;
+        const adjMobs = mobs.filter(m =>
+          m.hp > 0 && dist(state.player.x, state.player.y, m.x, m.y) === 1
+        );
+        for (const am of adjMobs) {
+          const novaDmg = Math.max(1, Math.floor(dmgTaken * 0.5));
+          am.hp -= novaDmg;
+          log(`Thorns nova hits ${am.name} for ${novaDmg}!`);
+          if (am.hp <= 0) {
+            log(`Thorns nova kills the ${am.name}!`);
+            gainXP(am.xp);
+          }
+        }
+        state.hitsTakenThisTurn = 0; // Reset after nova
+      }
+    }
+  }
+}
+
+// Apply stat bonuses from tiles to combat calculations
+function getTileStatBonus(statName) {
+  const bonuses = getTileBonuses();
+  return bonuses[statName] || 0;
+}
+
 // SPD combat: hero attacks mob
+state.playerInitiatedAttack = false;
 function attackMob(mob) {
   const { player } = state;
   const weapon = player.weapon;
+  state.playerInitiatedAttack = true;
+
+  // Apply tile stat bonuses to combat
+  const atkBonus = getTileStatBonus('atkSkill');
+  const strBonus = getTileStatBonus('str');
 
   // Hit resolution (from SPD Char.java)
-  // Hero accuracy: attackSkill * weapon.acc (encumbrance not relevant at STR 10 + tier 1)
-  const heroAccuracy = player.atkSkill * (weapon ? weapon.acc : 1);
+  const heroAccuracy = (player.atkSkill + atkBonus) * (weapon ? weapon.acc : 1);
 
   if (!resolveHit(heroAccuracy, mob.defSkill)) {
     log(`You miss the ${mob.name}.`);
+    state.playerInitiatedAttack = false;
     endTurn();
     return;
   }
 
   // Damage roll
-  let dmg = weapon ? weaponDamageRoll(weapon, player.str) : normalIntRange(1, 4);
+  let dmg = weapon ? weaponDamageRoll(weapon, player.str + strBonus) : normalIntRange(1, 4);
 
   // Mob DR
   const mobDR = normalIntRange(0, mob.dr);
   dmg = Math.max(0, dmg - mobDR);
+
+  // Apply on-hit tile abilities (backstab, arc, drain, etc.)
+  const bonusDmg = applyOnHitEffects(mob, dmg);
+  dmg += bonusDmg;
 
   mob.hp -= dmg;
 
@@ -840,6 +1130,7 @@ function attackMob(mob) {
     gainXP(mob.xp);
   }
 
+  state.playerInitiatedAttack = false;
   endTurn();
 }
 
@@ -848,8 +1139,11 @@ function mobAttackHero(mob) {
   const { player } = state;
   const armor = player.armor;
 
+  // Apply tile def bonus
+  const defBonus = getTileStatBonus('defSkill');
+
   // Mob accuracy vs hero evasion
-  if (!resolveHit(mob.atkSkill, player.defSkill)) {
+  if (!resolveHit(mob.atkSkill, player.defSkill + defBonus)) {
     log(`The ${mob.name} misses you.`);
     return;
   }
@@ -866,6 +1160,8 @@ function mobAttackHero(mob) {
 
   if (dmg > 0) {
     log(`The ${mob.name} hits you for ${dmg}!`);
+    // Apply when-hit tile abilities (thorns, etc.)
+    applyWhenHitEffects(mob, dmg);
   } else {
     log(`The ${mob.name} hits you but your armor absorbs it.`);
   }
@@ -890,6 +1186,7 @@ function gainXP(amount) {
 
 function endTurn() {
   state.turn++;
+  state.hitsTakenThisTurn = 0;
   mobTurns();
   updateFOV();
   centerCamera();
@@ -935,6 +1232,9 @@ function mobTurns() {
     setTimeout(() => {
       initPlayer();
       state.depth = 1;
+      state.tileBoard = [null, null, null, null, null, null, null, null, null];
+      state.heldTile = null;
+      state.selectedBoardSlot = null;
       document.getElementById('depth-label').textContent = 'Depth 1';
       generateLevel();
       render();
@@ -976,6 +1276,16 @@ function updateUI() {
   const aName = player.armor ? player.armor.name : 'None';
   const equipLabel = document.getElementById('equip-label');
   equipLabel.textContent = `STR:${player.str} Lv${player.level} | ${wName} | ${aName}`;
+
+  // Held tile indicator
+  const heldEl = document.getElementById('held-tile');
+  if (state.heldTile) {
+    heldEl.classList.add('has-tile');
+    heldEl.querySelector('.held-icon').textContent = state.heldTile.icon;
+    heldEl.querySelector('.held-name').textContent = state.heldTile.name;
+  } else {
+    heldEl.classList.remove('has-tile');
+  }
 
   // Refresh panel if open
   if (panelOpen) updatePanelContents();
@@ -1306,6 +1616,23 @@ function render() {
     }
   }
 
+  // Floor items (tile drops)
+  for (const item of state.floorItems) {
+    if (!visible[idx(item.x, item.y)]) continue;
+    const screenX = Math.floor(item.x * tileSize - camera.x);
+    const screenY = Math.floor(item.y * tileSize - camera.y);
+    // Pulsing glow background
+    const pulse = 0.5 + 0.3 * Math.sin(Date.now() / 500);
+    ctx.fillStyle = `rgba(100,180,255,${pulse * 0.3})`;
+    ctx.fillRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
+    // Tile icon
+    ctx.fillStyle = '#8cf';
+    ctx.font = `bold ${Math.floor(tileSize * 0.55)}px monospace`;
+    ctx.textAlign = 'center';
+    ctx.textBaseline = 'middle';
+    ctx.fillText(item.tile.icon, screenX + tileSize / 2, screenY + tileSize / 2);
+  }
+
   // Mobs
   for (const mob of mobs) {
     if (mob.hp <= 0 || !visible[idx(mob.x, mob.y)]) continue;
@@ -1365,12 +1692,307 @@ function render() {
 }
 
 // ============================================================
-// TILE BOARD STATE
+// TILE ABILITY DEFINITIONS
+// Each ability has: id, name, archetype, type, cooldown (if active),
+// unpowered/powered descriptions, and an icon character
+// ============================================================
+
+const TILE_ABILITIES = [
+  // --- SHADOW ---
+  { id: 'blink', name: 'Blink', archetype: 'SHADOW', type: 'active', cooldown: 5,
+    unpowered: { desc: 'Teleport to visible tile within 3', fn: 'blink_unpowered' },
+    powered: { desc: 'Teleport leaves stun trap at origin', fn: 'blink_powered' },
+    icon: '\u26A1', strength: 7 },
+  { id: 'backstab', name: 'Backstab', archetype: 'SHADOW', type: 'passive',
+    unpowered: { desc: '2x damage from behind', fn: 'backstab_unpowered' },
+    powered: { desc: 'Kill from behind = invis + free move', fn: 'backstab_powered' },
+    icon: '\u2694', strength: 6 },
+  { id: 'smoke', name: 'Smoke', archetype: 'SHADOW', type: 'active', cooldown: 8,
+    unpowered: { desc: 'Invisible for 2 turns', fn: 'smoke_unpowered' },
+    powered: { desc: '3x3 smoke cloud, CD reduced to 6', fn: 'smoke_powered' },
+    icon: '\u2601', strength: 7 },
+  // --- STORM ---
+  { id: 'arc', name: 'Arc', archetype: 'STORM', type: 'passive',
+    unpowered: { desc: 'Attacks chain to 1 adj enemy 50% dmg', fn: 'arc_unpowered' },
+    powered: { desc: 'Chains to ALL adj, +20% per chain', fn: 'arc_powered' },
+    icon: '\u2607', strength: 6 },
+  { id: 'shockwave', name: 'Shockwave', archetype: 'STORM', type: 'active', cooldown: 6,
+    unpowered: { desc: 'Push all adj enemies 1 tile', fn: 'shockwave_unpowered' },
+    powered: { desc: 'Push 2, wall stun, CD reduced to 4', fn: 'shockwave_powered' },
+    icon: '\u2727', strength: 5 },
+  { id: 'ricochet', name: 'Ricochet', archetype: 'STORM', type: 'passive',
+    unpowered: { desc: 'Missed attacks bounce off walls', fn: 'ricochet_unpowered' },
+    powered: { desc: 'ALL attacks bounce 3x off walls', fn: 'ricochet_powered' },
+    icon: '\u2B29', strength: 7 },
+  { id: 'detonate', name: 'Detonate', archetype: 'STORM', type: 'passive',
+    unpowered: { desc: 'Attacks apply Marks, explode after 3t', fn: 'detonate_unpowered' },
+    powered: { desc: 'Explosions spread Marks within 2 tiles', fn: 'detonate_powered' },
+    icon: '\u2738', strength: 8 },
+  // --- IRON ---
+  { id: 'thorns', name: 'Thorns', archetype: 'IRON', type: 'passive',
+    unpowered: { desc: 'Melee attackers take 30% reflected', fn: 'thorns_unpowered' },
+    powered: { desc: '3+ hits/turn = thorns nova on adj', fn: 'thorns_powered' },
+    icon: '\u2666', strength: 5 },
+  { id: 'fortify', name: 'Fortify', archetype: 'IRON', type: 'passive',
+    unpowered: { desc: '-25% dmg, immune to knockback', fn: 'fortify_unpowered' },
+    powered: { desc: 'Melee attackers get weapon stuck', fn: 'fortify_powered' },
+    icon: '\u2616', strength: 6 },
+  { id: 'barricade', name: 'Barricade', archetype: 'IRON', type: 'active', cooldown: 4,
+    unpowered: { desc: 'Place 1-tile wall on adj empty', fn: 'barricade_unpowered' },
+    powered: { desc: 'L-shaped wall, elemental, CD 3', fn: 'barricade_powered' },
+    icon: '\u2588', strength: 6 },
+  // --- BLOOD ---
+  { id: 'frenzy', name: 'Frenzy', archetype: 'BLOOD', type: 'passive',
+    unpowered: { desc: 'Rage meter: +60% dmg -30% def 3t', fn: 'frenzy_unpowered' },
+    powered: { desc: 'Kills extend, heal 10%, Hyper at 5', fn: 'frenzy_powered' },
+    icon: '\u2620', strength: 8 },
+  { id: 'drain', name: 'Drain', archetype: 'BLOOD', type: 'passive',
+    unpowered: { desc: 'Heal 15% of damage dealt', fn: 'drain_unpowered' },
+    powered: { desc: 'Overheal = shield, 1-hit kills heal 50%', fn: 'drain_powered' },
+    icon: '\u2764', strength: 6 },
+  { id: 'venom', name: 'Venom', archetype: 'BLOOD', type: 'passive',
+    unpowered: { desc: 'Attacks apply 2 poison (1dmg/stack/t)', fn: 'venom_unpowered' },
+    powered: { desc: 'No decay, Slow at 10+, Catalyst 1/flr', fn: 'venom_powered' },
+    icon: '\u2623', strength: 7 },
+  { id: 'curse_eater', name: 'Curse Eater', archetype: 'BLOOD', type: 'passive',
+    unpowered: { desc: 'Absorb debuffs: +15% dmg, -5% HP/t', fn: 'curse_eater_unpowered' },
+    powered: { desc: 'Purge all curses as room-wide AoE', fn: 'curse_eater_powered' },
+    icon: '\u2609', strength: 8 },
+  // --- FROST ---
+  { id: 'chill', name: 'Chill', archetype: 'FROST', type: 'passive',
+    unpowered: { desc: '1 Chill/hit, 3 stacks = Frozen 1t', fn: 'chill_unpowered' },
+    powered: { desc: '3x3 frost zone, frozen shatter AoE', fn: 'chill_powered' },
+    icon: '\u2744', strength: 6 },
+  { id: 'gravity', name: 'Gravity', archetype: 'FROST', type: 'active', cooldown: 8,
+    unpowered: { desc: 'Gravity well pulls enemies 2 tiles 3t', fn: 'gravity_unpowered' },
+    powered: { desc: '4-tile pull, crushes center, CD 6', fn: 'gravity_powered' },
+    icon: '\u29BF', strength: 7 },
+  { id: 'snare', name: 'Snare', archetype: 'FROST', type: 'active', cooldown: 6,
+    unpowered: { desc: 'Stun 1 enemy for 1 turn', fn: 'snare_unpowered' },
+    powered: { desc: '2-radius time bubble, freeze 2t, CD 4', fn: 'snare_powered' },
+    icon: '\u231B', strength: 6 },
+  // --- SPIRIT ---
+  { id: 'ghost', name: 'Ghost', archetype: 'SPIRIT', type: 'passive',
+    unpowered: { desc: 'Kills leave ghosts that block + dmg', fn: 'ghost_unpowered' },
+    powered: { desc: 'Ghosts fight at 50% stats, 3+ = barrier', fn: 'ghost_powered' },
+    icon: '\u2622', strength: 7 },
+  { id: 'puppet', name: 'Puppet', archetype: 'SPIRIT', type: 'active', cooldown: 10,
+    unpowered: { desc: 'Confuse enemy 2t (random attacks)', fn: 'puppet_unpowered' },
+    powered: { desc: 'Dominate 3t, kills extend, CD 8', fn: 'puppet_powered' },
+    icon: '\u2639', strength: 8 },
+  { id: 'mimic', name: 'Mimic', archetype: 'SPIRIT', type: 'passive',
+    unpowered: { desc: '25% to learn enemy ability on kill', fn: 'mimic_unpowered' },
+    powered: { desc: '50%, hold 2 stolen, +25% stolen dmg', fn: 'mimic_powered' },
+    icon: '\u2687', strength: 9 },
+];
+
+// Stat/utility abilities (work globally, not position-dependent)
+const STAT_ABILITIES = [
+  { id: 'str_boost', name: 'Might', type: 'stat',
+    unpowered: { desc: '+1 STR', stat: 'str', value: 1 },
+    powered: { desc: '+2 STR total', stat: 'str', value: 2 },
+    icon: '\u2660', strength: 3 },
+  { id: 'atk_boost', name: 'Precision', type: 'stat',
+    unpowered: { desc: '+1 ATK skill', stat: 'atkSkill', value: 1 },
+    powered: { desc: '+2 ATK skill total', stat: 'atkSkill', value: 2 },
+    icon: '\u2720', strength: 3 },
+  { id: 'def_boost', name: 'Endurance', type: 'stat',
+    unpowered: { desc: '+1 DEF skill', stat: 'defSkill', value: 1 },
+    powered: { desc: '+2 DEF skill total', stat: 'defSkill', value: 2 },
+    icon: '\u2742', strength: 3 },
+  { id: 'quicken', name: 'Quicken', type: 'utility',
+    unpowered: { desc: 'All cooldowns -25%', cdReduction: 0.25 },
+    powered: { desc: 'All cooldowns -40%', cdReduction: 0.40 },
+    icon: '\u23F1', strength: 5 },
+];
+
+// Duo combos — unlocked when two specific tiles are connected via connectors
+const DUO_COMBOS = [
+  { a: 'blink', b: 'arc', name: 'Thunder Step', desc: 'Teleport fires chain lightning at origin' },
+  { a: 'backstab', b: 'ghost', name: 'Ghost Blade', desc: 'Backstab kills spawn ghosts that backstab enemies' },
+  { a: 'shockwave', b: 'chill', name: 'Shatter Strike', desc: 'Push frozen enemy = 3x dmg + ice shards AoE' },
+  { a: 'thorns', b: 'venom', name: 'Poison Thorns', desc: 'Reflected thorn damage applies venom stacks' },
+  { a: 'frenzy', b: 'fortify', name: 'Juggernaut', desc: 'Frenzied: charge through enemies damaging all in path' },
+  { a: 'gravity', b: 'detonate', name: 'Implosion', desc: 'Gravity well detonates all Marks on pulled enemies' },
+  { a: 'smoke', b: 'drain', name: 'Phantom Drain', desc: 'Invisible attacks drain 2x HP, stay invisible 1 extra hit' },
+  { a: 'puppet', b: 'chill', name: 'Mass Hysteria', desc: 'Confused enemies also terrified, attack each other + flee' },
+  { a: 'barricade', b: 'ricochet', name: 'Killbox', desc: 'Your walls become ricochet surfaces for attacks' },
+  { a: 'curse_eater', b: 'mimic', name: 'Dark Apotheosis', desc: 'Steal ability + debuffs, each debuff +30% stolen ability' },
+  { a: 'ghost', b: 'detonate', name: 'Spectral Bomb', desc: 'Ghosts carry Marks, detonate on expire' },
+  { a: 'blink', b: 'chill', name: 'Frost Flash', desc: 'Teleport leaves frost zones at origin and destination' },
+  { a: 'venom', b: 'arc', name: 'Plague Lightning', desc: 'Chain lightning spreads venom stacks to all targets' },
+  { a: 'drain', b: 'frenzy', name: 'Blood Frenzy', desc: 'Lifesteal scales with frenzy damage bonus' },
+];
+
+// ============================================================
+// TILE GENERATION SYSTEM
+// Scoring function determines rarity. Higher score = rarer drop.
+// ============================================================
+
+// All abilities combined for random selection
+const ALL_ABILITIES = [...TILE_ABILITIES, ...STAT_ABILITIES];
+
+// Generate a tile instance with random connectors
+function generateTile(depthBonus = 0) {
+  // Pick ability: 75% chance combat ability, 25% stat/utility
+  const pool = Math.random() < 0.75 ? TILE_ABILITIES : STAT_ABILITIES;
+  const ability = pool[Math.floor(Math.random() * pool.length)];
+
+  // Generate connectors: 0-4 sides (top=0, right=1, bottom=2, left=3)
+  // More connectors are rarer via weighted roll
+  const connectorCount = rollConnectorCount();
+  const connectors = [false, false, false, false]; // [top, right, bottom, left]
+  const sides = [0, 1, 2, 3];
+  // Shuffle and pick
+  for (let i = sides.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [sides[i], sides[j]] = [sides[j], sides[i]];
+  }
+  for (let i = 0; i < connectorCount; i++) {
+    connectors[sides[i]] = true;
+  }
+
+  const tile = {
+    abilityId: ability.id,
+    name: ability.name,
+    archetype: ability.archetype || null,
+    type: ability.type,
+    icon: ability.icon,
+    connectors,
+    cooldown: ability.cooldown || 0,
+    cooldownTimer: 0,
+    unpowered: ability.unpowered,
+    powered: ability.powered,
+    strength: ability.strength,
+  };
+
+  tile.score = scoreTile(tile);
+  return tile;
+}
+
+// Weighted connector count: 0=10%, 1=35%, 2=30%, 3=18%, 4=7%
+function rollConnectorCount() {
+  const r = Math.random();
+  if (r < 0.10) return 0;
+  if (r < 0.45) return 1;
+  if (r < 0.75) return 2;
+  if (r < 0.93) return 3;
+  return 4;
+}
+
+// Score a tile for rarity: higher = rarer
+function scoreTile(tile) {
+  let score = tile.strength || 5;
+  // Connector bonus: each connector adds value
+  const connCount = tile.connectors.filter(c => c).length;
+  score += connCount * 1.5;
+  return score;
+}
+
+// Should this tile drop? Based on score vs depth
+// Higher score tiles only start appearing at deeper depths
+function shouldDropTile(depth) {
+  // Base chance: 40% per floor, increasing slightly with depth
+  const chance = 0.40 + depth * 0.02;
+  return Math.random() < chance;
+}
+
+// ============================================================
+// TILE BOARD STATE & LOGIC
 // ============================================================
 
 // 3x3 board — each slot is null or a tile object
-// Tile objects will be: { id, name, icon, unpowered, powered, connectors: [N,E,S,W], rotation }
 state.tileBoard = [null, null, null, null, null, null, null, null, null];
+state.heldTile = null; // tile picked up but not yet placed
+
+// Check if two board slots are adjacent
+function areBoardAdjacent(slotA, slotB) {
+  const rowA = Math.floor(slotA / 3), colA = slotA % 3;
+  const rowB = Math.floor(slotB / 3), colB = slotB % 3;
+  return (Math.abs(rowA - rowB) + Math.abs(colA - colB)) === 1;
+}
+
+// Get the shared edge direction from slotA to slotB
+// Returns: 0=top, 1=right, 2=bottom, 3=left, or -1 if not adjacent
+function sharedEdge(slotA, slotB) {
+  const rowA = Math.floor(slotA / 3), colA = slotA % 3;
+  const rowB = Math.floor(slotB / 3), colB = slotB % 3;
+  if (rowB === rowA - 1 && colB === colA) return 0; // B is above A → top
+  if (rowB === rowA + 1 && colB === colA) return 2; // B is below A → bottom
+  if (colB === colA + 1 && rowB === rowA) return 1; // B is right of A → right
+  if (colB === colA - 1 && rowB === rowA) return 3; // B is left of A → left
+  return -1;
+}
+
+// Opposite edge: top↔bottom, right↔left
+function oppositeEdge(edge) {
+  return [2, 3, 0, 1][edge];
+}
+
+// Check if two tiles in given slots are connected via connectors
+function areTilesConnected(slotA, slotB) {
+  const tileA = state.tileBoard[slotA];
+  const tileB = state.tileBoard[slotB];
+  if (!tileA || !tileB) return false;
+  const edge = sharedEdge(slotA, slotB);
+  if (edge === -1) return false;
+  return tileA.connectors[edge] && tileB.connectors[oppositeEdge(edge)];
+}
+
+// Get all connections for a tile in a given slot
+function getConnections(slot) {
+  const connections = [];
+  const row = Math.floor(slot / 3), col = slot % 3;
+  const neighbors = [];
+  if (row > 0) neighbors.push(slot - 3); // top
+  if (col < 2) neighbors.push(slot + 1); // right
+  if (row < 2) neighbors.push(slot + 3); // bottom
+  if (col > 0) neighbors.push(slot - 1); // left
+  for (const n of neighbors) {
+    if (areTilesConnected(slot, n)) connections.push(n);
+  }
+  return connections;
+}
+
+// Check for active duo combos on the board
+function getActiveDuoCombos() {
+  const combos = [];
+  for (const duo of DUO_COMBOS) {
+    // Find all slots containing each tile of the duo
+    for (let i = 0; i < 9; i++) {
+      if (!state.tileBoard[i] || state.tileBoard[i].abilityId !== duo.a) continue;
+      for (let j = 0; j < 9; j++) {
+        if (i === j) continue;
+        if (!state.tileBoard[j] || state.tileBoard[j].abilityId !== duo.b) continue;
+        if (areTilesConnected(i, j)) {
+          combos.push({ ...duo, slotA: i, slotB: j });
+        }
+      }
+    }
+  }
+  return combos;
+}
+
+// Calculate total stat bonuses from all placed tiles
+function getTileBonuses() {
+  const bonuses = { str: 0, atkSkill: 0, defSkill: 0, cdReduction: 0 };
+  for (let i = 0; i < 9; i++) {
+    const tile = state.tileBoard[i];
+    if (!tile) continue;
+    const isPowered = getConnections(i).length > 0;
+    const effect = isPowered ? tile.powered : tile.unpowered;
+    if (tile.type === 'stat' && effect.stat) {
+      bonuses[effect.stat] += effect.value;
+    }
+    if (tile.type === 'utility' && effect.cdReduction) {
+      bonuses.cdReduction = Math.min(0.75, bonuses.cdReduction + effect.cdReduction);
+    }
+  }
+  return bonuses;
+}
+
+// Items on the dungeon floor (tile drops)
+state.floorItems = [];
 
 // ============================================================
 // PANEL UI
@@ -1415,6 +2037,14 @@ tileBoardBtn.addEventListener('pointerdown', (e) => {
   if (panelOpen) closePanel(); else openPanel();
 });
 
+// Tapping held tile indicator opens board tab directly
+document.getElementById('held-tile').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  openPanel();
+  switchTab('board');
+});
+
 panelClose.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
   closePanel();
@@ -1423,6 +2053,29 @@ panelClose.addEventListener('pointerdown', (e) => {
 // Close on overlay background tap
 panelOverlay.addEventListener('pointerdown', (e) => {
   if (e.target === panelOverlay) closePanel();
+});
+
+// Board cell interaction: place tiles or inspect
+state.selectedBoardSlot = null;
+document.querySelector('.tile-board-grid').addEventListener('pointerdown', (e) => {
+  const cell = e.target.closest('.board-cell');
+  if (!cell) return;
+  e.stopPropagation();
+  const slot = parseInt(cell.dataset.slot);
+  if (isNaN(slot)) return;
+
+  if (!state.tileBoard[slot] && state.heldTile) {
+    // Place held tile into empty slot
+    state.tileBoard[slot] = state.heldTile;
+    state.heldTile = null;
+    state.selectedBoardSlot = slot;
+    log(`Placed ${state.tileBoard[slot].name} in slot ${slot + 1}.`);
+    updateUI();
+  } else if (state.tileBoard[slot]) {
+    // Tap filled slot to inspect
+    state.selectedBoardSlot = (state.selectedBoardSlot === slot) ? null : slot;
+    updatePanelContents();
+  }
 });
 
 function updatePanelContents() {
@@ -1462,26 +2115,126 @@ function updatePanelContents() {
   const cells = document.querySelectorAll('.board-cell');
   const board = state.tileBoard;
   let filledCount = 0;
+  const edgeNames = ['top', 'right', 'bottom', 'left'];
 
   cells.forEach((cell, i) => {
     const tile = board[i];
+    cell.classList.remove('filled', 'powered', 'placeable');
+
     if (tile) {
-      cell.classList.add('filled');
-      cell.innerHTML = `<span class="cell-label">${i + 1}</span>${tile.icon || '?'}`;
       filledCount++;
+      const connections = getConnections(i);
+      const isPowered = connections.length > 0;
+
+      cell.classList.add('filled');
+      if (isPowered) cell.classList.add('powered');
+
+      // Build cell HTML with connectors
+      let html = `<span class="cell-label">${i + 1}</span>`;
+      html += tile.icon || '?';
+      html += `<span class="cell-name">${tile.name}</span>`;
+
+      // Show connector dots
+      for (let e = 0; e < 4; e++) {
+        if (tile.connectors[e]) {
+          // Check if this connector is actually connected to a neighbor
+          const neighborSlots = { 0: i - 3, 1: i + 1, 2: i + 3, 3: i - 1 };
+          const nSlot = neighborSlots[e];
+          const nTile = (nSlot >= 0 && nSlot < 9) ? board[nSlot] : null;
+          // Check bounds: right edge can't connect right, etc.
+          const col = i % 3, row = Math.floor(i / 3);
+          let valid = true;
+          if (e === 0 && row === 0) valid = false;
+          if (e === 1 && col === 2) valid = false;
+          if (e === 2 && row === 2) valid = false;
+          if (e === 3 && col === 0) valid = false;
+
+          const isConn = valid && nTile && nTile.connectors[oppositeEdge(e)];
+          html += `<span class="connector ${edgeNames[e]} active${isConn ? ' connected' : ''}"></span>`;
+        }
+      }
+      cell.innerHTML = html;
     } else {
-      cell.classList.remove('filled');
-      cell.innerHTML = `<span class="cell-label">${i + 1}</span>\u00B7`;
+      // Empty slot — show as placeable if player has a held tile
+      if (state.heldTile) {
+        cell.classList.add('placeable');
+        cell.innerHTML = `<span class="cell-label">${i + 1}</span>+`;
+      } else {
+        cell.innerHTML = `<span class="cell-label">${i + 1}</span>\u00B7`;
+      }
     }
   });
 
+  // Status text
   const statusEl = document.querySelector('.board-status');
-  if (filledCount === 0) {
+  if (filledCount === 0 && !state.heldTile) {
     statusEl.textContent = 'No tiles placed yet. Find tiles in the dungeon.';
   } else if (filledCount === 9) {
     statusEl.textContent = 'Board complete!';
+  } else if (state.heldTile) {
+    statusEl.textContent = `${filledCount}/9 placed. Tap an empty slot to place tile.`;
   } else {
     statusEl.textContent = `${filledCount}/9 tiles placed.`;
+  }
+
+  // Held tile preview
+  let detailEl = document.querySelector('#tab-board .held-preview');
+  if (state.heldTile) {
+    if (!detailEl) {
+      detailEl = document.createElement('div');
+      detailEl.className = 'held-preview';
+      document.getElementById('tab-board').appendChild(detailEl);
+    }
+    const t = state.heldTile;
+    const connNames = edgeNames.filter((_, e) => t.connectors[e]);
+    detailEl.innerHTML = `
+      <div class="hp-label">${t.icon} ${t.name} <span style="color:#668;font-weight:normal;font-size:10px">${t.archetype || t.type}</span></div>
+      <div class="hp-ability">${t.unpowered.desc}</div>
+      <div style="color:#4af;font-size:10px">Powered: ${t.powered.desc}</div>
+      <div class="hp-connectors">Connectors: ${connNames.length ? connNames.join(', ') : 'none'}</div>
+    `;
+  } else if (detailEl) {
+    detailEl.remove();
+  }
+
+  // Selected tile detail (if tapping a filled cell)
+  let selDetail = document.querySelector('#tab-board .tile-detail');
+  if (state.selectedBoardSlot !== undefined && state.selectedBoardSlot !== null) {
+    const st = board[state.selectedBoardSlot];
+    if (st) {
+      if (!selDetail) {
+        selDetail = document.createElement('div');
+        selDetail.className = 'tile-detail';
+        document.getElementById('tab-board').appendChild(selDetail);
+      }
+      const connections = getConnections(state.selectedBoardSlot);
+      const isPowered = connections.length > 0;
+      let html = `<div class="td-name">${st.icon} ${st.name}</div>`;
+      html += `<div class="td-type">${st.archetype || st.type}${st.cooldown ? ` \u2022 CD: ${st.cooldown}t` : ''}</div>`;
+      html += `<div class="td-ability">${st.unpowered.desc}</div>`;
+      if (isPowered) {
+        html += `<div class="td-powered">\u26A1 ${st.powered.desc}</div>`;
+      } else {
+        html += `<div style="color:#555;font-size:10px">Connect to power up: ${st.powered.desc}</div>`;
+      }
+      // Check for duo combos involving this tile
+      const duos = getActiveDuoCombos().filter(d => d.slotA === state.selectedBoardSlot || d.slotB === state.selectedBoardSlot);
+      for (const d of duos) {
+        html += `<div class="td-duo">\u2728 ${d.name}: ${d.desc}</div>`;
+      }
+      selDetail.innerHTML = html;
+    } else if (selDetail) {
+      selDetail.remove();
+    }
+  } else if (selDetail) {
+    selDetail.remove();
+  }
+
+  // Show active duo combos in status
+  const duos = getActiveDuoCombos();
+  if (duos.length > 0) {
+    const duoEl = document.querySelector('.board-status');
+    duoEl.textContent += ` ${duos.length} duo combo${duos.length > 1 ? 's' : ''} active!`;
   }
 }
 
@@ -1509,12 +2262,22 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
+// Animation loop for floor item glow pulse
+let animating = false;
+function animLoop() {
+  if (state.floorItems.length > 0) {
+    render();
+  }
+  requestAnimationFrame(animLoop);
+}
+
 initPlayer();
 loadSprites(() => {
   buildTileAtlas();
   generateLevel();
   render();
   log('Tap to move. Tap enemies to attack.');
+  animLoop();
 });
 
 </script>
