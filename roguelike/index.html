@@ -678,20 +678,28 @@ function generateLevel() {
     }
   }
 
-  // Spawn tile drops in rooms (1-2 per level, not in entrance room)
+  // Spawn tile drops in rooms (2-3 per level for playtesting, not in entrance room)
   state.floorItems = [];
-  const tileDropCount = rng(1, 2);
-  let dropsPlaced = 0;
-  for (let ri = 1; ri < rooms.length && dropsPlaced < tileDropCount; ri++) {
-    if (Math.random() < 0.5 && ri < rooms.length - 1) continue; // skip some rooms
+  const tileDropCount = rng(2, 3);
+  const validDropPositions = [];
+  for (let ri = 1; ri < rooms.length; ri++) {
     const r = rooms[ri];
-    const fx = rng(r.x + 1, r.x + r.w - 2);
-    const fy = rng(r.y + 1, r.y + r.h - 2);
-    if (PASSABLE.has(map[idx(fx, fy)]) && !(fx === exit.cx && fy === exit.cy)) {
-      const tile = generateTile(state.depth);
-      state.floorItems.push({ x: fx, y: fy, type: 'tile', tile });
-      dropsPlaced++;
+    for (let dx = r.x + 1; dx <= r.x + r.w - 2; dx++) {
+      for (let dy = r.y + 1; dy <= r.y + r.h - 2; dy++) {
+        if (PASSABLE.has(map[idx(dx, dy)]) && !(dx === exit.cx && dy === exit.cy)) {
+          validDropPositions.push({ x: dx, y: dy });
+        }
+      }
     }
+  }
+  for (let i = validDropPositions.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [validDropPositions[i], validDropPositions[j]] = [validDropPositions[j], validDropPositions[i]];
+  }
+  for (let i = 0; i < Math.min(tileDropCount, validDropPositions.length); i++) {
+    const pos = validDropPositions[i];
+    const tile = generateTile(state.depth);
+    state.floorItems.push({ x: pos.x, y: pos.y, type: 'tile', tile });
   }
 
   state.rooms = rooms;
