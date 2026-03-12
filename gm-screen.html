@@ -181,17 +181,34 @@
   hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
 
   /* ===== NPC GRID ===== */
-  .npc-row {
-    display: grid;
-    grid-template-columns: 80px 80px 1fr;
-    gap: 8px;
-    padding: 4px 0;
-    border-bottom: 1px solid rgba(255,255,255,0.03);
+  .npc-card {
+    padding: 8px 0;
+    border-bottom: 1px solid rgba(255,255,255,0.05);
     font-size: 12px;
   }
-  .npc-row:last-child { border-bottom: none; }
+  .npc-card:last-child { border-bottom: none; }
+  .npc-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 3px;
+  }
   .npc-name { color: var(--cyan); font-weight: bold; }
-  .npc-loc { color: var(--dim); }
+  .npc-loc { color: var(--dim); font-size: 11px; }
+  .npc-role { color: var(--text); font-size: 12px; margin-bottom: 3px; }
+  .npc-vibe {
+    font-size: 11px;
+    color: var(--amber);
+    font-style: italic;
+    margin-bottom: 2px;
+  }
+  .npc-quote {
+    font-size: 11px;
+    color: var(--dim);
+    font-style: italic;
+    padding-left: 10px;
+    border-left: 2px solid var(--border);
+  }
 
   /* ===== ENVIRONMENT CARDS ===== */
   .env-card {
@@ -506,16 +523,41 @@
         NPCs <span class="chevron">&#9660;</span>
       </div>
       <div class="panel-body">
-        <div class="npc-row"><span class="npc-name">Valdez</span><span class="npc-loc">Chimney</span><span>Sgt. Allied. Medkit. Reactor protocol.</span></div>
-        <div class="npc-row"><span class="npc-name">Dr. Edem</span><span class="npc-loc">Lab</span><span>Cure data. <span class="red">Shaw's target.</span> Acid kills carcinids.</span></div>
-        <div class="npc-row"><span class="npc-name">Shaw</span><span class="npc-loc">Lab</span><span class="amber">Company programmed. Trigger = cure.</span></div>
-        <div class="npc-row"><span class="npc-name">Franco</span><span class="npc-loc">Reactor</span><span>Hinton reveal: "It was Hinton all along."</span></div>
-        <div class="npc-row"><span class="npc-name">Maas</span><span class="npc-loc">Ship</span><span><span class="red">INFECTED.</span> Save for Scenario 4.</span></div>
+        <div class="npc-card">
+          <div class="npc-header"><span class="npc-name">Sgt. Valdez</span><span class="npc-loc">Chimney</span></div>
+          <div class="npc-role">Allied marine. Medkit. Knows reactor med unit protocol.</div>
+          <div class="npc-vibe">Capable, blunt, protective. The sergeant who gets it done.</div>
+          <div class="npc-quote">"Stay tight, stay quiet, follow me."</div>
+        </div>
+        <div class="npc-card">
+          <div class="npc-header"><span class="npc-name">Dr. Edem</span><span class="npc-loc">Lab</span></div>
+          <div class="npc-role">Cure data. <span class="red">Shaw's target.</span> Acid kills carcinids.</div>
+          <div class="npc-vibe">Precise, fascinated, earnest. Academic calm masking terror.</div>
+          <div class="npc-quote">"The krebslieder — it's how they reproduce. Through sound."</div>
+        </div>
+        <div class="npc-card">
+          <div class="npc-header"><span class="npc-name">Shaw</span><span class="npc-loc">Lab</span></div>
+          <div class="npc-role"><span class="amber">Company android. Trigger = Edem reveals cure.</span></div>
+          <div class="npc-vibe">Still, watchful, unnervingly calm. Android flatness.</div>
+          <div class="npc-quote">"I suggest you leave now."</div>
+        </div>
+        <div class="npc-card">
+          <div class="npc-header"><span class="npc-name">Franco</span><span class="npc-loc">Reactor</span></div>
+          <div class="npc-role"><span class="red">Found mid-process.</span> Cocooned in organic matter on the mother. Still alive, barely.</div>
+          <div class="npc-vibe">Traumatized, half-conscious. The horror is recognising him.</div>
+          <div class="npc-quote">(Mumbling, incoherent — just his name, rank, over and over)</div>
+        </div>
+        <div class="npc-card">
+          <div class="npc-header"><span class="npc-name">Maas</span><span class="npc-loc">Ship</span></div>
+          <div class="npc-role"><span class="red">INFECTED.</span> Save for Scenario 4.</div>
+          <div class="npc-vibe">Slimy, evasive, corporate. The worst manager you've ever met.</div>
+          <div class="npc-quote">"Dr. Edem and Hinton are the priority. Everything else is secondary."</div>
+        </div>
         <hr>
         <div class="section-label" style="color:var(--amber)">Not revealing yet</div>
         <ul>
-          <li>Hinton saboteur — Franco delivers at reactor</li>
-          <li>Full Company conspiracy — breadcrumbs via Shaw</li>
+          <li>Hinton saboteur — save for NEXT scenario (Franco can't talk)</li>
+          <li>Full Company conspiracy — breadcrumbs via Shaw only</li>
           <li>Maas infection — Scenario 4</li>
           <li>Hive coordination — show, don't confirm</li>
         </ul>
