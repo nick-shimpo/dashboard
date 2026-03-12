@@ -12,7 +12,6 @@
     --surface: #0c0e12;
     --panel: #10131a;
     --border: #1a2332;
-    --border-hi: #253448;
     --text: #c0c8d4;
     --dim: #506070;
     --bright: #e8f0f8;
@@ -34,26 +33,26 @@
     background: var(--bg);
     color: var(--text);
     font-family: 'Share Tech Mono', 'Courier New', monospace;
-    font-size: 13px;
-    line-height: 1.5;
+    font-size: 16px;
+    line-height: 1.6;
     overflow-x: hidden;
   }
 
-  /* Scanlines overlay */
+  /* Scanlines */
   body::after {
     content: '';
     position: fixed;
     top: 0; left: 0; right: 0; bottom: 0;
-    background: repeating-linear-gradient(0deg, transparent, transparent 2px, rgba(255,255,255,0.008) 2px, rgba(255,255,255,0.008) 4px);
+    background: repeating-linear-gradient(0deg, transparent, transparent 3px, rgba(255,255,255,0.006) 3px, rgba(255,255,255,0.006) 6px);
     pointer-events: none;
     z-index: 9999;
   }
 
   /* ===== HEADER ===== */
-  .dashboard-header {
+  .header {
     background: var(--surface);
     border-bottom: 2px solid var(--red);
-    padding: 12px 24px;
+    padding: 14px 28px;
     display: flex;
     justify-content: space-between;
     align-items: center;
@@ -61,54 +60,83 @@
     top: 0;
     z-index: 100;
   }
-  .dashboard-header h1 {
+  .header h1 {
     font-family: 'Orbitron', sans-serif;
     font-weight: 900;
-    font-size: 18px;
+    font-size: 20px;
     color: var(--red);
     text-transform: uppercase;
     letter-spacing: 3px;
   }
-  .dashboard-header .subtitle {
-    font-size: 11px;
+  .header .sub {
+    font-size: 13px;
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 2px;
   }
-  .header-right {
-    display: flex;
-    gap: 16px;
-    align-items: center;
-  }
   .clock {
     font-family: 'Orbitron', sans-serif;
-    font-size: 14px;
+    font-size: 16px;
     color: var(--amber);
   }
 
-  /* ===== MAIN LAYOUT ===== */
-  .dashboard {
+  /* ===== TWO-COLUMN LAYOUT ===== */
+  .layout {
     display: grid;
-    grid-template-columns: 1fr 1fr 340px;
-    gap: 8px;
-    padding: 8px;
-    min-height: calc(100vh - 50px);
+    grid-template-columns: 1fr 380px;
+    min-height: calc(100vh - 54px);
   }
+
+  /* Left: scrollable content */
+  .main {
+    padding: 20px 28px;
+    overflow-y: auto;
+  }
+
+  /* Right: sticky improv sidebar */
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    padding: 16px;
+    position: sticky;
+    top: 54px;
+    height: calc(100vh - 54px);
+    overflow-y: auto;
+  }
+
+  /* ===== TIER LABELS ===== */
+  .tier {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+    color: var(--dim);
+    margin: 40px 0 16px 0;
+    padding-bottom: 8px;
+    border-bottom: 1px solid var(--border);
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .tier:first-child { margin-top: 0; }
+  .tier .line { flex: 1; height: 1px; background: var(--border); }
 
   /* ===== PANELS ===== */
   .panel {
     background: var(--panel);
     border: 1px solid var(--border);
-    border-radius: 2px;
+    border-radius: 3px;
+    margin-bottom: 12px;
     overflow: hidden;
   }
   .panel-header {
     font-family: 'Orbitron', sans-serif;
     font-weight: 700;
-    font-size: 11px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 2px;
-    padding: 10px 14px;
+    padding: 12px 18px;
     border-bottom: 1px solid var(--border);
     cursor: pointer;
     display: flex;
@@ -118,14 +146,14 @@
     transition: background 0.15s;
   }
   .panel-header:hover { background: rgba(255,255,255,0.02); }
-  .panel-header .chevron {
-    font-size: 10px;
+  .panel-header .chev {
+    font-size: 12px;
     color: var(--dim);
     transition: transform 0.2s;
   }
-  .panel.collapsed .panel-header .chevron { transform: rotate(-90deg); }
+  .panel.collapsed .panel-header .chev { transform: rotate(-90deg); }
   .panel.collapsed .panel-body { display: none; }
-  .panel-body { padding: 12px 14px; }
+  .panel-body { padding: 16px 18px; }
 
   .ph-red { color: var(--red); border-bottom-color: var(--red); }
   .ph-amber { color: var(--amber); border-bottom-color: var(--amber); }
@@ -136,19 +164,19 @@
   /* ===== LISTS ===== */
   ul { list-style: none; }
   li {
-    padding: 2px 0 2px 16px;
+    padding: 3px 0 3px 20px;
     position: relative;
-    font-size: 13px;
+    font-size: 16px;
   }
-  li::before { content: '>'; position: absolute; left: 0; color: var(--dim); font-size: 12px; }
+  li::before { content: '>'; position: absolute; left: 0; color: var(--dim); }
   li.crit::before { content: '!'; color: var(--red); font-weight: bold; }
   li.warn::before { content: '*'; color: var(--amber); }
 
   /* ===== TAGS ===== */
   .tag {
     display: inline-block;
-    padding: 1px 6px;
-    font-size: 10px;
+    padding: 2px 8px;
+    font-size: 12px;
     text-transform: uppercase;
     font-weight: bold;
     border-radius: 2px;
@@ -156,8 +184,6 @@
   }
   .tag-red { background: var(--red-dim); color: var(--red); border: 1px solid rgba(255,51,68,0.3); }
   .tag-amber { background: var(--amber-dim); color: var(--amber); border: 1px solid rgba(255,170,34,0.3); }
-  .tag-green { background: var(--green-dim); color: var(--green); border: 1px solid rgba(34,221,102,0.3); }
-  .tag-blue { background: var(--blue-dim); color: var(--blue); border: 1px solid rgba(51,136,255,0.3); }
 
   /* ===== TEXT STYLES ===== */
   .red { color: var(--red); }
@@ -169,70 +195,137 @@
   .bright { color: var(--bright); }
   b { color: var(--bright); }
 
-  .section-label {
-    font-size: 10px;
+  .label {
+    font-size: 12px;
     color: var(--dim);
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    margin: 8px 0 4px 0;
+    margin: 10px 0 6px 0;
   }
-  .section-label:first-child { margin-top: 0; }
+  .label:first-child { margin-top: 0; }
 
-  hr { border: none; border-top: 1px solid var(--border); margin: 8px 0; }
+  hr { border: none; border-top: 1px solid var(--border); margin: 12px 0; }
 
-  /* ===== NPC GRID ===== */
+  /* ===== TWO-COL GRID ===== */
+  .g2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+
+  /* ===== NPC CARDS ===== */
   .npc-card {
-    padding: 8px 0;
+    padding: 12px 0;
     border-bottom: 1px solid rgba(255,255,255,0.05);
-    font-size: 12px;
   }
   .npc-card:last-child { border-bottom: none; }
-  .npc-header {
+  .npc-top {
     display: flex;
     justify-content: space-between;
     align-items: baseline;
-    margin-bottom: 3px;
+    margin-bottom: 4px;
   }
-  .npc-name { color: var(--cyan); font-weight: bold; }
-  .npc-loc { color: var(--dim); font-size: 11px; }
-  .npc-role { color: var(--text); font-size: 12px; margin-bottom: 3px; }
+  .npc-name { color: var(--cyan); font-weight: bold; font-size: 17px; }
+  .npc-loc { color: var(--dim); font-size: 13px; }
+  .npc-role { font-size: 15px; margin-bottom: 4px; }
   .npc-vibe {
-    font-size: 11px;
+    font-size: 14px;
     color: var(--amber);
     font-style: italic;
-    margin-bottom: 2px;
+    margin-bottom: 3px;
   }
   .npc-quote {
-    font-size: 11px;
+    font-size: 14px;
     color: var(--dim);
     font-style: italic;
-    padding-left: 10px;
+    padding-left: 14px;
     border-left: 2px solid var(--border);
   }
 
   /* ===== ENVIRONMENT CARDS ===== */
   .env-card {
-    padding: 8px 12px;
+    padding: 12px 16px;
     border-left: 3px solid var(--border);
-    margin-bottom: 6px;
-    font-size: 12px;
+    margin-bottom: 10px;
     background: rgba(0,0,0,0.2);
+    font-size: 15px;
+    line-height: 1.7;
   }
   .env-card h4 {
     font-family: 'Orbitron', sans-serif;
-    font-size: 11px;
+    font-size: 13px;
     text-transform: uppercase;
     letter-spacing: 1.5px;
-    margin-bottom: 4px;
+    margin-bottom: 6px;
   }
 
-  /* ===== IMPROV TOOLS ===== */
-  .roll-btn {
+  /* ===== SECRETS ===== */
+  .secret-content {
+    display: none;
+    padding: 12px 16px;
+    background: rgba(255,51,68,0.05);
+    border: 1px dashed rgba(255,51,68,0.2);
+    margin-top: 10px;
+    border-radius: 3px;
+  }
+  .secret-content.visible { display: block; }
+  .secret-toggle {
+    background: none;
+    border: 1px solid rgba(255,51,68,0.3);
+    color: var(--red);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    border-radius: 2px;
+  }
+  .secret-toggle:hover { background: var(--red-dim); }
+
+  /* ===== QUICK RULES ===== */
+  .rule-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    font-size: 15px;
+  }
+  .rule-grid b { color: var(--amber); }
+
+  /* ===== SESSION NOTES ===== */
+  .notes-area {
+    width: 100%;
+    min-height: 140px;
     background: var(--surface);
     border: 1px solid var(--border);
     color: var(--text);
     font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
+    font-size: 15px;
+    padding: 12px;
+    resize: vertical;
+    border-radius: 3px;
+  }
+  .notes-area:focus { outline: none; border-color: var(--cyan); }
+
+  /* ===== SIDEBAR: IMPROV TOOLS ===== */
+  .improv-section {
+    margin-bottom: 18px;
+  }
+  .improv-section:last-child { margin-bottom: 0; }
+  .improv-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    margin-bottom: 8px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .roll-btn {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 13px;
     padding: 6px 14px;
     cursor: pointer;
     border-radius: 2px;
@@ -246,523 +339,452 @@
     background: var(--cyan-dim);
   }
   .roll-btn:active { transform: scale(0.97); }
-  .roll-btn.primary {
-    border-color: var(--red);
-    color: var(--red);
-  }
-  .roll-btn.primary:hover {
-    background: var(--red-dim);
-    border-color: var(--red);
-    color: var(--red);
-  }
+  .roll-btn.primary { border-color: var(--red); color: var(--red); }
+  .roll-btn.primary:hover { background: var(--red-dim); border-color: var(--red); color: var(--red); }
 
   .result-box {
-    background: var(--surface);
+    background: var(--panel);
     border: 1px solid var(--border);
-    padding: 10px 14px;
-    font-size: 15px;
-    min-height: 42px;
+    padding: 12px 16px;
+    font-size: 18px;
+    min-height: 48px;
     display: flex;
     align-items: center;
-    border-radius: 2px;
+    border-radius: 3px;
     color: var(--bright);
     transition: border-color 0.3s;
   }
   .result-box.flash { border-color: var(--cyan); }
   .result-box .action-word { color: var(--cyan); font-weight: bold; }
   .result-box .theme-word { color: var(--amber); font-weight: bold; }
-  .result-box .plus { color: var(--dim); margin: 0 8px; }
+  .result-box .plus { color: var(--dim); margin: 0 10px; }
 
   .descriptor-chips {
     display: flex;
     flex-wrap: wrap;
-    gap: 6px;
+    gap: 8px;
   }
   .chip {
-    font-size: 12px;
-    padding: 3px 10px;
+    font-size: 14px;
+    padding: 4px 12px;
     border: 1px solid var(--border);
     border-radius: 2px;
     color: var(--text);
-    background: var(--surface);
+    background: var(--panel);
     transition: all 0.3s;
   }
-  .chip.fresh {
-    border-color: var(--cyan);
-    color: var(--bright);
-  }
+  .chip.fresh { border-color: var(--cyan); color: var(--bright); }
 
-  .improv-section {
-    margin-bottom: 16px;
-  }
-  .improv-section:last-child { margin-bottom: 0; }
-  .improv-label {
-    font-family: 'Orbitron', sans-serif;
-    font-size: 10px;
-    text-transform: uppercase;
-    letter-spacing: 1.5px;
-    color: var(--dim);
-    margin-bottom: 6px;
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-  }
-
-  /* ===== NAME ROLLER ===== */
   .name-result {
-    font-size: 20px;
+    font-size: 22px;
     color: var(--bright);
     font-weight: bold;
     letter-spacing: 1px;
   }
 
-  /* ===== QUICK RULES ===== */
-  .rule-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 8px;
-    font-size: 12px;
-  }
-  .rule-item b { color: var(--amber); }
-
-  /* ===== SECRETS (hidden by default) ===== */
-  .secret-content {
-    display: none;
-    padding: 8px 12px;
-    background: rgba(255,51,68,0.05);
-    border: 1px dashed rgba(255,51,68,0.2);
-    margin-top: 8px;
-    font-size: 12px;
-    border-radius: 2px;
-  }
-  .secret-content.visible { display: block; }
-  .secret-toggle {
-    background: none;
-    border: 1px solid rgba(255,51,68,0.3);
-    color: var(--red);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 10px;
-    padding: 2px 8px;
-    cursor: pointer;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    border-radius: 2px;
-  }
-  .secret-toggle:hover { background: var(--red-dim); }
-
-  /* ===== SESSION NOTES ===== */
-  .notes-area {
-    width: 100%;
-    min-height: 120px;
-    background: var(--surface);
-    border: 1px solid var(--border);
-    color: var(--text);
-    font-family: 'Share Tech Mono', monospace;
-    font-size: 12px;
-    padding: 10px;
-    resize: vertical;
-    border-radius: 2px;
-  }
-  .notes-area:focus { outline: none; border-color: var(--cyan); }
-
-  /* ===== COLUMN STACKING ===== */
-  .col-stack { display: flex; flex-direction: column; gap: 8px; }
-
-  /* ===== RESPONSIVE ===== */
-  @media (max-width: 1200px) {
-    .dashboard {
-      grid-template-columns: 1fr 1fr;
-    }
-    .col-right {
-      grid-column: 1 / -1;
-    }
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 16px 0;
   }
 </style>
 </head>
 <body>
 
 <!-- ===== HEADER ===== -->
-<div class="dashboard-header">
+<div class="header">
   <div>
     <h1>Another Bug Hunt</h1>
-    <span class="subtitle">Scenario 2: Hard Choices &mdash; Heron Station &mdash; Mothership 1e</span>
+    <span class="sub">Scenario 2: Hard Choices &mdash; Heron Station &mdash; Mothership 1e</span>
   </div>
-  <div class="header-right">
-    <span class="clock" id="clock"></span>
-  </div>
+  <span class="clock" id="clock"></span>
 </div>
 
-<!-- ===== MAIN GRID ===== -->
-<div class="dashboard">
+<!-- ===== LAYOUT ===== -->
+<div class="layout">
 
-  <!-- ==================== LEFT COLUMN ==================== -->
-  <div class="col-stack">
+<!-- ==================== MAIN CONTENT (scrollable) ==================== -->
+<div class="main">
 
-    <!-- STARTING POSITION -->
-    <div class="panel">
-      <div class="panel-header ph-red" onclick="togglePanel(this)">
-        Starting Position — Party Split <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
-          <div>
-            <div class="section-label" style="color:var(--amber)">Team Alpha — Chimney</div>
-            <ul>
-              <li class="crit"><b>Bud</b> <span class="tag tag-red">bleeding out</span> speared in leg</li>
-              <li><b>Rick</b> — marine, traumatized, vengeful</li>
-              <li><b>Tandy</b> — scientist, field medicine?</li>
-            </ul>
-            <div class="dim" style="font-size:11px;margin-top:4px">With Valdez / Hog Squad. Post-ambush.</div>
-          </div>
-          <div>
-            <div class="section-label" style="color:var(--blue)">Team Beta — Edem's Lab</div>
-            <ul>
-              <li><b>Willis</b> — teamster, McClane archetype</li>
-              <li class="warn"><b>Shaw</b> <span class="tag tag-amber">primed</span> Company android</li>
-            </ul>
-            <div class="dim" style="font-size:11px;margin-top:4px">Just arrived. Calm before storm. Isolated.</div>
-          </div>
+  <!-- ====== TIER 1: FRONT OF MIND ====== -->
+  <div class="tier">Front of Mind <span class="line"></span></div>
+
+  <!-- STARTING POSITION -->
+  <div class="panel">
+    <div class="panel-header ph-red" onclick="togglePanel(this)">
+      Starting Position &mdash; Party Split <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="g2">
+        <div>
+          <div class="label" style="color:var(--amber)">Team Alpha &mdash; Chimney</div>
+          <ul>
+            <li class="crit"><b>Bud</b> <span class="tag tag-red">bleeding out</span> speared in leg</li>
+            <li><b>Rick</b> &mdash; marine, traumatized, vengeful</li>
+            <li><b>Tandy</b> &mdash; scientist, field medicine?</li>
+          </ul>
+          <div class="dim" style="font-size:14px;margin-top:6px">With Valdez / Hog Squad. Post-ambush.</div>
+        </div>
+        <div>
+          <div class="label" style="color:var(--blue)">Team Beta &mdash; Edem's Lab</div>
+          <ul>
+            <li><b>Willis</b> &mdash; teamster, McClane archetype</li>
+            <li class="warn"><b>Shaw</b> <span class="tag tag-amber">primed</span> Company android</li>
+          </ul>
+          <div class="dim" style="font-size:14px;margin-top:6px">Just arrived. Calm before storm. Isolated.</div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- REVELATIONS -->
-    <div class="panel">
-      <div class="panel-header ph-cyan" onclick="togglePanel(this)">
-        Revelations <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div class="section-label" style="color:var(--amber)">1. Carcinid Intelligence</div>
-        <ul>
-          <li>Herd tactically — emergent, not Hinton</li>
-          <li>Funneling to reactor = birthing chamber</li>
-          <li>Mother fused with reactor</li>
-        </ul>
-        <div class="section-label" style="color:var(--red);margin-top:8px">2. Shaw Betrayal</div>
-        <ul>
-          <li>Trigger: Edem reveals cure</li>
-          <li>Ash-style — kills Edem, no warning</li>
-          <li><i>"I suggest you leave now."</i></li>
-        </ul>
-        <hr>
-        <div class="dim" style="font-size:11px">RESERVE: Hinton saboteur (Franco), Company conspiracy, hive coordination, crabsong</div>
-      </div>
+  <!-- REVELATIONS -->
+  <div class="panel">
+    <div class="panel-header ph-cyan" onclick="togglePanel(this)">
+      Revelations <span class="chev">&#9660;</span>
     </div>
+    <div class="panel-body">
+      <div class="g2">
+        <div>
+          <div class="label" style="color:var(--amber)">1. Carcinid Intelligence</div>
+          <ul>
+            <li>Herd tactically &mdash; emergent, not Hinton</li>
+            <li>Funneling to reactor = birthing chamber</li>
+            <li>Mother fused with reactor</li>
+          </ul>
+        </div>
+        <div>
+          <div class="label" style="color:var(--red)">2. Shaw Betrayal</div>
+          <ul>
+            <li>Trigger: Edem reveals cure</li>
+            <li>Ash-style &mdash; kills Edem, no warning</li>
+            <li><i>"I suggest you leave now."</i></li>
+          </ul>
+        </div>
+      </div>
+      <hr>
+      <div class="dim" style="font-size:14px">RESERVE: Hinton saboteur (Franco &mdash; next scenario), Company conspiracy, hive coordination, crabsong</div>
+    </div>
+  </div>
 
-    <!-- THREATS -->
+  <!-- THREATS + PRESSURE side by side -->
+  <div class="g2">
     <div class="panel">
       <div class="panel-header ph-red" onclick="togglePanel(this)">
-        Threats <span class="chevron">&#9660;</span>
+        Threats <span class="chev">&#9660;</span>
       </div>
       <div class="panel-body">
-        <div class="section-label" style="color:var(--amber)">Mother (Reactor)</div>
+        <div class="label" style="color:var(--amber)">Mother (Reactor)</div>
         <ul>
           <li>Immobile factory, not fighter</li>
           <li>Marines cocooned, alive, changing</li>
           <li>Horror = witnessing the process</li>
         </ul>
-        <div class="section-label" style="color:var(--red);margin-top:8px">Shaw</div>
+        <div class="label" style="color:var(--red);margin-top:10px">Shaw</div>
         <ul>
           <li>Long-term NPC antagonist</li>
-          <li>Willis must flee — can't fight android</li>
+          <li>Willis must flee &mdash; can't fight android</li>
           <li>Cure survival = play to find out</li>
         </ul>
       </div>
     </div>
-
-    <!-- PRESSURE -->
     <div class="panel">
       <div class="panel-header ph-amber" onclick="togglePanel(this)">
-        Pressure <span class="chevron">&#9660;</span>
+        Pressure <span class="chev">&#9660;</span>
       </div>
       <div class="panel-body">
         <ul>
           <li class="crit">Storm closing evac + killing comms</li>
-          <li class="crit">Bud — hours not days</li>
-          <li class="warn">Shaw — ticking bomb Willis doesn't know</li>
+          <li class="crit">Bud &mdash; hours not days</li>
+          <li class="warn">Shaw &mdash; ticking bomb Willis doesn't know</li>
           <li>Radio: NPCs report sections falling</li>
         </ul>
         <hr>
-        <div class="dim" style="font-size:11px">Radio reports = flexible tool. NPC voices on comms. Dial intensity as needed.</div>
+        <div class="dim" style="font-size:14px">Radio reports = flexible tool. NPC voices on comms. Dial intensity as needed.</div>
       </div>
     </div>
-
-    <!-- INTERACTABLES -->
-    <div class="panel">
-      <div class="panel-header ph-green" onclick="togglePanel(this)">
-        Interactables <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div class="section-label" style="color:var(--amber)">Team Alpha</div>
-        <ul>
-          <li>Valdez medkit — patches Bud (hours)</li>
-          <li>Fork: press on / go back / split?</li>
-          <li>Reactor med unit — Valdez knows protocol</li>
-        </ul>
-        <div class="section-label" style="color:var(--blue);margin-top:8px">Team Beta</div>
-        <ul>
-          <li>Edem's research — improvise at table</li>
-        </ul>
-        <div class="section-label" style="color:var(--cyan);margin-top:8px">Reactor (back pocket)</div>
-        <ul>
-          <li>Coolant purge valve — hurts mother</li>
-          <li>Containment bulkhead — traps mother</li>
-        </ul>
-        <div class="dim" style="font-size:11px;margin-top:4px">Hurt vs Contain. Deploy if players look for it.</div>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ==================== CENTRE COLUMN ==================== -->
-  <div class="col-stack">
-
-    <!-- NPCs -->
-    <div class="panel">
-      <div class="panel-header ph-blue" onclick="togglePanel(this)">
-        NPCs <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div class="npc-card">
-          <div class="npc-header"><span class="npc-name">Sgt. Valdez</span><span class="npc-loc">Chimney</span></div>
-          <div class="npc-role">Allied marine. Medkit. Knows reactor med unit protocol.</div>
-          <div class="npc-vibe">Capable, blunt, protective. The sergeant who gets it done.</div>
-          <div class="npc-quote">"Stay tight, stay quiet, follow me."</div>
-        </div>
-        <div class="npc-card">
-          <div class="npc-header"><span class="npc-name">Dr. Edem</span><span class="npc-loc">Lab</span></div>
-          <div class="npc-role">Cure data. <span class="red">Shaw's target.</span> Acid kills carcinids.</div>
-          <div class="npc-vibe">Precise, fascinated, earnest. Academic calm masking terror.</div>
-          <div class="npc-quote">"The krebslieder — it's how they reproduce. Through sound."</div>
-        </div>
-        <div class="npc-card">
-          <div class="npc-header"><span class="npc-name">Shaw</span><span class="npc-loc">Lab</span></div>
-          <div class="npc-role"><span class="amber">Company android. Trigger = Edem reveals cure.</span></div>
-          <div class="npc-vibe">Still, watchful, unnervingly calm. Android flatness.</div>
-          <div class="npc-quote">"I suggest you leave now."</div>
-        </div>
-        <div class="npc-card">
-          <div class="npc-header"><span class="npc-name">Franco</span><span class="npc-loc">Reactor</span></div>
-          <div class="npc-role"><span class="red">Found mid-process.</span> Cocooned in organic matter on the mother. Still alive, barely.</div>
-          <div class="npc-vibe">Traumatized, half-conscious. The horror is recognising him.</div>
-          <div class="npc-quote">(Mumbling, incoherent — just his name, rank, over and over)</div>
-        </div>
-        <div class="npc-card">
-          <div class="npc-header"><span class="npc-name">Maas</span><span class="npc-loc">Ship</span></div>
-          <div class="npc-role"><span class="red">INFECTED.</span> Save for Scenario 4.</div>
-          <div class="npc-vibe">Slimy, evasive, corporate. The worst manager you've ever met.</div>
-          <div class="npc-quote">"Dr. Edem and Hinton are the priority. Everything else is secondary."</div>
-        </div>
-        <hr>
-        <div class="section-label" style="color:var(--amber)">Not revealing yet</div>
-        <ul>
-          <li>Hinton saboteur — save for NEXT scenario (Franco can't talk)</li>
-          <li>Full Company conspiracy — breadcrumbs via Shaw only</li>
-          <li>Maas infection — Scenario 4</li>
-          <li>Hive coordination — show, don't confirm</li>
-        </ul>
-        <div style="margin-top:8px">
-          <button class="secret-toggle" onclick="toggleSecret('secrets')">Warden Eyes Only</button>
-        </div>
-        <div class="secret-content" id="secrets">
+  <!-- INTERACTABLES -->
+  <div class="panel">
+    <div class="panel-header ph-green" onclick="togglePanel(this)">
+      Interactables <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="g2">
+        <div>
+          <div class="label" style="color:var(--amber)">Team Alpha</div>
           <ul>
-            <li class="crit">Maas is listening to planetary broadcasts right now — carcinid shriek infecting him</li>
-            <li class="crit">Hinton sabotaged reactor, escaped through wall gash to alien ship in mountains</li>
-            <li class="warn">Company goal: control carcinisation for cancer cure. Everyone expendable except Edem + Hinton</li>
+            <li>Valdez medkit &mdash; patches Bud (hours)</li>
+            <li>Fork: press on / go back / split?</li>
+            <li>Reactor med unit &mdash; Valdez knows protocol</li>
+          </ul>
+          <div class="label" style="color:var(--blue);margin-top:10px">Team Beta</div>
+          <ul>
+            <li>Edem's research &mdash; improvise at table</li>
           </ul>
         </div>
-      </div>
-    </div>
-
-    <!-- ENVIRONMENTS -->
-    <div class="panel">
-      <div class="panel-header ph-cyan" onclick="togglePanel(this)">
-        Environments <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div class="env-card" style="border-color:var(--blue)">
-          <h4 class="blue">Spillway</h4>
-          <span class="amber">Unsettling:</span> Flooded, ceiling ladder, organic slick<br>
-          <span class="green">Useful:</span> Bypasses corridors above<br>
-          <span class="red">Dangerous:</span> Aquatic carcinid — swims with legs, human DNA<br>
-          <span class="dim">Sensory: tactile/visual</span>
-        </div>
-        <div class="env-card" style="border-color:var(--amber)">
-          <h4 class="amber">Stairwell</h4>
-          <span class="amber">Unsettling:</span> Echo chamber, clicking, can't locate source<br>
-          <span class="green">Useful:</span> Vertical access between levels<br>
-          <span class="red">Dangerous:</span> Blind corners + echoes. <b>NO actual encounter.</b><br>
-          <span class="dim">Sensory: audio. Dread not combat.</span>
-        </div>
-        <div class="env-card" style="border-color:var(--green)">
-          <h4 class="green">Outdoors</h4>
-          <span class="amber">Unsettling:</span> Dead silence, no wildlife, just storm<br>
-          <span class="green">Useful:</span> Route between buildings, Willis's escape valve<br>
-          <span class="red">Dangerous:</span> Steep, muddy, zero vis, fatal fall<br>
-          <span class="dim">Sensory: absence</span>
-        </div>
-        <div class="env-card" style="border-color:var(--red)">
-          <h4 class="red">Reactor</h4>
-          <span class="amber">Unsettling:</span> Warm, sweet, cocoons in flashlight beams<br>
-          <span class="green">Useful:</span> Med unit, Franco, reactor controls<br>
-          <span class="red">Dangerous:</span> Witnessing the process. No boss fight.<br>
-          <b>THIS IS THE PAYOFF.</b>
+        <div>
+          <div class="label" style="color:var(--cyan)">Reactor (back pocket)</div>
+          <ul>
+            <li>Coolant purge valve &mdash; hurts mother</li>
+            <li>Containment bulkhead &mdash; traps mother</li>
+          </ul>
+          <div class="dim" style="font-size:14px;margin-top:6px">Hurt vs Contain. Deploy if players look for it.</div>
         </div>
       </div>
     </div>
-
-    <!-- QUICK RULES -->
-    <div class="panel">
-      <div class="panel-header ph-green" onclick="togglePanel(this)">
-        Quick Rules <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <div class="rule-grid">
-          <div>
-            <b>Panic:</b> 2d10 + Stress &ge; threshold &rarr; Panic table<br>
-            <b>Wound:</b> Bleeding = 1 HP/round until First Aid (Body save)
-          </div>
-          <div>
-            <b>Comms:</b> Suit-to-suit = safe. Radio broadcast = shriek risk<br>
-            <b>Acid:</b> Hydrofluoric kills carcinids. Edem knows.
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- SESSION NOTES -->
-    <div class="panel">
-      <div class="panel-header" style="color:var(--dim)" onclick="togglePanel(this)">
-        Session Notes <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-        <textarea class="notes-area" placeholder="Type session notes here..."></textarea>
-      </div>
-    </div>
-
   </div>
 
-  <!-- ==================== RIGHT COLUMN: IMPROV TOOLS ==================== -->
-  <div class="col-stack col-right">
-
-    <div class="panel">
-      <div class="panel-header ph-cyan" onclick="togglePanel(this)">
-        Improv Dashboard <span class="chevron">&#9660;</span>
-      </div>
-      <div class="panel-body">
-
-        <!-- ORACLE -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span>Oracle — Action + Theme</span>
-            <button class="roll-btn primary" onclick="rollOracle()">Roll</button>
-          </div>
-          <div class="result-box" id="oracle-result">
-            <span class="dim">Click Roll to generate a prompt...</span>
-          </div>
+  <!-- QUICK RULES -->
+  <div class="panel">
+    <div class="panel-header ph-green" onclick="togglePanel(this)">
+      Quick Rules <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="rule-grid">
+        <div>
+          <b>Panic:</b> 2d10 + Stress &ge; threshold &rarr; Panic table<br>
+          <b>Wound:</b> Bleeding = 1 HP/round until First Aid (Body save)
         </div>
-
-        <!-- CARCINID DESCRIPTORS -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span class="red">Carcinid Descriptors</span>
-            <button class="roll-btn" onclick="rollDescriptors('carcinid', 4)">Roll 4</button>
-          </div>
-          <div class="descriptor-chips" id="carcinid-chips">
-            <span class="chip dim">Roll for descriptors...</span>
-          </div>
+        <div>
+          <b>Comms:</b> Suit-to-suit = safe. Radio broadcast = shriek risk<br>
+          <b>Acid:</b> Hydrofluoric kills carcinids. Edem knows.
         </div>
-
-        <!-- STATION DESCRIPTORS -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span class="blue">Station / Environment</span>
-            <button class="roll-btn" onclick="rollDescriptors('station', 3)">Roll 3</button>
-          </div>
-          <div class="descriptor-chips" id="station-chips">
-            <span class="chip dim">Roll for descriptors...</span>
-          </div>
-        </div>
-
-        <!-- BODY HORROR -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span class="amber">Body Horror / Infection</span>
-            <button class="roll-btn" onclick="rollDescriptors('bodyhorror', 3)">Roll 3</button>
-          </div>
-          <div class="descriptor-chips" id="bodyhorror-chips">
-            <span class="chip dim">Roll for descriptors...</span>
-          </div>
-        </div>
-
-        <!-- SOUND / ATMOSPHERE -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span class="green">Sound / Atmosphere</span>
-            <button class="roll-btn" onclick="rollDescriptors('sound', 3)">Roll 3</button>
-          </div>
-          <div class="descriptor-chips" id="sound-chips">
-            <span class="chip dim">Roll for descriptors...</span>
-          </div>
-        </div>
-
-        <!-- EMOTIONAL -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span class="cyan">Emotional / Tonal</span>
-            <button class="roll-btn" onclick="rollDescriptors('emotional', 2)">Roll 2</button>
-          </div>
-          <div class="descriptor-chips" id="emotional-chips">
-            <span class="chip dim">Roll for descriptors...</span>
-          </div>
-        </div>
-
-        <hr>
-
-        <!-- NAME ROLLER -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span>Name Generator</span>
-            <button class="roll-btn" onclick="rollName()">Roll Name</button>
-          </div>
-          <div class="result-box" id="name-result">
-            <span class="dim">Roll for a name...</span>
-          </div>
-        </div>
-
-        <!-- SCENE SEED -->
-        <div class="improv-section">
-          <div class="improv-label">
-            <span>Scene Seed</span>
-            <button class="roll-btn primary" onclick="rollSceneSeed()">Generate</button>
-          </div>
-          <div class="result-box" id="seed-result" style="flex-direction:column;align-items:flex-start;gap:4px;min-height:60px">
-            <span class="dim">Generate an improv seed...</span>
-          </div>
-        </div>
-
-        <hr>
-
-        <!-- ROLL ALL -->
-        <button class="roll-btn primary" onclick="rollAll()" style="width:100%;padding:10px;font-size:13px;letter-spacing:2px">
-          &#9881; Roll Everything Fresh
-        </button>
-
       </div>
     </div>
-
   </div>
+
+
+  <!-- ====== TIER 2: WHEN YOU'RE THERE ====== -->
+  <div class="tier">When You're There <span class="line"></span></div>
+
+  <!-- NPCs -->
+  <div class="panel">
+    <div class="panel-header ph-blue" onclick="togglePanel(this)">
+      NPCs <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="npc-card">
+        <div class="npc-top"><span class="npc-name">Sgt. Valdez</span><span class="npc-loc">Chimney</span></div>
+        <div class="npc-role">Allied marine. Medkit. Knows reactor med unit protocol.</div>
+        <div class="npc-vibe">Capable, blunt, protective. The sergeant who gets it done.</div>
+        <div class="npc-quote">"Stay tight, stay quiet, follow me."</div>
+      </div>
+      <div class="npc-card">
+        <div class="npc-top"><span class="npc-name">Dr. Edem</span><span class="npc-loc">Lab</span></div>
+        <div class="npc-role">Cure data. <span class="red">Shaw's target.</span> Acid kills carcinids.</div>
+        <div class="npc-vibe">Precise, fascinated, earnest. Academic calm masking terror.</div>
+        <div class="npc-quote">"The krebslieder &mdash; it's how they reproduce. Through sound."</div>
+      </div>
+      <div class="npc-card">
+        <div class="npc-top"><span class="npc-name">Shaw</span><span class="npc-loc">Lab</span></div>
+        <div class="npc-role"><span class="amber">Company android. Trigger = Edem reveals cure.</span></div>
+        <div class="npc-vibe">Still, watchful, unnervingly calm. Android flatness.</div>
+        <div class="npc-quote">"I suggest you leave now."</div>
+      </div>
+      <div class="npc-card">
+        <div class="npc-top"><span class="npc-name">Franco</span><span class="npc-loc">Reactor</span></div>
+        <div class="npc-role"><span class="red">Found mid-process.</span> Cocooned in organic matter on the mother. Still alive, barely.</div>
+        <div class="npc-vibe">Traumatized, half-conscious. The horror is recognising him.</div>
+        <div class="npc-quote">(Mumbling, incoherent &mdash; just his name, rank, over and over)</div>
+      </div>
+      <div class="npc-card">
+        <div class="npc-top"><span class="npc-name">Maas</span><span class="npc-loc">Ship</span></div>
+        <div class="npc-role"><span class="red">INFECTED.</span> Save for Scenario 4.</div>
+        <div class="npc-vibe">Slimy, evasive, corporate. The worst manager you've ever met.</div>
+        <div class="npc-quote">"Dr. Edem and Hinton are the priority. Everything else is secondary."</div>
+      </div>
+      <hr>
+      <div class="label" style="color:var(--amber)">Not revealing yet</div>
+      <ul>
+        <li>Hinton saboteur &mdash; save for NEXT scenario (Franco can't talk)</li>
+        <li>Full Company conspiracy &mdash; breadcrumbs via Shaw only</li>
+        <li>Maas infection &mdash; Scenario 4</li>
+        <li>Hive coordination &mdash; show, don't confirm</li>
+      </ul>
+      <div style="margin-top:10px">
+        <button class="secret-toggle" onclick="toggleSecret('secrets')">Warden Eyes Only</button>
+      </div>
+      <div class="secret-content" id="secrets">
+        <ul>
+          <li class="crit">Maas is listening to planetary broadcasts right now &mdash; carcinid shriek infecting him</li>
+          <li class="crit">Hinton sabotaged reactor, escaped through wall gash to alien ship in mountains</li>
+          <li class="warn">Company goal: control carcinisation for cancer cure. Everyone expendable except Edem + Hinton</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENVIRONMENTS -->
+  <div class="panel">
+    <div class="panel-header ph-cyan" onclick="togglePanel(this)">
+      Environments <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="g2">
+        <div>
+          <div class="env-card" style="border-color:var(--blue)">
+            <h4 class="blue">Spillway</h4>
+            <span class="amber">Unsettling:</span> Flooded, ceiling ladder, organic slick<br>
+            <span class="green">Useful:</span> Bypasses corridors above<br>
+            <span class="red">Dangerous:</span> Aquatic carcinid &mdash; swims with legs, human DNA<br>
+            <span class="dim">Sensory: tactile/visual</span>
+          </div>
+          <div class="env-card" style="border-color:var(--amber)">
+            <h4 class="amber">Stairwell</h4>
+            <span class="amber">Unsettling:</span> Echo chamber, clicking, can't locate source<br>
+            <span class="green">Useful:</span> Vertical access between levels<br>
+            <span class="red">Dangerous:</span> Blind corners + echoes. <b>NO actual encounter.</b><br>
+            <span class="dim">Sensory: audio. Dread not combat.</span>
+          </div>
+        </div>
+        <div>
+          <div class="env-card" style="border-color:var(--green)">
+            <h4 class="green">Outdoors</h4>
+            <span class="amber">Unsettling:</span> Dead silence, no wildlife, just storm<br>
+            <span class="green">Useful:</span> Route between buildings, Willis's escape valve<br>
+            <span class="red">Dangerous:</span> Steep, muddy, zero vis, fatal fall<br>
+            <span class="dim">Sensory: absence</span>
+          </div>
+          <div class="env-card" style="border-color:var(--red)">
+            <h4 class="red">Reactor</h4>
+            <span class="amber">Unsettling:</span> Warm, sweet, cocoons in flashlight beams<br>
+            <span class="green">Useful:</span> Med unit, Franco, reactor controls<br>
+            <span class="red">Dangerous:</span> Witnessing the process. No boss fight.<br>
+            <b style="font-size:16px">THIS IS THE PAYOFF.</b>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+
+  <!-- ====== TIER 3: SESSION ADMIN ====== -->
+  <div class="tier">Session Admin <span class="line"></span></div>
+
+  <!-- SESSION NOTES -->
+  <div class="panel">
+    <div class="panel-header" style="color:var(--dim)" onclick="togglePanel(this)">
+      Session Notes <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <textarea class="notes-area" placeholder="Type session notes here..."></textarea>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== SIDEBAR: IMPROV TOOLS (sticky) ==================== -->
+<div class="sidebar">
+
+  <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:13px;text-transform:uppercase;letter-spacing:2px;color:var(--cyan);margin-bottom:16px">Improv Dashboard</div>
+
+  <!-- ORACLE -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Oracle &mdash; Action + Theme</span>
+      <button class="roll-btn primary" onclick="rollOracle()">Roll</button>
+    </div>
+    <div class="result-box" id="oracle-result">
+      <span class="dim">Click Roll...</span>
+    </div>
+  </div>
+
+  <!-- CARCINID -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="red">Carcinid</span>
+      <button class="roll-btn" onclick="rollDescriptors('carcinid', 4)">Roll 4</button>
+    </div>
+    <div class="descriptor-chips" id="carcinid-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- STATION -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="blue">Station</span>
+      <button class="roll-btn" onclick="rollDescriptors('station', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="station-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- BODY HORROR -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="amber">Body Horror</span>
+      <button class="roll-btn" onclick="rollDescriptors('bodyhorror', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="bodyhorror-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- SOUND -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="green">Sound</span>
+      <button class="roll-btn" onclick="rollDescriptors('sound', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="sound-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- EMOTIONAL -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="cyan">Emotional</span>
+      <button class="roll-btn" onclick="rollDescriptors('emotional', 2)">Roll 2</button>
+    </div>
+    <div class="descriptor-chips" id="emotional-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- NAME -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Name</span>
+      <button class="roll-btn" onclick="rollName()">Roll</button>
+    </div>
+    <div class="result-box" id="name-result">
+      <span class="dim">Roll for a name...</span>
+    </div>
+  </div>
+
+  <!-- SCENE SEED -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Scene Seed</span>
+      <button class="roll-btn primary" onclick="rollSceneSeed()">Generate</button>
+    </div>
+    <div class="result-box" id="seed-result" style="flex-direction:column;align-items:flex-start;gap:4px;min-height:60px">
+      <span class="dim">Generate a seed...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <button class="roll-btn primary" onclick="rollAll()" style="width:100%;padding:10px;font-size:14px;letter-spacing:2px">
+    &#9881; Roll Everything Fresh
+  </button>
+
+</div>
 
 </div>
 
 <!-- ===== JAVASCRIPT ===== -->
 <script>
-// === PANEL COLLAPSE ===
 function togglePanel(header) {
   header.parentElement.classList.toggle('collapsed');
 }
 
-// === CLOCK ===
 function updateClock() {
   const now = new Date();
   document.getElementById('clock').textContent =
@@ -771,12 +793,10 @@ function updateClock() {
 updateClock();
 setInterval(updateClock, 30000);
 
-// === SECRET TOGGLE ===
 function toggleSecret(id) {
   document.getElementById(id).classList.toggle('visible');
 }
 
-// === DATA ===
 const ACTIONS = [
   'Seal','Breach','Sabotage','Protect','Abandon','Reveal','Consume','Isolate',
   'Transform','Overwhelm','Contain','Corrupt','Salvage','Collapse','Awaken',
@@ -825,7 +845,7 @@ const FIRST_NAMES = [
   'Vasquez','Harkness','Okonkwo','Chen','Moreau','Dietrich','Novak','Reyes',
   'Kowalski','Tanaka','Brennan','Osei','Lindqvist','Gupta','Herrera','Volkov',
   'Nakamura','Ortega','Fischer','Mbeki','Alvarez','Yusuf','Petrova','Anh',
-  'Cruz','Sato','Marchetti','Holm','Dakka','Webb','Krol','Osei','Marsh',
+  'Cruz','Sato','Marchetti','Holm','Dakka','Webb','Krol','Marsh',
   'Tran','Pavlov','Ikeda','Cortez','Engel','Ndiaye','Zhao','Burke','Ripley',
   'Anders','Johansson','Moro','Kaur','Singh','Park','Jensen','Flores'
 ];
@@ -847,25 +867,13 @@ const SCENE_LOCATIONS = [
   'medical bay','storage bay','observation deck','comm tower'
 ];
 
-// === UTILITY ===
-function pick(arr) {
-  return arr[Math.floor(Math.random() * arr.length)];
-}
-function pickN(arr, n) {
-  const shuffled = [...arr].sort(() => Math.random() - 0.5);
-  return shuffled.slice(0, n);
-}
-function flash(el) {
-  el.classList.add('flash');
-  setTimeout(() => el.classList.remove('flash'), 400);
-}
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pickN(arr, n) { return [...arr].sort(() => Math.random() - 0.5).slice(0, n); }
+function flash(el) { el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 400); }
 
-// === ROLLERS ===
 function rollOracle() {
-  const action = pick(ACTIONS);
-  const theme = pick(THEMES);
   const box = document.getElementById('oracle-result');
-  box.innerHTML = `<span class="action-word">${action}</span><span class="plus">+</span><span class="theme-word">${theme}</span>`;
+  box.innerHTML = `<span class="action-word">${pick(ACTIONS)}</span><span class="plus">+</span><span class="theme-word">${pick(THEMES)}</span>`;
   flash(box);
 }
 
@@ -873,26 +881,20 @@ function rollDescriptors(category, count) {
   const words = pickN(DESCRIPTORS[category], count);
   const container = document.getElementById(category + '-chips');
   container.innerHTML = words.map(w => `<span class="chip fresh">${w}</span>`).join('');
-  setTimeout(() => {
-    container.querySelectorAll('.chip').forEach(c => c.classList.remove('fresh'));
-  }, 500);
+  setTimeout(() => container.querySelectorAll('.chip').forEach(c => c.classList.remove('fresh')), 500);
 }
 
 function rollName() {
-  const name = pick(FIRST_NAMES);
   const box = document.getElementById('name-result');
-  box.innerHTML = `<span class="name-result">${name}</span>`;
+  box.innerHTML = `<span class="name-result">${pick(FIRST_NAMES)}</span>`;
   flash(box);
 }
 
 function rollSceneSeed() {
-  const action = pick(SCENE_ACTIONS);
-  const location = pick(SCENE_LOCATIONS);
-  const mood = pick(DESCRIPTORS.emotional);
   const box = document.getElementById('seed-result');
   box.innerHTML = `
-    <div style="font-size:14px"><span class="bright">${action} ${location}.</span></div>
-    <div style="font-size:11px;color:var(--dim)">Mood: <span class="cyan">${mood}</span></div>
+    <div style="font-size:16px"><span class="bright">${pick(SCENE_ACTIONS)} ${pick(SCENE_LOCATIONS)}.</span></div>
+    <div style="font-size:13px;color:var(--dim)">Mood: <span class="cyan">${pick(DESCRIPTORS.emotional)}</span></div>
   `;
   flash(box);
 }
