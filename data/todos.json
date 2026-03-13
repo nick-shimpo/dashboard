@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-10T15:52:00+01:00",
+  "lastUpdated": "2026-03-13T12:36:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -136,6 +136,7 @@
         {"title": "Gather core documents: valid UK passport, German residence permit (Aufenthaltstitel), UK birth certificate with certified translation", "done": false},
         {"title": "Gather marriage certificate (Heiratsurkunde) proving marriage to German citizen", "done": false},
         {"title": "Gather financial documents: payslips (last 6 months), employment contract, rental contract", "done": false},
+        {"title": "Versicherungsverlauf (pension insurance history) — REQUESTED from Deutsche Rentenversicherung 2026-03-13", "done": true},
         {"title": "Gather proof of health insurance (Krankenversicherung)", "done": false},
         {"title": "Locate B1 German language certificate (already completed)", "done": false},
         {"title": "Locate naturalization test certificate (already completed)", "done": false},
