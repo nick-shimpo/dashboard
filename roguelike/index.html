@@ -1555,19 +1555,23 @@ function preTintTile(tileCanvas, fg, bg) {
   if (tileMap[key]) return tileMap[key];
 
   // Create pre-tinted version
+  // Step 1: Tint tile sprite on temp canvas (source-atop only colors tile pixels)
+  const tmp = document.createElement('canvas');
+  tmp.width = KENNEY_TILE;
+  tmp.height = KENNEY_TILE;
+  const tmpCtx = tmp.getContext('2d');
+  tmpCtx.drawImage(tileCanvas, 0, 0);
+  tmpCtx.globalCompositeOperation = 'source-atop';
+  tmpCtx.fillStyle = `rgb(${fg[0]},${fg[1]},${fg[2]})`;
+  tmpCtx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
+  // Step 2: Fill bg then composite tinted tile on top
   const c = document.createElement('canvas');
   c.width = KENNEY_TILE;
   c.height = KENNEY_TILE;
   const tctx = c.getContext('2d');
-  // Fill bg
   tctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
   tctx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
-  // Draw tile then tint with source-atop
-  tctx.drawImage(tileCanvas, 0, 0);
-  tctx.globalCompositeOperation = 'source-atop';
-  tctx.fillStyle = `rgb(${fg[0]},${fg[1]},${fg[2]})`;
-  tctx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
-  tctx.globalCompositeOperation = 'source-over';
+  tctx.drawImage(tmp, 0, 0);
 
   tileMap[key] = c;
   return c;
