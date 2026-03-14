@@ -1534,37 +1534,75 @@ const FLOOR_BG_DIM = [10, 10, 15];
 const WALL_FG_DIM = [40, 40, 50];
 const WALL_BG_DIM = [15, 15, 20];
 
-// Draw a Kenney tile with foreground/background tinting
-// The Kenney 1-bit tiles are white-on-transparent, so we:
-// 1. Fill the cell with bg color
-// 2. Set globalCompositeOperation to draw the tile, then tint it
-function drawTile(tileCanvas, screenX, screenY, tileSize, fg, bg) {
-  // Background fill
-  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
-  ctx.fillRect(screenX, screenY, tileSize, tileSize);
+// Pre-tinted tile cache: tileCanvas -> { 'fg_bg': canvas }
+// Eliminates per-frame offscreen canvas compositing (was the #1 perf bottleneck)
+const _preTintedCache = new Map();
 
-  if (!tileCanvas) return;
+function preTintKey(fg, bg) {
+  return `${fg[0]},${fg[1]},${fg[2]}_${bg[0]},${bg[1]},${bg[2]}`;
+}
 
-  // Draw the tile sprite (white pixels on transparent)
-  // We tint by drawing it, then overlaying fg color with source-atop
-  // Use an offscreen canvas for the tinting operation
-  const tc = _tintCache;
-  const tctx = tc.getContext('2d');
-  tc.width = KENNEY_TILE;
-  tc.height = KENNEY_TILE;
-  tctx.clearRect(0, 0, KENNEY_TILE, KENNEY_TILE);
+// Pre-tint a tile canvas with given fg/bg colors, returning a ready-to-draw canvas
+function preTintTile(tileCanvas, fg, bg) {
+  if (!tileCanvas) return null;
+  // Check cache
+  let tileMap = _preTintedCache.get(tileCanvas);
+  if (!tileMap) {
+    tileMap = {};
+    _preTintedCache.set(tileCanvas, tileMap);
+  }
+  const key = preTintKey(fg, bg);
+  if (tileMap[key]) return tileMap[key];
+
+  // Create pre-tinted version
+  const c = document.createElement('canvas');
+  c.width = KENNEY_TILE;
+  c.height = KENNEY_TILE;
+  const tctx = c.getContext('2d');
+  // Fill bg
+  tctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  tctx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
+  // Draw tile then tint with source-atop
   tctx.drawImage(tileCanvas, 0, 0);
   tctx.globalCompositeOperation = 'source-atop';
   tctx.fillStyle = `rgb(${fg[0]},${fg[1]},${fg[2]})`;
   tctx.fillRect(0, 0, KENNEY_TILE, KENNEY_TILE);
   tctx.globalCompositeOperation = 'source-over';
 
-  ctx.imageSmoothingEnabled = false;
-  ctx.drawImage(tc, 0, 0, KENNEY_TILE, KENNEY_TILE, screenX, screenY, tileSize, tileSize);
+  tileMap[key] = c;
+  return c;
 }
 
-// Reusable offscreen canvas for tinting
-const _tintCache = document.createElement('canvas');
+// Build all pre-tinted variants after atlas is ready
+function buildPreTintedCache() {
+  // Pre-tint all tile types in all 4 color variants (visible floor/wall, explored floor/wall)
+  const colorSets = [
+    [FLOOR_FG, FLOOR_BG], [WALL_FG, WALL_BG],
+    [FLOOR_FG_DIM, FLOOR_BG_DIM], [WALL_FG_DIM, WALL_BG_DIM],
+  ];
+  const allTiles = Object.values(tiles);
+  // Also pre-tint all autotile map entries
+  for (const t of Object.values(AUTOTILE_MAP)) {
+    if (!allTiles.includes(t)) allTiles.push(t);
+  }
+  for (const t of allTiles) {
+    if (!t) continue;
+    for (const [fg, bg] of colorSets) {
+      preTintTile(t, fg, bg);
+    }
+  }
+}
+
+// Fast tile draw using pre-tinted cache (single drawImage per tile)
+function drawTile(tileCanvas, screenX, screenY, tileSize, fg, bg) {
+  const tinted = tileCanvas ? preTintTile(tileCanvas, fg, bg) : null;
+  if (tinted) {
+    ctx.drawImage(tinted, 0, 0, KENNEY_TILE, KENNEY_TILE, screenX, screenY, tileSize, tileSize);
+  } else {
+    ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+    ctx.fillRect(screenX, screenY, tileSize, tileSize);
+  }
+}
 
 function render() {
   const { map, visible, explored, player, mobs, camera, scale } = state;
@@ -1572,6 +1610,7 @@ function render() {
 
   ctx.fillStyle = '#000';
   ctx.fillRect(0, 0, canvas.width, canvas.height);
+  ctx.imageSmoothingEnabled = false;
 
   const startX = Math.floor(camera.x / tileSize) - 1;
   const startY = Math.floor(camera.y / tileSize) - 1;
@@ -1649,7 +1688,6 @@ function render() {
     const def = MOB_SPRITES[mob.name];
 
     if (spriteImg && def) {
-      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(spriteImg,
         def.col * def.w, def.row * def.h, def.w, def.h,
         screenX + (tileSize - def.w * scale) / 2,
@@ -1682,7 +1720,6 @@ function render() {
     const spriteImg = sprites.warrior;
     const def = MOB_SPRITES.warrior;
     if (spriteImg && def) {
-      ctx.imageSmoothingEnabled = false;
       ctx.drawImage(spriteImg,
         def.col * def.w, def.row * def.h, def.w, def.h,
         screenX + (tileSize - def.w * scale) / 2,
@@ -2272,6 +2309,7 @@ if ('serviceWorker' in navigator) {
 initPlayer();
 loadSprites(() => {
   buildTileAtlas();
+  buildPreTintedCache();
   generateLevel();
   render();
   log('Tap to move. Tap enemies to attack.');
