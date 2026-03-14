@@ -1629,9 +1629,8 @@ function render() {
     if (!visible[idx(item.x, item.y)]) continue;
     const screenX = Math.floor(item.x * tileSize - camera.x);
     const screenY = Math.floor(item.y * tileSize - camera.y);
-    // Pulsing glow background
-    const pulse = 0.5 + 0.3 * Math.sin(Date.now() / 500);
-    ctx.fillStyle = `rgba(100,180,255,${pulse * 0.3})`;
+    // Static glow background (no animation needed)
+    ctx.fillStyle = 'rgba(100,180,255,0.2)';
     ctx.fillRect(screenX + 2, screenY + 2, tileSize - 4, tileSize - 4);
     // Tile icon
     ctx.fillStyle = '#8cf';
@@ -2270,22 +2269,12 @@ if ('serviceWorker' in navigator) {
   navigator.serviceWorker.register('sw.js').catch(() => {});
 }
 
-// Animation loop for floor item glow pulse
-let animating = false;
-function animLoop() {
-  if (state.floorItems.length > 0) {
-    render();
-  }
-  requestAnimationFrame(animLoop);
-}
-
 initPlayer();
 loadSprites(() => {
   buildTileAtlas();
   generateLevel();
   render();
   log('Tap to move. Tap enemies to attack.');
-  animLoop();
 });
 
 </script>

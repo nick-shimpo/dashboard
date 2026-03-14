@@ -1,4 +1,4 @@
-const CACHE_NAME = 'roguelike-v8';
+const CACHE_NAME = 'roguelike-v9';
 const ASSETS = [
   '/dashboard/roguelike/',
   '/dashboard/roguelike/index.html',
