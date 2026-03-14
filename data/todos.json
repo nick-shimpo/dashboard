@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-14T14:23:00+01:00",
+  "lastUpdated": "2026-03-14T16:00:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -330,16 +330,16 @@
       "id": "t021",
       "title": "Danner Mountain Light boot care",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "normal",
-      "notes": "Products DELIVERED. CARE ROUTINE: (1) Clean with soft brush after each hike. (2) Condition leather every 2 months. (3) Reapply waterproofing when water stops beading. NEVER mink oil/neatsfoot oil. Apply to leather only, NOT textile panels.",
+      "notes": "DONE — Boots cleaned and conditioned 2026-03-14. Products: Nikwax Conditioner + Waterproofing Wax. CARE ROUTINE: (1) Clean with soft brush after each hike. (2) Condition leather every 2 months. (3) Reapply waterproofing when water stops beading. NEVER mink oil/neatsfoot oil. Apply to leather only, NOT textile panels.",
       "created": "2026-02-28",
       "due": null,
       "subtasks": [
         {"title": "Buy leather conditioner (Nikwax or Obenauf's) — DELIVERED", "done": true},
         {"title": "Buy waterproofing wax/gel — DELIVERED", "done": true},
         {"title": "Buy soft-bristled boot brush — DELIVERED", "done": true},
-        {"title": "Clean and condition boots", "done": false}
+        {"title": "Clean and condition boots — DONE 2026-03-14", "done": true}
       ]
     },
     {
