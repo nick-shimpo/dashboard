@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-13T12:36:00+01:00",
+  "lastUpdated": "2026-03-14T14:23:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -174,31 +174,31 @@
       "id": "t009",
       "title": "Buy brackets for under-bed drawers",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "normal",
-      "notes": "Corner brackets to reinforce under-bed drawers (daughter's bed). Drawer fronts keep coming off due to weak cam lock fasteners. REVISED APPROACH: 20mm corner brackets placed in the 4.5cm gap between the two cam lock fastenings on each side. 2 brackets per gap, 2 gaps per drawer = 4 per drawer × 5 drawers = 20 brackets total. Screws into 15mm deep wood, screws must be ≤12mm long. AMAZON LINKS: (1) WINOMO 20mm Winkelverbinder 20 Stk: https://www.amazon.de/dp/B06XHWH4H2 (2) Alt: 20x20mm Metallwinkel: https://www.amazon.de/dp/B0D2BJNM2Y — CHECK screw length ≤12mm before ordering!",
+      "notes": "DONE — Brackets received and installed on all 5 drawers. 20mm corner brackets in cam lock gaps.",
       "created": "2026-02-16",
       "due": null,
       "subtasks": [
         {"title": "Order 20x corner brackets (20mm) + short screws (≤12mm) — ORDERED 2026-03-01", "done": true},
         {"title": "Order 1.5-2mm HSS drill bit for pilot holes (if not in existing set) — ORDERED 2026-03-01", "done": true},
-        {"title": "Install 4 brackets per drawer (2 per side, in cam lock gap) on all 5 drawers", "done": false}
+        {"title": "Install 4 brackets per drawer (2 per side, in cam lock gap) on all 5 drawers — DONE", "done": true}
       ]
     },
     {
       "id": "t010",
       "title": "Buy picture hanging wire + mirror mounting hardware",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "normal",
-      "notes": "Mirror: 60x110x3cm, 12kg. Cannot use side hooks (water pipes behind wall). Must mount centrally with wire. D-rings already fitted by manufacturer: 6.5cm from top, 3cm from sides (54cm span). SHOPPING LIST: (1) 1.5-2mm stainless steel braided picture wire, rated 30kg+, cut ~70-75cm. (2) Fischer DuoPower 8x40 with Winkelhaken (angle hook) — standard picture hooks only rated 3-5kg, NOT enough. Drill 8mm, 50mm deep. (3) Wire crimps/ferrules 1.5-2mm if not included with wire. (4) Adhesive rubber/felt bumper pads for bottom corners. INSTALLATION: Wire sag ~5cm. Hook at ~193-194cm from floor for mirror centre at eye level. Note: D-rings near top = steep wire angle = higher tension, so 30kg+ rating is important. Est. cost: €25-40 total. AMAZON LINKS: (1) GIGIIS Stahlseil 2mm 5m 30kg: https://www.amazon.de/dp/B0BTD54FLC (2) Fischer EasyHook Angle + DuoPower 8x40: https://www.amazon.de/dp/B0922THB6D (3) Constrabo Presshülsen 2mm 50 Stk: https://www.amazon.de/dp/B07CB8S4P7 (4) Filzgleiter: search amazon.de for 'selbstklebende Gummipuffer'",
+      "notes": "DONE — Mirror mounted. 60x110x3cm, 12kg, wire on D-rings, Fischer DuoPower 8x40 + Winkelhaken.",
       "created": "2026-02-16",
       "due": null,
       "subtasks": [
         {"title": "Order: stainless steel picture wire 1.5-2mm, 30kg+ rated — ORDERED 2026-03-01", "done": true},
         {"title": "Order: Fischer DuoPower 8x40 + Winkelhaken — ORDERED 2026-03-01", "done": true},
         {"title": "Order: wire crimps/ferrules + rubber bumper pads — ORDERED 2026-03-01", "done": true},
-        {"title": "Install wire on mirror D-rings and mount centrally", "done": false}
+        {"title": "Install wire on mirror D-rings and mount centrally — DONE", "done": true}
       ]
     },
     {
@@ -216,9 +216,9 @@
       "id": "t012",
       "title": "Fix drawers",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "normal",
-      "notes": "",
+      "notes": "DONE — Fixed with bracket installation (t009).",
       "created": "2026-02-16",
       "due": null,
       "subtasks": []
@@ -301,14 +301,14 @@
       "id": "t020",
       "title": "Book neurologist appointment for repeat medication",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "high",
-      "notes": "Repeat prescription appointment. Neuro.MVZ 24 March at 16:00 CONFIRMED (Herr Wagner). Calendar event added. Local neurologist search deprioritised — earliest local availability is late April, so sticking with Frankfurt appointment for now. May revisit later.",
+      "notes": "DONE — Neuro.MVZ 24 March at 16:00 CONFIRMED (Herr Wagner). Appointment is booked and on calendar. No further action needed.",
       "created": "2026-02-22",
       "due": null,
       "subtasks": [
-        {"title": "Call neurologist to book appointment", "done": false},
-        {"title": "Coordinate date/time with psychiatrist appointment (t019) — aim for same day", "done": false},
+        {"title": "Book appointment — CONFIRMED 24 March at 16:00", "done": true},
+        {"title": "Add to calendar — DONE", "done": true},
         {"title": "Attend appointment and get prescription", "done": false}
       ]
     },
@@ -332,13 +332,13 @@
       "category": "quick",
       "status": "pending",
       "priority": "normal",
-      "notes": "Full-grain leather boots with Gore-Tex lining. CARE ROUTINE: (1) Clean with soft brush after each hike. (2) Condition leather every 2 months (more if heavy use). (3) Reapply waterproofing when boots start absorbing water. NEVER use mink oil or neatsfoot oil (rots natural fibers). NEVER apply heat to dry. Apply products to leather only, NOT fabric/textile panels. PRODUCT OPTIONS (amazon.de): Nikwax Conditioner For Leather: https://www.amazon.de/dp/B004VE739M — Nikwax Waterproofing Wax: https://www.amazon.de/dp/B0041DFH3C — OR Obenauf's Heavy Duty LP (beeswax, highly rated): https://www.amazon.de/dp/B0002X520S",
+      "notes": "Products DELIVERED. CARE ROUTINE: (1) Clean with soft brush after each hike. (2) Condition leather every 2 months. (3) Reapply waterproofing when water stops beading. NEVER mink oil/neatsfoot oil. Apply to leather only, NOT textile panels.",
       "created": "2026-02-28",
       "due": null,
       "subtasks": [
-        {"title": "Buy leather conditioner (Nikwax or Obenauf's) — ORDERED 2026-03-01", "done": true},
-        {"title": "Buy waterproofing wax/gel — ORDERED 2026-03-01", "done": true},
-        {"title": "Buy soft-bristled boot brush (if not already owned) — ORDERED 2026-03-01", "done": true},
+        {"title": "Buy leather conditioner (Nikwax or Obenauf's) — DELIVERED", "done": true},
+        {"title": "Buy waterproofing wax/gel — DELIVERED", "done": true},
+        {"title": "Buy soft-bristled boot brush — DELIVERED", "done": true},
         {"title": "Clean and condition boots", "done": false}
       ]
     },
@@ -346,15 +346,14 @@
       "id": "t022",
       "title": "Buy camera neck strap",
       "category": "quick",
-      "status": "pending",
+      "status": "completed",
       "priority": "normal",
-      "notes": "Simple, cheap neck strap for camera. ORDERED 2026-03-01.",
+      "notes": "DONE — Camera strap delivered and attached.",
       "created": "2026-02-28",
       "due": null,
-      "status": "pending",
       "subtasks": [
         {"title": "Camera strap ordered — ORDERED 2026-03-01", "done": true},
-        {"title": "Attach strap to camera when delivered", "done": false}
+        {"title": "Attach strap to camera — DONE", "done": true}
       ]
     },
     {
