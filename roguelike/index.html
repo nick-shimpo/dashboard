@@ -58,6 +58,22 @@ canvas {
   display: flex;
   justify-content: space-between;
 }
+#wait-btn {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
+  right: 64px;
+  width: 44px; height: 44px;
+  background: rgba(60,60,80,0.8);
+  border: 1px solid #666;
+  border-radius: 8px;
+  color: #fff;
+  font: bold 18px monospace;
+  z-index: 20;
+  pointer-events: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 #tile-board-btn {
   position: fixed;
   bottom: calc(env(safe-area-inset-bottom, 8px) + 8px);
@@ -320,6 +336,7 @@ canvas {
     <div class="held-hint">Tap BOARD to place</div>
   </div>
 </div>
+<div id="wait-btn">&#9202;</div>
 <div id="tile-board-btn">&#9638;</div>
 
 <div id="panel-overlay">
@@ -854,9 +871,17 @@ function cancelAutoWalk() {
   state.autoWalkPath = null;
 }
 
+function waitTurn() {
+  log('You wait.');
+  endTurn();
+}
+
 function movePlayer(tx, ty) {
   const { player, mobs } = state;
   cancelAutoWalk();
+
+  // Tap self = wait/skip turn
+  if (tx === player.x && ty === player.y) { waitTurn(); return; }
 
   const targetMob = mobs.find(m => m.x === tx && m.y === ty && m.hp > 0);
   if (targetMob && dist(player.x, player.y, tx, ty) === 1) {
@@ -2078,6 +2103,13 @@ panelTabs.forEach(tab => {
   });
 });
 
+// Wait button
+document.getElementById('wait-btn').addEventListener('pointerdown', (e) => {
+  e.stopPropagation();
+  e.preventDefault();
+  if (!panelOpen) waitTurn();
+});
+
 // Open/close
 tileBoardBtn.addEventListener('pointerdown', (e) => {
   e.stopPropagation();
@@ -2316,7 +2348,7 @@ loadSprites(() => {
   buildPreTintedCache();
   generateLevel();
   render();
-  log('Tap to move. Tap enemies to attack.');
+  log('v12 — Tap to move. Tap enemies to attack.');
 });
 
 </script>
