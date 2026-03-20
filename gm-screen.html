@@ -396,6 +396,28 @@
   b { color: var(--bright); }
   hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
   ::selection { background: var(--caution); color: var(--bright); }
+
+  /* SCENE DRESSING */
+  .dressing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .dressing-item {
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .dressing-item .dressing-label {
+    font-weight: bold;
+    color: var(--bright);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
 </style>
 </head>
 <body>
@@ -610,13 +632,13 @@
     </div>
   </div>
 
-  <!-- SESSION NOTES -->
+  <!-- SCENE DRESSING -->
   <div class="panel">
     <div class="panel-header" style="color:var(--dim)" onclick="togglePanel(this)">
-      Session Notes <span class="chev">&#9660;</span>
+      Scene Dressing <span style="font-weight:normal;font-size:10px;letter-spacing:0;text-transform:none;color:var(--dim)">&mdash; refreshes on load</span> <span class="chev">&#9660;</span>
     </div>
     <div class="panel-body">
-      <textarea class="notes-area" placeholder="Type session notes here..."></textarea>
+      <div class="dressing-grid" id="dressing-grid"></div>
     </div>
   </div>
 
@@ -927,6 +949,84 @@ function rollAll() {
   rollName();
   rollSceneSeed();
 }
+
+// ===== SCENE DRESSING =====
+const DRESSING = [
+  // OBJECTS — things you find
+  {cat:'Object', text:'Laminated evacuation map, water-stained, route marked in red pen'},
+  {cat:'Object', text:'Empty coffee mug with a name scratched into the handle'},
+  {cat:'Object', text:'Personal locker, door hanging open, photos taped inside'},
+  {cat:'Object', text:'Fire extinguisher pulled from bracket, lying on the floor'},
+  {cat:'Object', text:'Clipboard with maintenance checklist, last entry half-finished'},
+  {cat:'Object', text:'Boot print in something dark and sticky, heading toward a door'},
+  {cat:'Object', text:'Hard hat with company logo, cracked down the middle'},
+  {cat:'Object', text:'Roll of duct tape wrapped around a pipe joint — makeshift repair'},
+  {cat:'Object', text:'Duffel bag, zipped shut, heavier than it looks'},
+  {cat:'Object', text:'Wedding ring sitting on top of a folded uniform'},
+  {cat:'Object', text:'Flashlight, still on, beam pointing at the ceiling'},
+  {cat:'Object', text:'Child\'s drawing pinned to a notice board — crayon sun, stick figures'},
+  {cat:'Object', text:'Toolbox, open, wrenches scattered as if dropped in a hurry'},
+  {cat:'Object', text:'Handwritten note: "DON\'T GO BELOW LEVEL 3"'},
+  {cat:'Object', text:'Radio handset hanging by its cord, faint static'},
+
+  // TEXTURES — surface details
+  {cat:'Texture', text:'Condensation beading on cold pipes, running in slow trails'},
+  {cat:'Texture', text:'Organic residue — slick, slightly warm, smells faintly sweet'},
+  {cat:'Texture', text:'Floor grating caked with dried mud and something darker'},
+  {cat:'Texture', text:'Peeling safety tape, yellow-black stripes curling at the edges'},
+  {cat:'Texture', text:'Wall paint blistered from heat, rough like skin'},
+  {cat:'Texture', text:'Mineral deposits crusting around a leaking valve'},
+  {cat:'Texture', text:'Hairline cracks spreading across reinforced glass'},
+  {cat:'Texture', text:'Rust blooming through grey paint like a rash'},
+  {cat:'Texture', text:'Smooth patch on a handrail where a thousand hands have gripped'},
+  {cat:'Texture', text:'Floor tiles buckled upward, something growing underneath'},
+
+  // SOUNDS — background audio
+  {cat:'Sound', text:'Distant clang — metallic, rhythmic, like someone hammering'},
+  {cat:'Sound', text:'Air cycling through vents, changing pitch every few seconds'},
+  {cat:'Sound', text:'Water running somewhere behind a wall, faster than a drip'},
+  {cat:'Sound', text:'Generator hum shifting frequency — wrong for a moment, then back'},
+  {cat:'Sound', text:'Something dragging across the floor, one room over'},
+  {cat:'Sound', text:'Radio squelch — someone keying a mic but not speaking'},
+  {cat:'Sound', text:'Gurgling from a drain, like it\'s trying to breathe'},
+  {cat:'Sound', text:'Tick-tick-tick — thermal expansion in cooling pipes'},
+  {cat:'Sound', text:'Echo of your own footsteps coming back wrong — too many feet'},
+  {cat:'Sound', text:'A door closing softly, somewhere behind you'},
+
+  // ATMOSPHERE — vibes and conditions
+  {cat:'Vibe', text:'Emergency lighting only — everything red-tinted and long-shadowed'},
+  {cat:'Vibe', text:'Air feels thick, humid, slightly hard to breathe'},
+  {cat:'Vibe', text:'Temperature suddenly warmer than it should be'},
+  {cat:'Vibe', text:'Power flicker — half a second of total darkness'},
+  {cat:'Vibe', text:'Smell of ozone and burnt insulation'},
+  {cat:'Vibe', text:'Floor vibration — subsonic, felt in the chest not heard'},
+  {cat:'Vibe', text:'A room that looks perfectly normal. Nothing wrong at all. Somehow worse.'},
+  {cat:'Vibe', text:'Graffiti on the wall: tally marks. Forty-seven of them.'},
+  {cat:'Vibe', text:'A corridor that curves just enough that you can\'t see the end'},
+  {cat:'Vibe', text:'Handprints on the wall at running height — smeared, heading one direction'},
+
+  // BODIES & BIOLOGY — the horror layer
+  {cat:'Biology', text:'Shed chitin fragments on the floor, translucent, still wet'},
+  {cat:'Biology', text:'Mucus trail across a doorway, thick as a finger'},
+  {cat:'Biology', text:'Organic growth in a wall seam — soft, fibrous, pulsing faintly'},
+  {cat:'Biology', text:'A tooth on the floor. Human.'},
+  {cat:'Biology', text:'Something that used to be a hand, fused to a pipe fitting'},
+  {cat:'Biology', text:'Cocoon material draped from the ceiling like wet fabric'},
+  {cat:'Biology', text:'Scratch marks on the inside of a locked door'},
+  {cat:'Biology', text:'A puddle that\'s slightly too warm and slightly too thick'},
+  {cat:'Biology', text:'Shell casing in a cluster — someone fired at something here'},
+  {cat:'Biology', text:'A boot. Just one. Still laced.'},
+];
+
+function populateDressing() {
+  const grid = document.getElementById('dressing-grid');
+  const items = pickN(DRESSING, 8);
+  grid.innerHTML = items.map(d =>
+    `<div class="dressing-item"><span class="dressing-label">${d.cat}</span><br>${d.text}</div>`
+  ).join('');
+}
+
+populateDressing();
 </script>
 
 </body>
