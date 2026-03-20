@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-03-15T05:00:18.601Z",
+  "generatedAt": "2026-03-20T05:00:58.242Z",
   "cycle": {
     "startDate": "2026-02-25",
-    "daysPassed": 18,
-    "daysRemaining": 10,
+    "daysPassed": 23,
+    "daysRemaining": 5,
     "daysTotal": 28,
-    "percentElapsed": 64
+    "percentElapsed": 82
   },
   "balance": {
-    "current": 1622.28,
+    "current": 1094.33,
     "currency": "EUR",
-    "asOf": "2026-03-15"
+    "asOf": "2026-03-20"
   },
   "variableBuckets": [
     {
@@ -20,9 +20,9 @@
       "spent": 149.33,
       "remaining": 50.67,
       "percentUsed": 75,
-      "dailyPaceAllowed": 5.07,
-      "paceRatio": 1.17,
-      "paceStatus": "amber",
+      "dailyPaceAllowed": 10.13,
+      "paceRatio": 0.91,
+      "paceStatus": "green",
       "transactionCount": 7,
       "status": "on_track"
     },
@@ -30,13 +30,13 @@
       "id": "groceries",
       "name": "Groceries",
       "budget": 750,
-      "spent": 325.45,
-      "remaining": 424.55,
-      "percentUsed": 43,
-      "dailyPaceAllowed": 42.46,
-      "paceRatio": 0.67,
+      "spent": 462.36,
+      "remaining": 287.64,
+      "percentUsed": 62,
+      "dailyPaceAllowed": 57.53,
+      "paceRatio": 0.76,
       "paceStatus": "green",
-      "transactionCount": 9,
+      "transactionCount": 13,
       "status": "on_track"
     },
     {
@@ -46,8 +46,8 @@
       "spent": 64.2,
       "remaining": -14.2,
       "percentUsed": 128,
-      "dailyPaceAllowed": -1.42,
-      "paceRatio": 2,
+      "dailyPaceAllowed": -2.84,
+      "paceRatio": 1.56,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "over_budget"
@@ -56,13 +56,13 @@
       "id": "drugstore",
       "name": "Drugstore (DM)",
       "budget": 160,
-      "spent": 136.63,
-      "remaining": 23.37,
-      "percentUsed": 85,
-      "dailyPaceAllowed": 2.34,
-      "paceRatio": 1.33,
-      "paceStatus": "red",
-      "transactionCount": 5,
+      "spent": 158.93,
+      "remaining": 1.07,
+      "percentUsed": 99,
+      "dailyPaceAllowed": 0.21,
+      "paceRatio": 1.21,
+      "paceStatus": "amber",
+      "transactionCount": 6,
       "status": "warning"
     },
     {
@@ -72,7 +72,7 @@
       "spent": 0,
       "remaining": 20,
       "percentUsed": 0,
-      "dailyPaceAllowed": 2,
+      "dailyPaceAllowed": 4,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -82,13 +82,13 @@
       "id": "kids_activities",
       "name": "Kids Activities",
       "budget": 100,
-      "spent": 25,
-      "remaining": 75,
-      "percentUsed": 25,
-      "dailyPaceAllowed": 7.5,
-      "paceRatio": 0.39,
+      "spent": 57.5,
+      "remaining": 42.5,
+      "percentUsed": 57,
+      "dailyPaceAllowed": 8.5,
+      "paceRatio": 0.7,
       "paceStatus": "green",
-      "transactionCount": 1,
+      "transactionCount": 2,
       "status": "on_track"
     },
     {
@@ -98,7 +98,7 @@
       "spent": 0,
       "remaining": 100,
       "percentUsed": 0,
-      "dailyPaceAllowed": 10,
+      "dailyPaceAllowed": 20,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -108,13 +108,13 @@
       "id": "subscriptions",
       "name": "Subscriptions",
       "budget": 100,
-      "spent": 158.81,
-      "remaining": -58.81,
-      "percentUsed": 159,
-      "dailyPaceAllowed": -5.88,
-      "paceRatio": 2.48,
+      "spent": 327.75,
+      "remaining": -227.75,
+      "percentUsed": 328,
+      "dailyPaceAllowed": -45.55,
+      "paceRatio": 4,
       "paceStatus": "red",
-      "transactionCount": 7,
+      "transactionCount": 11,
       "status": "over_budget"
     },
     {
@@ -211,13 +211,13 @@
       "id": "amazon_shopping",
       "name": "Amazon Shopping",
       "budget": null,
-      "spent": 80.85,
+      "spent": 171.14,
       "remaining": null,
       "percentUsed": null,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 1,
+      "transactionCount": 2,
       "status": "no_budget"
     },
     {
@@ -235,7 +235,7 @@
     }
   ],
   "fixedCosts": {
-    "total": 3750.82,
+    "total": 3863.82,
     "items": [
       {
         "name": "Housing",
@@ -304,6 +304,12 @@
         "date": "2026-03-03"
       },
       {
+        "name": "Insurance",
+        "amount": 113,
+        "creditor": "Alexandra Orsi",
+        "date": "2026-03-19"
+      },
+      {
         "name": "Childcare & Kita",
         "amount": 72,
         "creditor": "Sibel Yildirim",
@@ -348,14 +354,25 @@
     ]
   },
   "unclassified": {
-    "count": 0,
-    "totalAmount": 0,
-    "items": []
+    "count": 2,
+    "totalAmount": 91.29,
+    "items": [
+      {
+        "creditor": "PayPal Europe S.a.r.l. et Cie S.C.A",
+        "amount": 90.29,
+        "date": "2026-03-20"
+      },
+      {
+        "creditor": "VISA HBF WIESBADEN 4008-291",
+        "amount": 1,
+        "date": "2026-03-19"
+      }
+    ]
   },
   "summary": {
-    "totalSpent": 4941.02,
-    "totalFixed": 3750.82,
-    "totalVariable": 1190.2,
-    "totalUnclassified": 0
+    "totalSpent": 5596.25,
+    "totalFixed": 3863.82,
+    "totalVariable": 1641.14,
+    "totalUnclassified": 91.29
   }
 }
