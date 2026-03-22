@@ -1,5 +1,5 @@
 {
-  "lastUpdated": "2026-03-14T16:00:00+01:00",
+  "lastUpdated": "2026-03-22T21:00:00+01:00",
   "updatedBy": "Kai (Telegram)",
   "categories": {
     "quick": {
@@ -435,6 +435,21 @@
       "subtasks": [
         {"title": "Book appointment or walk in at Hausärztin", "done": false},
         {"title": "Collect Überweisung for psychiatrist", "done": false}
+      ]
+    },
+    {
+      "id": "t030",
+      "title": "Find local English-speaking TTRPG/board game group",
+      "category": "long",
+      "status": "in-progress",
+      "priority": "normal",
+      "notes": "Research done 2026-03-22. Best leads: Frankfurt Game Lovers (Meetup, has Offenbach sessions), Frankfurt Role Players (Meetup, TTRPG-focused), Darmstadt Board Games Group (Spielezentrum, English welcome). Also: Playce board game café Frankfurt, Facebook Frankfurt English Gamers Group. Next step: attend one or two sessions to try them out. If none fit, draft a LFG post for Reddit/Facebook/Discord.",
+      "created": "2026-03-22",
+      "due": null,
+      "subtasks": [
+        {"title": "Try Frankfurt Game Lovers or Darmstadt Board Games session", "done": false},
+        {"title": "Try Frankfurt Role Players session (TTRPG)", "done": false},
+        {"title": "If needed: draft and post LFG on Reddit/Facebook/Discord", "done": false}
       ]
     },
     {
