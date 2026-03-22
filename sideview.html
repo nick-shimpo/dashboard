@@ -7,43 +7,49 @@
 <style>
   * { margin: 0; padding: 0; box-sizing: border-box; }
   body {
-    background: #0a0a12;
+    background: #0a0a18;
     display: flex;
     flex-direction: column;
     align-items: center;
-    justify-content: center;
+    justify-content: flex-start;
+    padding-top: 10px;
     height: 100vh;
     overflow: hidden;
     touch-action: none;
   }
   #game {
-    font-family: 'Courier New', 'Consolas', monospace;
-    font-size: 14px;
-    line-height: 1.0;
-    letter-spacing: 0px;
+    font-family: 'Menlo', 'Courier New', 'Consolas', monospace;
+    font-size: 11px;
+    line-height: 1.2;
+    letter-spacing: 1px;
     white-space: pre;
     user-select: none;
     -webkit-user-select: none;
+    border: 1px solid #222;
+    padding: 2px;
   }
   #info {
-    color: #666;
+    color: #888;
     font-family: monospace;
     font-size: 11px;
-    margin-top: 8px;
+    margin-top: 6px;
     text-align: center;
+    padding: 0 10px;
   }
   #controls {
     display: flex;
     gap: 4px;
-    margin-top: 12px;
+    margin-top: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
   }
   .btn {
     background: #1a1a2e;
     color: #8888aa;
-    border: 1px solid #333;
-    padding: 12px 18px;
+    border: 1px solid #444;
+    padding: 14px 20px;
     font-family: monospace;
-    font-size: 16px;
+    font-size: 18px;
     cursor: pointer;
     border-radius: 4px;
     -webkit-tap-highlight-color: transparent;
@@ -53,7 +59,7 @@
 </head>
 <body>
 
-<div id="game"></div>
+<div id="game">Loading...</div>
 <div id="info">Arrow keys / buttons to move. R = use rope.</div>
 <div id="controls">
   <button class="btn" onclick="move(-1,0)">&#9664;</button>
@@ -64,68 +70,61 @@
 </div>
 
 <script>
+try {
+
 // === WORLD CONFIG ===
-const W = 48;  // width
-const H = 28;  // height
+const W = 48;
+const H = 24;
 
 // Terrain types
-const AIR = 0;
-const GRASS = 1;
-const DIRT = 2;
-const ROCK = 3;
-const BEDROCK = 4;
-const WATER = 5;
-const CAVE_AIR = 6;
-const TREE_TRUNK = 7;
-const TREE_CANOPY = 8;
-const ROPE_ITEM = 9;
-const ARTIFACT = 10;
-const VINE = 11;
+const AIR = 0, GRASS = 1, DIRT = 2, ROCK = 3, BEDROCK = 4;
+const WATER = 5, CAVE_AIR = 6, TREE_TRUNK = 7, TREE_CANOPY = 8;
+const ROPE_ITEM = 9, ARTIFACT = 10, VINE = 11;
 
 // === CHARACTER & COLOR MAPS ===
 const CHAR_MAP = {
-  [AIR]:        ' ',
-  [GRASS]:      '▁',
-  [DIRT]:       '▒',
-  [ROCK]:       '▓',
-  [BEDROCK]:    '█',
-  [WATER]:      '≈',
-  [CAVE_AIR]:   '·',
-  [TREE_TRUNK]: '│',
-  [TREE_CANOPY]:'♣',
-  [ROPE_ITEM]:  '∿',
-  [ARTIFACT]:   '◆',
-  [VINE]:       '┆',
+  [AIR]:        '\u00B7',  // middle dot - visible sky
+  [GRASS]:      '\u2581',  // ▁
+  [DIRT]:       '\u2592',  // ▒
+  [ROCK]:       '\u2593',  // ▓
+  [BEDROCK]:    '\u2588',  // █
+  [WATER]:      '\u2248',  // ≈
+  [CAVE_AIR]:   '\u00B7',  // ·
+  [TREE_TRUNK]: '\u2502',  // │
+  [TREE_CANOPY]:'\u2663',  // ♣
+  [ROPE_ITEM]:  '\u007E',  // ~ (safe ASCII fallback)
+  [ARTIFACT]:   '\u25C6',  // ◆
+  [VINE]:       '\u2506',  // ┆
 };
 
 const FG_MAP = {
-  [AIR]:        '#111122',
-  [GRASS]:      '#44aa44',
-  [DIRT]:       '#8b6914',
-  [ROCK]:       '#777788',
-  [BEDROCK]:    '#444455',
-  [WATER]:      '#4488cc',
-  [CAVE_AIR]:   '#333344',
-  [TREE_TRUNK]: '#6b4423',
-  [TREE_CANOPY]:'#228833',
-  [ROPE_ITEM]:  '#ddaa44',
-  [ARTIFACT]:   '#ff44ff',
-  [VINE]:       '#337733',
+  [AIR]:        '#1a1a33',
+  [GRASS]:      '#55cc55',
+  [DIRT]:       '#aa7722',
+  [ROCK]:       '#8888aa',
+  [BEDROCK]:    '#555566',
+  [WATER]:      '#5599dd',
+  [CAVE_AIR]:   '#222233',
+  [TREE_TRUNK]: '#885533',
+  [TREE_CANOPY]:'#33aa44',
+  [ROPE_ITEM]:  '#ffcc44',
+  [ARTIFACT]:   '#ff55ff',
+  [VINE]:       '#44aa44',
 };
 
 const BG_MAP = {
-  [AIR]:        '#0a0a16',
-  [GRASS]:      '#1a2a14',
-  [DIRT]:       '#2a1a08',
-  [ROCK]:       '#1a1a22',
-  [BEDROCK]:    '#0e0e14',
-  [WATER]:      '#0a1a2a',
-  [CAVE_AIR]:   '#0c0c14',
-  [TREE_TRUNK]: '#0a0a16',
-  [TREE_CANOPY]:'#0a0a16',
-  [ROPE_ITEM]:  '#1a1a08',
-  [ARTIFACT]:   '#1a0a1a',
-  [VINE]:       '#0a0a16',
+  [AIR]:        '#080814',
+  [GRASS]:      '#1a3316',
+  [DIRT]:       '#331a08',
+  [ROCK]:       '#1a1a28',
+  [BEDROCK]:    '#0e0e18',
+  [WATER]:      '#0a1a33',
+  [CAVE_AIR]:   '#0a0a14',
+  [TREE_TRUNK]: '#080814',
+  [TREE_CANOPY]:'#0c1a0c',
+  [ROPE_ITEM]:  '#1a1a0a',
+  [ARTIFACT]:   '#220a22',
+  [VINE]:       '#0a0a14',
 };
 
 // === GENERATE TERRAIN ===
@@ -137,31 +136,25 @@ for (let y = 0; y < H; y++) {
   }
 }
 
-// Height map with gentle hills
 function terrainHeight(x) {
-  // Base terrain: hills using overlapping sine waves
-  let h = 15
-    + Math.sin(x * 0.12) * 4
-    + Math.sin(x * 0.05 + 1) * 3
+  let h = 12
+    + Math.sin(x * 0.12) * 3
+    + Math.sin(x * 0.05 + 1) * 2
     + Math.sin(x * 0.25 + 2) * 1.5;
-  // Cliff drop at x=34-36
-  if (x >= 34 && x <= 36) h -= 5;
-  if (x >= 37) h -= 3;
+  if (x >= 34 && x <= 36) h -= 4;
+  if (x >= 37) h -= 2;
   return Math.round(h);
 }
 
 // Fill terrain
 for (let x = 0; x < W; x++) {
   let surface = terrainHeight(x);
-
   for (let y = 0; y < H; y++) {
     if (y === surface) {
       world[y][x] = GRASS;
-    } else if (y === surface + 1) {
+    } else if (y > surface && y < surface + 4) {
       world[y][x] = DIRT;
-    } else if (y > surface + 1 && y < surface + 5) {
-      world[y][x] = DIRT;
-    } else if (y >= surface + 5 && y < H - 1) {
+    } else if (y >= surface + 4 && y < H - 1) {
       world[y][x] = ROCK;
     } else if (y === H - 1) {
       world[y][x] = BEDROCK;
@@ -169,14 +162,17 @@ for (let x = 0; x < W; x++) {
   }
 }
 
-// Carve a cave system (mid-level underground)
-function carveCave(cx, cy, radius) {
-  for (let dy = -radius; dy <= radius; dy++) {
-    for (let dx = -radius; dx <= radius; dx++) {
-      let ny = cy + dy, nx = cx + dx;
+// Cave system
+let caveCenterY = 19;
+for (let cx = 8; cx < 38; cx++) {
+  let wobble = Math.sin(cx * 0.2) * 1.2;
+  let r = 1.8 + Math.sin(cx * 0.15) * 0.8;
+  for (let dy = -3; dy <= 3; dy++) {
+    for (let dx = -3; dx <= 3; dx++) {
+      let ny = Math.round(caveCenterY + wobble) + dy;
+      let nx = cx + dx;
       if (ny >= 0 && ny < H && nx >= 0 && nx < W) {
-        let dist = Math.sqrt(dx*dx + dy*dy);
-        if (dist < radius && world[ny][nx] !== AIR && world[ny][nx] !== BEDROCK) {
+        if (Math.sqrt(dx*dx + dy*dy) < r && world[ny][nx] !== AIR && world[ny][nx] !== BEDROCK) {
           world[ny][nx] = CAVE_AIR;
         }
       }
@@ -184,115 +180,72 @@ function carveCave(cx, cy, radius) {
   }
 }
 
-// Create a connected cave system
-let caveCenterY = 22;
-for (let cx = 8; cx < 38; cx += 1) {
-  let wobble = Math.sin(cx * 0.2) * 1.5;
-  let r = 2 + Math.sin(cx * 0.15) * 1;
-  carveCave(cx, caveCenterY + wobble, r);
-}
-// Cave entrance (vertical shaft from surface)
+// Cave entrance shaft
 let entranceX = 10;
 let entranceSurface = terrainHeight(entranceX);
-for (let y = entranceSurface; y <= caveCenterY - 1; y++) {
+for (let y = entranceSurface; y <= caveCenterY; y++) {
   if (y >= 0 && y < H) {
     world[y][entranceX] = CAVE_AIR;
     if (entranceX + 1 < W) world[y][entranceX + 1] = CAVE_AIR;
   }
 }
 
-// Add vines down the shaft
-for (let y = entranceSurface + 1; y <= caveCenterY - 2; y++) {
+// Vines down the shaft
+for (let y = entranceSurface + 1; y < caveCenterY; y++) {
   if (y >= 0 && y < H && world[y][entranceX] === CAVE_AIR) {
     world[y][entranceX] = VINE;
   }
 }
 
-// Add a water pool in the cave
-for (let x = 22; x < 30; x++) {
-  let wy = caveCenterY + 2;
-  if (wy < H && world[wy][x] === CAVE_AIR) {
+// Water pool in cave
+for (let x = 22; x < 29; x++) {
+  let wy = caveCenterY + 1;
+  if (wy < H && (world[wy][x] === CAVE_AIR || world[wy][x] === ROCK || world[wy][x] === DIRT)) {
     world[wy][x] = WATER;
   }
-  // Also the row above if cave air
-  if (wy - 1 >= 0 && world[wy-1][x] === CAVE_AIR && x > 23 && x < 29) {
-    // keep as cave air — water is just the bottom
-  }
 }
 
-// Add trees on the surface
+// Trees
 function addTree(tx) {
-  let surface = terrainHeight(tx);
-  if (surface - 1 >= 0 && surface - 2 >= 0 && surface - 3 >= 0) {
-    world[surface - 1][tx] = TREE_TRUNK;
-    world[surface - 2][tx] = TREE_TRUNK;
-    world[surface - 3][tx] = TREE_CANOPY;
-    if (tx - 1 >= 0) world[surface - 3][tx - 1] = TREE_CANOPY;
-    if (tx + 1 < W) world[surface - 3][tx + 1] = TREE_CANOPY;
-    if (surface - 4 >= 0) world[surface - 4][tx] = TREE_CANOPY;
+  let s = terrainHeight(tx);
+  if (s - 3 >= 0) {
+    world[s - 1][tx] = TREE_TRUNK;
+    world[s - 2][tx] = TREE_TRUNK;
+    world[s - 3][tx] = TREE_CANOPY;
+    if (tx - 1 >= 0) world[s - 3][tx - 1] = TREE_CANOPY;
+    if (tx + 1 < W) world[s - 3][tx + 1] = TREE_CANOPY;
+    if (s - 4 >= 0) world[s - 4][tx] = TREE_CANOPY;
   }
 }
+addTree(5); addTree(16); addTree(20); addTree(32); addTree(40); addTree(44);
 
-addTree(5);
-addTree(16);
-addTree(20);
-addTree(32);
-addTree(40);
-addTree(44);
-
-// Add stars in the sky
-let stars = [];
-for (let i = 0; i < 15; i++) {
+// Stars
+let stars = new Set();
+for (let i = 0; i < 20; i++) {
   let sx = Math.floor(Math.random() * W);
-  let sy = Math.floor(Math.random() * 8);
-  if (world[sy][sx] === AIR) {
-    stars.push({x: sx, y: sy});
-  }
+  let sy = Math.floor(Math.random() * 6);
+  if (world[sy][sx] === AIR) stars.add(sy * W + sx);
 }
 
-// Place rope item on a ledge
+// Rope item
 let ropeX = 25;
-let ropeSurface = terrainHeight(ropeX);
-world[ropeSurface - 1][ropeX] = ROPE_ITEM;
+world[terrainHeight(ropeX) - 1][ropeX] = ROPE_ITEM;
 
-// Place artifact deep in cave
+// Artifact
 world[caveCenterY][30] = ARTIFACT;
 
-// Add a cliff / steep drop
-for (let y = 0; y < H; y++) {
-  for (let dx = 35; dx <= 37; dx++) {
-    let normalSurface = terrainHeight(dx);
-    // Make the cliff area deeper
-    if (y >= normalSurface - 4 && y < normalSurface) {
-      world[y][dx] = AIR; // carve out above the cliff
-    }
-  }
-}
-// Steepen terrain around x=36 — create a cliff face
-for (let y = 10; y < 20; y++) {
-  if (world[y][36] === AIR) world[y][36] = ROCK;
-  if (world[y][37] === AIR && y > 12) world[y][37] = ROCK;
+// Cliff face
+for (let y = 8; y < 16; y++) {
+  if (y < H && world[y][36] === AIR) world[y][36] = ROCK;
 }
 
-// === PLAYER STATE ===
-let player = {
-  x: 3,
-  y: terrainHeight(3) - 1,
-  hasRope: false,
-  ropeDeployed: false,
-};
+// === PLAYER ===
+let player = { x: 3, y: terrainHeight(3) - 1, hasRope: false };
 
-// === GAME LOGIC ===
 function isSolid(x, y) {
   if (x < 0 || x >= W || y < 0 || y >= H) return true;
   let t = world[y][x];
   return t === DIRT || t === ROCK || t === BEDROCK || t === GRASS;
-}
-
-function isClimbable(x, y) {
-  if (x < 0 || x >= W || y < 0 || y >= H) return false;
-  let t = world[y][x];
-  return t === VINE || (t === ROPE_ITEM) || player.ropeDeployed;
 }
 
 function isWalkable(x, y) {
@@ -300,209 +253,133 @@ function isWalkable(x, y) {
   return !isSolid(x, y);
 }
 
-function applyGravity() {
-  // Fall if nothing below and not on vine
-  let below = player.y + 1;
-  if (below < H && !isSolid(player.x, below) && !isOnVine()) {
-    player.y = below;
-    // Keep falling
-    while (player.y + 1 < H && !isSolid(player.x, player.y + 1) && !isOnVine()) {
-      player.y++;
-    }
-  }
+function isOnVine() {
+  return world[player.y][player.x] === VINE;
 }
 
-function isOnVine() {
-  let t = world[player.y][player.x];
-  return t === VINE;
+function applyGravity() {
+  while (player.y + 1 < H && !isSolid(player.x, player.y + 1) && !isOnVine()) {
+    player.y++;
+  }
 }
 
 function move(dx, dy) {
   let nx = player.x + dx;
   let ny = player.y + dy;
-
   if (nx < 0 || nx >= W || ny < 0 || ny >= H) return;
 
-  // Vertical movement
-  if (dy !== 0) {
-    // Going up
-    if (dy < 0) {
-      // Can climb if on vine/rope, or if stepping up 1 block (like stairs)
-      if (isOnVine() && isWalkable(nx, ny)) {
-        player.y = ny;
-        pickup();
-        return;
-      }
-      // Step-up: if the block at current level ahead is solid but above it is free
-      if (dx === 0 && isWalkable(player.x, ny)) {
-        // Only if there's something to grab or we're next to a wall
-        let hasWallContact = isSolid(player.x - 1, player.y) || isSolid(player.x + 1, player.y);
-        if (hasWallContact || player.hasRope) {
-          player.y = ny;
-          pickup();
-          return;
-        }
+  if (dy < 0) {
+    // Climb up
+    if (isOnVine() && isWalkable(nx, ny)) {
+      player.y = ny; pickup(); render(); return;
+    }
+    if (dx === 0 && isWalkable(player.x, ny)) {
+      let wall = isSolid(player.x - 1, player.y) || isSolid(player.x + 1, player.y);
+      if (wall || player.hasRope || isOnVine()) {
+        player.y = ny; pickup(); render(); return;
       }
     }
-    // Going down
-    if (dy > 0 && isWalkable(nx, ny)) {
-      player.y = ny;
-      pickup();
-      applyGravity();
-      return;
+    render(); return;
+  }
+  if (dy > 0) {
+    if (isWalkable(nx, ny)) {
+      player.y = ny; pickup(); applyGravity();
     }
-    return;
+    render(); return;
   }
 
-  // Horizontal movement
+  // Horizontal
   if (isWalkable(nx, ny)) {
-    player.x = nx;
-    pickup();
-    applyGravity();
+    player.x = nx; pickup(); applyGravity();
   } else if (isWalkable(nx, ny - 1) && isSolid(nx, ny)) {
-    // Step up one block automatically (walk up gentle slopes)
-    player.x = nx;
-    player.y = ny - 1;
-    pickup();
+    player.x = nx; player.y = ny - 1; pickup();
   }
+  render();
 }
 
 function pickup() {
   let t = world[player.y][player.x];
   if (t === ROPE_ITEM) {
     player.hasRope = true;
-    world[player.y][player.x] = (player.y >= terrainHeight(player.x)) ? CAVE_AIR : AIR;
+    world[player.y][player.x] = AIR;
     updateInfo();
   }
   if (t === ARTIFACT) {
     world[player.y][player.x] = CAVE_AIR;
     updateInfo();
-    // Flash effect
-    document.getElementById('game').style.color = '#ff44ff';
-    setTimeout(() => { document.getElementById('game').style.color = ''; render(); }, 200);
   }
 }
 
 function useRope() {
   if (!player.hasRope) return;
-
-  // Deploy rope downward from current position
   let deployed = false;
   for (let y = player.y + 1; y < H; y++) {
     if (isSolid(player.x, y)) break;
-    if (world[y][player.x] === AIR || world[y][player.x] === CAVE_AIR) {
-      world[y][player.x] = VINE;
-      deployed = true;
-    }
+    world[y][player.x] = VINE;
+    deployed = true;
   }
-
   if (deployed) {
     player.hasRope = false;
-    player.ropeDeployed = true;
     updateInfo();
     render();
   }
 }
 
 function updateInfo() {
-  let status = player.hasRope ? 'ROPE: equipped | ' : 'ROPE: -- | ';
-  status += `Pos: ${player.x},${player.y}`;
-  document.getElementById('info').textContent = status + ' | Arrows/tap to move, R = deploy rope';
-  document.getElementById('ropeBtn').textContent = player.hasRope ? 'ROPE ✓' : 'ROPE';
-  document.getElementById('ropeBtn').style.color = player.hasRope ? '#ddaa44' : '#555';
+  let s = player.hasRope ? 'ROPE: YES' : 'ROPE: --';
+  document.getElementById('info').textContent = s + ' | ' + player.x + ',' + player.y;
+  document.getElementById('ropeBtn').style.color = player.hasRope ? '#ffcc44' : '#555';
 }
 
 // === RENDER ===
-// Camera follows player
-function getCamera() {
-  let camX = Math.max(0, Math.min(player.x - 20, W - 42));
-  let camY = Math.max(0, Math.min(player.y - 10, H - 22));
-  return { x: camX, y: camY };
-}
-
 function render() {
-  let cam = getCamera();
-  let viewW = Math.min(42, W - cam.x);
-  let viewH = Math.min(22, H - cam.y);
+  // Viewport: fit mobile width ~35 cols, 20 rows
+  let viewW = 35;
+  let viewH = 20;
+  let camX = Math.max(0, Math.min(player.x - Math.floor(viewW/2), W - viewW));
+  let camY = Math.max(0, Math.min(player.y - Math.floor(viewH/2), H - viewH));
+
   let html = '';
-
   for (let vy = 0; vy < viewH; vy++) {
-    let y = cam.y + vy;
+    let y = camY + vy;
     for (let vx = 0; vx < viewW; vx++) {
-      let x = cam.x + vx;
-
+      let x = camX + vx;
       let ch, fg, bg;
 
       if (x === player.x && y === player.y) {
         ch = '@';
-        fg = '#ffcc00';
-        bg = BG_MAP[world[y][x]] || '#0a0a16';
+        fg = '#ffdd00';
+        bg = BG_MAP[world[y][x]] || '#080814';
       } else {
         let t = world[y][x];
-        ch = CHAR_MAP[t] || ' ';
-        fg = FG_MAP[t] || '#111122';
-        bg = BG_MAP[t] || '#0a0a16';
+        ch = CHAR_MAP[t];
+        fg = FG_MAP[t];
+        bg = BG_MAP[t];
 
         // Stars
-        if (t === AIR) {
-          for (let s of stars) {
-            if (s.x === x && s.y === y) {
-              ch = (Math.random() > 0.1) ? '·' : '✦';
-              fg = '#667799';
-              break;
-            }
-          }
+        if (t === AIR && stars.has(y * W + x)) {
+          ch = '*';
+          fg = '#7788aa';
         }
 
-        // Depth shading for underground — darken deeper areas
-        if ((t === CAVE_AIR || t === WATER || t === VINE) && y > 18) {
-          let depth = (y - 18) / (H - 18);
-          let dim = 1 - depth * 0.4;
-          fg = dimColor(fg, dim);
-        }
-
-        // Edge detection — show terrain boundaries with slope chars
+        // Edge hints
         if (t === AIR || t === CAVE_AIR) {
-          // Check if this is right at a terrain edge
           if (y + 1 < H && isSolid(x, y + 1)) {
-            // Ground surface below — show grass hint
-            let belowType = world[y + 1][x];
-            if (belowType === GRASS || belowType === DIRT) {
-              ch = '▁';
-              fg = '#44aa44';
-            }
-          }
-          if (x + 1 < W && isSolid(x + 1, y) && !isSolid(x, y + 1)) {
-            ch = '◢';
-            fg = '#555566';
-          }
-          if (x - 1 >= 0 && isSolid(x - 1, y) && !isSolid(x, y + 1)) {
-            ch = '◣';
-            fg = '#555566';
+            ch = '\u2581'; // ▁
+            fg = (world[y+1][x] === GRASS) ? '#55cc55' : '#666677';
           }
         }
       }
 
-      html += `<span style="color:${fg};background:${bg}">${ch}</span>`;
+      html += '<span style="color:' + fg + ';background:' + bg + '">' + ch + '</span>';
     }
     html += '\n';
   }
-
   document.getElementById('game').innerHTML = html;
 }
 
-function dimColor(hex, factor) {
-  let r = parseInt(hex.slice(1,3), 16);
-  let g = parseInt(hex.slice(3,5), 16);
-  let b = parseInt(hex.slice(5,7), 16);
-  r = Math.round(r * factor);
-  g = Math.round(g * factor);
-  b = Math.round(b * factor);
-  return `#${r.toString(16).padStart(2,'0')}${g.toString(16).padStart(2,'0')}${b.toString(16).padStart(2,'0')}`;
-}
-
 // === INPUT ===
-document.addEventListener('keydown', (e) => {
+document.addEventListener('keydown', function(e) {
   switch(e.key) {
     case 'ArrowLeft':  move(-1, 0); break;
     case 'ArrowRight': move(1, 0); break;
@@ -511,35 +388,33 @@ document.addEventListener('keydown', (e) => {
     case 'r': case 'R': useRope(); break;
   }
   e.preventDefault();
-  render();
 });
 
-// Touch/swipe controls
 let touchStartX, touchStartY;
-document.addEventListener('touchstart', (e) => {
+document.addEventListener('touchstart', function(e) {
   touchStartX = e.touches[0].clientX;
   touchStartY = e.touches[0].clientY;
 });
-document.addEventListener('touchend', (e) => {
-  if (!touchStartX) return;
+document.addEventListener('touchend', function(e) {
+  if (touchStartX === undefined) return;
   let dx = e.changedTouches[0].clientX - touchStartX;
   let dy = e.changedTouches[0].clientY - touchStartY;
-
-  // Only process swipes, not taps on buttons
   if (Math.abs(dx) < 20 && Math.abs(dy) < 20) return;
-
   if (Math.abs(dx) > Math.abs(dy)) {
     move(dx > 0 ? 1 : -1, 0);
   } else {
     move(0, dy > 0 ? 1 : -1);
   }
-  render();
-  touchStartX = null;
+  touchStartX = undefined;
 });
 
 // === INIT ===
 updateInfo();
 render();
+
+} catch(err) {
+  document.getElementById('game').textContent = 'ERROR: ' + err.message + '\n' + err.stack;
+}
 </script>
 </body>
 </html>
