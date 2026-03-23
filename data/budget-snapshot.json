@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-03-22T05:00:20.786Z",
+  "generatedAt": "2026-03-23T05:00:59.588Z",
   "cycle": {
     "startDate": "2026-02-25",
-    "daysPassed": 25,
-    "daysRemaining": 3,
+    "daysPassed": 26,
+    "daysRemaining": 2,
     "daysTotal": 28,
-    "percentElapsed": 89
+    "percentElapsed": 93
   },
   "balance": {
-    "current": 1094.33,
+    "current": 605.13,
     "currency": "EUR",
-    "asOf": "2026-03-22"
+    "asOf": "2026-03-23"
   },
   "variableBuckets": [
     {
@@ -20,8 +20,8 @@
       "spent": 149.33,
       "remaining": 50.67,
       "percentUsed": 75,
-      "dailyPaceAllowed": 16.89,
-      "paceRatio": 0.84,
+      "dailyPaceAllowed": 25.33,
+      "paceRatio": 0.81,
       "paceStatus": "green",
       "transactionCount": 7,
       "status": "on_track"
@@ -30,14 +30,14 @@
       "id": "groceries",
       "name": "Groceries",
       "budget": 750,
-      "spent": 462.36,
-      "remaining": 287.64,
-      "percentUsed": 62,
-      "dailyPaceAllowed": 95.88,
-      "paceRatio": 0.7,
+      "spent": 620.18,
+      "remaining": 129.82,
+      "percentUsed": 83,
+      "dailyPaceAllowed": 64.91,
+      "paceRatio": 0.89,
       "paceStatus": "green",
-      "transactionCount": 13,
-      "status": "on_track"
+      "transactionCount": 14,
+      "status": "warning"
     },
     {
       "id": "dining_out",
@@ -46,8 +46,8 @@
       "spent": 64.2,
       "remaining": -14.2,
       "percentUsed": 128,
-      "dailyPaceAllowed": -4.73,
-      "paceRatio": 1.44,
+      "dailyPaceAllowed": -7.1,
+      "paceRatio": 1.38,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "over_budget"
@@ -59,8 +59,8 @@
       "spent": 158.93,
       "remaining": 1.07,
       "percentUsed": 99,
-      "dailyPaceAllowed": 0.36,
-      "paceRatio": 1.11,
+      "dailyPaceAllowed": 0.53,
+      "paceRatio": 1.06,
       "paceStatus": "amber",
       "transactionCount": 6,
       "status": "warning"
@@ -72,7 +72,7 @@
       "spent": 0,
       "remaining": 20,
       "percentUsed": 0,
-      "dailyPaceAllowed": 6.67,
+      "dailyPaceAllowed": 10,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -85,8 +85,8 @@
       "spent": 57.5,
       "remaining": 42.5,
       "percentUsed": 57,
-      "dailyPaceAllowed": 14.17,
-      "paceRatio": 0.64,
+      "dailyPaceAllowed": 21.25,
+      "paceRatio": 0.61,
       "paceStatus": "green",
       "transactionCount": 2,
       "status": "on_track"
@@ -98,9 +98,9 @@
       "spent": 90.29,
       "remaining": 9.71,
       "percentUsed": 90,
-      "dailyPaceAllowed": 3.24,
-      "paceRatio": 1.01,
-      "paceStatus": "amber",
+      "dailyPaceAllowed": 4.85,
+      "paceRatio": 0.97,
+      "paceStatus": "green",
       "transactionCount": 1,
       "status": "warning"
     },
@@ -111,8 +111,8 @@
       "spent": 327.75,
       "remaining": -227.75,
       "percentUsed": 328,
-      "dailyPaceAllowed": -75.92,
-      "paceRatio": 3.69,
+      "dailyPaceAllowed": -113.87,
+      "paceRatio": 3.53,
       "paceStatus": "red",
       "transactionCount": 11,
       "status": "over_budget"
@@ -121,13 +121,13 @@
       "id": "clothing_ali",
       "name": "Clothing Ali",
       "budget": 50,
-      "spent": 174.92,
-      "remaining": -124.92,
-      "percentUsed": 350,
+      "spent": 244.91,
+      "remaining": -194.91,
+      "percentUsed": 490,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 3,
+      "transactionCount": 4,
       "status": "over_budget",
       "accumulates": true,
       "walletBalance": 50
@@ -211,26 +211,26 @@
       "id": "amazon_shopping",
       "name": "Amazon Shopping",
       "budget": null,
-      "spent": 80.85,
+      "spent": 131.26,
       "remaining": null,
       "percentUsed": null,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 1,
+      "transactionCount": 3,
       "status": "no_budget"
     },
     {
       "id": "transport",
       "name": "Public Transport",
       "budget": null,
-      "spent": 14.5,
+      "spent": 225.48,
       "remaining": null,
       "percentUsed": null,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 2,
+      "transactionCount": 3,
       "status": "no_budget"
     }
   ],
@@ -359,9 +359,9 @@
     "items": []
   },
   "summary": {
-    "totalSpent": 5505.96,
+    "totalSpent": 5995.16,
     "totalFixed": 3863.82,
-    "totalVariable": 1642.14,
+    "totalVariable": 2131.34,
     "totalUnclassified": 0
   }
 }
