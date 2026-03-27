@@ -1,69 +1,69 @@
 {
-  "generatedAt": "2026-03-26T05:00:35.180Z",
+  "generatedAt": "2026-03-27T05:01:08.241Z",
   "cycle": {
-    "startDate": "2026-02-25",
-    "daysPassed": 29,
-    "daysRemaining": 0,
+    "startDate": "2026-03-26",
+    "daysPassed": 1,
+    "daysRemaining": 27,
     "daysTotal": 28,
-    "percentElapsed": 100
+    "percentElapsed": 4
   },
   "balance": {
-    "current": 337.33,
+    "current": 5335.22,
     "currency": "EUR",
-    "asOf": "2026-03-26"
+    "asOf": "2026-03-27"
   },
   "variableBuckets": [
     {
       "id": "petrol_parking",
       "name": "Petrol & Parking",
       "budget": 200,
-      "spent": 178.85,
-      "remaining": 21.15,
-      "percentUsed": 89,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 0.86,
+      "spent": 0,
+      "remaining": 200,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 7.41,
+      "paceRatio": 0,
       "paceStatus": "green",
-      "transactionCount": 8,
-      "status": "warning"
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "groceries",
       "name": "Groceries",
       "budget": 750,
-      "spent": 748.37,
-      "remaining": 1.63,
-      "percentUsed": 100,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 0.96,
+      "spent": 0,
+      "remaining": 750,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 27.78,
+      "paceRatio": 0,
       "paceStatus": "green",
-      "transactionCount": 20,
-      "status": "warning"
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "dining_out",
       "name": "Dining Out",
       "budget": 50,
-      "spent": 149.4,
-      "remaining": -99.4,
-      "percentUsed": 299,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 2.88,
-      "paceStatus": "red",
-      "transactionCount": 11,
-      "status": "over_budget"
+      "spent": 0,
+      "remaining": 50,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 1.85,
+      "paceRatio": 0,
+      "paceStatus": "green",
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "drugstore",
       "name": "Drugstore (DM)",
       "budget": 160,
-      "spent": 192.38,
-      "remaining": -32.38,
-      "percentUsed": 120,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 1.15,
-      "paceStatus": "amber",
-      "transactionCount": 7,
-      "status": "over_budget"
+      "spent": 0,
+      "remaining": 160,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 5.93,
+      "paceRatio": 0,
+      "paceStatus": "green",
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "toys",
@@ -72,7 +72,7 @@
       "spent": 0,
       "remaining": 20,
       "percentUsed": 0,
-      "dailyPaceAllowed": 0,
+      "dailyPaceAllowed": 0.74,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -82,59 +82,44 @@
       "id": "kids_activities",
       "name": "Kids Activities",
       "budget": 100,
-      "spent": 57.5,
-      "remaining": 42.5,
-      "percentUsed": 57,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 0.55,
+      "spent": 0,
+      "remaining": 100,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 3.7,
+      "paceRatio": 0,
       "paceStatus": "green",
-      "transactionCount": 2,
+      "transactionCount": 0,
       "status": "on_track"
     },
     {
       "id": "household",
       "name": "Household Items",
       "budget": 100,
-      "spent": 90.29,
-      "remaining": 9.71,
-      "percentUsed": 90,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 0.87,
+      "spent": 0,
+      "remaining": 100,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 3.7,
+      "paceRatio": 0,
       "paceStatus": "green",
-      "transactionCount": 1,
-      "status": "warning"
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "subscriptions",
       "name": "Subscriptions",
       "budget": 100,
-      "spent": 337.74,
-      "remaining": -237.74,
-      "percentUsed": 338,
-      "dailyPaceAllowed": 0,
-      "paceRatio": 3.25,
-      "paceStatus": "red",
-      "transactionCount": 12,
-      "status": "over_budget"
+      "spent": 0,
+      "remaining": 100,
+      "percentUsed": 0,
+      "dailyPaceAllowed": 3.7,
+      "paceRatio": 0,
+      "paceStatus": "green",
+      "transactionCount": 0,
+      "status": "on_track"
     },
     {
       "id": "clothing_ali",
       "name": "Clothing Ali",
-      "budget": 50,
-      "spent": 244.91,
-      "remaining": -194.91,
-      "percentUsed": 490,
-      "dailyPaceAllowed": null,
-      "paceRatio": null,
-      "paceStatus": null,
-      "transactionCount": 4,
-      "status": "over_budget",
-      "accumulates": true,
-      "walletBalance": 50
-    },
-    {
-      "id": "clothing_nick",
-      "name": "Clothing Nick",
       "budget": 50,
       "spent": 0,
       "remaining": 50,
@@ -148,26 +133,11 @@
       "walletBalance": 50
     },
     {
-      "id": "clothing_kids",
-      "name": "Clothing Kids",
-      "budget": 75,
-      "spent": 14.99,
-      "remaining": 60.01,
-      "percentUsed": 20,
-      "dailyPaceAllowed": null,
-      "paceRatio": null,
-      "paceStatus": null,
-      "transactionCount": 1,
-      "status": "on_track",
-      "accumulates": true,
-      "walletBalance": 75
-    },
-    {
-      "id": "hairdresser",
-      "name": "Hairdresser",
-      "budget": 40,
+      "id": "clothing_nick",
+      "name": "Clothing Nick",
+      "budget": 100,
       "spent": 0,
-      "remaining": 40,
+      "remaining": 100,
       "percentUsed": 0,
       "dailyPaceAllowed": null,
       "paceRatio": null,
@@ -175,204 +145,101 @@
       "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
-      "walletBalance": 40
+      "walletBalance": 100
     },
     {
-      "id": "healthcare",
-      "name": "Health Care",
-      "budget": 80,
-      "spent": 22.52,
-      "remaining": 57.48,
-      "percentUsed": 28,
+      "id": "clothing_kids",
+      "name": "Clothing Kids",
+      "budget": 135.01,
+      "spent": 0,
+      "remaining": 135.01,
+      "percentUsed": 0,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 2,
+      "transactionCount": 0,
+      "status": "on_track",
+      "accumulates": true,
+      "walletBalance": 135.01
+    },
+    {
+      "id": "hairdresser",
+      "name": "Hairdresser",
+      "budget": 80,
+      "spent": 0,
+      "remaining": 80,
+      "percentUsed": 0,
+      "dailyPaceAllowed": null,
+      "paceRatio": null,
+      "paceStatus": null,
+      "transactionCount": 0,
       "status": "on_track",
       "accumulates": true,
       "walletBalance": 80
     },
     {
-      "id": "books",
-      "name": "Books",
-      "budget": 30,
-      "spent": 24,
-      "remaining": 6,
-      "percentUsed": 80,
+      "id": "healthcare",
+      "name": "Health Care",
+      "budget": 137.48,
+      "spent": 0,
+      "remaining": 137.48,
+      "percentUsed": 0,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 1,
-      "status": "warning",
+      "transactionCount": 0,
+      "status": "on_track",
       "accumulates": true,
-      "walletBalance": 30
+      "walletBalance": 137.48
     },
     {
-      "id": "amazon_shopping",
-      "name": "Amazon Shopping",
-      "budget": null,
-      "spent": 149.26,
-      "remaining": null,
-      "percentUsed": null,
+      "id": "books",
+      "name": "Books",
+      "budget": 36,
+      "spent": 0,
+      "remaining": 36,
+      "percentUsed": 0,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 4,
-      "status": "no_budget"
+      "transactionCount": 0,
+      "status": "on_track",
+      "accumulates": true,
+      "walletBalance": 36
     },
     {
       "id": "transport",
       "name": "Public Transport",
       "budget": null,
-      "spent": 243.18,
+      "spent": 6.11,
       "remaining": null,
       "percentUsed": null,
       "dailyPaceAllowed": null,
       "paceRatio": null,
       "paceStatus": null,
-      "transactionCount": 5,
+      "transactionCount": 2,
       "status": "no_budget"
     }
   ],
   "fixedCosts": {
-    "total": 3863.82,
-    "items": [
-      {
-        "name": "Housing",
-        "amount": 390,
-        "creditor": "Rolf Diefenthaler",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Housing",
-        "amount": 80,
-        "creditor": "Stadtwerke Dreieich GmbH",
-        "date": "2026-03-05"
-      },
-      {
-        "name": "Housing",
-        "amount": 115.18,
-        "creditor": "Kreiskasse Offenbach",
-        "date": "2026-03-09"
-      },
-      {
-        "name": "Housing",
-        "amount": 40,
-        "creditor": "V.Juras",
-        "date": "2026-03-09"
-      },
-      {
-        "name": "Telecom",
-        "amount": 39.98,
-        "creditor": "Vodafone West GmbH",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Telecom",
-        "amount": 23.99,
-        "creditor": "Telefonica Germany GmbH + Co. OHG",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Telecom",
-        "amount": 1.49,
-        "creditor": "ING",
-        "date": "2026-03-03"
-      },
-      {
-        "name": "Telecom",
-        "amount": 1.49,
-        "creditor": "ING",
-        "date": "2026-03-03"
-      },
-      {
-        "name": "Insurance",
-        "amount": 77.43,
-        "creditor": "Swiss Life SE",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Insurance",
-        "amount": 6.18,
-        "creditor": "VHV Allgemeine Versicherung AG",
-        "date": "2026-03-03"
-      },
-      {
-        "name": "Insurance",
-        "amount": 41.48,
-        "creditor": "Dela Lebensversicher",
-        "date": "2026-03-03"
-      },
-      {
-        "name": "Insurance",
-        "amount": 113,
-        "creditor": "Alexandra Orsi",
-        "date": "2026-03-19"
-      },
-      {
-        "name": "Childcare & Kita",
-        "amount": 72,
-        "creditor": "Sibel Yildirim",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Childcare & Kita",
-        "amount": 83.5,
-        "creditor": "Ev. Regionalverwaltungsverband Starkenburg-Ost",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Childcare & Kita",
-        "amount": 83.1,
-        "creditor": "Ev. Regionalverwaltungsverband Starkenburg-Ost",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Children's Savings",
-        "amount": 50,
-        "creditor": "Theo Austin Goodall",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Children's Savings",
-        "amount": 50,
-        "creditor": "Ivy Olivia Goodall",
-        "date": "2026-03-02"
-      },
-      {
-        "name": "Children's Savings",
-        "amount": 1750,
-        "creditor": "Alexandra Orsi",
-        "date": "2026-03-03"
-      },
-      {
-        "name": "Children's Savings",
-        "amount": 845,
-        "creditor": "Alexandra Orsi",
-        "date": "2026-03-09"
-      }
-    ]
+    "total": 0,
+    "items": []
   },
   "unclassified": {
-    "count": 2,
-    "totalAmount": 20.74,
+    "count": 1,
+    "totalAmount": 4896,
     "items": [
       {
-        "creditor": "PayPal Europe S.a.r.l. et Cie S.C.A",
-        "amount": 18,
-        "date": "2026-03-25"
-      },
-      {
-        "creditor": "VISA 63210150 FRANKFURT MAI",
-        "amount": 2.74,
-        "date": "2026-03-25"
+        "creditor": "Alexandra Orsi",
+        "amount": 4896,
+        "date": "2026-03-26"
       }
     ]
   },
   "summary": {
-    "totalSpent": 6337.95,
-    "totalFixed": 3863.82,
-    "totalVariable": 2453.39,
-    "totalUnclassified": 20.74
+    "totalSpent": 4902.11,
+    "totalFixed": 0,
+    "totalVariable": 6.11,
+    "totalUnclassified": 4896
   }
 }
