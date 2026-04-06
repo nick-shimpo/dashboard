@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-04-05T04:00:15.442Z",
+  "generatedAt": "2026-04-06T04:00:24.723Z",
   "cycle": {
     "startDate": "2026-03-26",
-    "daysPassed": 10,
-    "daysRemaining": 18,
+    "daysPassed": 11,
+    "daysRemaining": 17,
     "daysTotal": 28,
-    "percentElapsed": 36
+    "percentElapsed": 39
   },
   "balance": {
-    "current": 3656.57,
+    "current": 3506.57,
     "currency": "EUR",
-    "asOf": "2026-04-05"
+    "asOf": "2026-04-06"
   },
   "variableBuckets": [
     {
@@ -20,8 +20,8 @@
       "spent": 140.76,
       "remaining": 59.24,
       "percentUsed": 70,
-      "dailyPaceAllowed": 3.29,
-      "paceRatio": 1.94,
+      "dailyPaceAllowed": 3.48,
+      "paceRatio": 1.79,
       "paceStatus": "red",
       "transactionCount": 4,
       "status": "on_track"
@@ -33,9 +33,9 @@
       "spent": 280.19,
       "remaining": 469.81,
       "percentUsed": 37,
-      "dailyPaceAllowed": 26.1,
-      "paceRatio": 1.03,
-      "paceStatus": "amber",
+      "dailyPaceAllowed": 27.64,
+      "paceRatio": 0.95,
+      "paceStatus": "green",
       "transactionCount": 10,
       "status": "on_track"
     },
@@ -46,8 +46,8 @@
       "spent": 48,
       "remaining": 2,
       "percentUsed": 96,
-      "dailyPaceAllowed": 0.11,
-      "paceRatio": 2.67,
+      "dailyPaceAllowed": 0.12,
+      "paceRatio": 2.46,
       "paceStatus": "red",
       "transactionCount": 1,
       "status": "warning"
@@ -59,8 +59,8 @@
       "spent": 67.85,
       "remaining": 92.15,
       "percentUsed": 42,
-      "dailyPaceAllowed": 5.12,
-      "paceRatio": 1.17,
+      "dailyPaceAllowed": 5.42,
+      "paceRatio": 1.08,
       "paceStatus": "amber",
       "transactionCount": 2,
       "status": "on_track"
@@ -72,8 +72,8 @@
       "spent": 64.01,
       "remaining": -44.01,
       "percentUsed": 320,
-      "dailyPaceAllowed": -2.44,
-      "paceRatio": 8.89,
+      "dailyPaceAllowed": -2.59,
+      "paceRatio": 8.21,
       "paceStatus": "red",
       "transactionCount": 2,
       "status": "over_budget"
@@ -85,8 +85,8 @@
       "spent": 79.5,
       "remaining": 20.5,
       "percentUsed": 80,
-      "dailyPaceAllowed": 1.14,
-      "paceRatio": 2.22,
+      "dailyPaceAllowed": 1.21,
+      "paceRatio": 2.05,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "warning"
@@ -98,7 +98,7 @@
       "spent": 0,
       "remaining": 100,
       "percentUsed": 0,
-      "dailyPaceAllowed": 5.56,
+      "dailyPaceAllowed": 5.88,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -111,8 +111,8 @@
       "spent": 132.5,
       "remaining": -32.5,
       "percentUsed": 133,
-      "dailyPaceAllowed": -1.81,
-      "paceRatio": 3.69,
+      "dailyPaceAllowed": -1.91,
+      "paceRatio": 3.41,
       "paceStatus": "red",
       "transactionCount": 4,
       "status": "over_budget"
@@ -248,7 +248,7 @@
     }
   ],
   "fixedCosts": {
-    "total": 848.64,
+    "total": 998.64,
     "items": [
       {
         "name": "Housing",
@@ -321,6 +321,12 @@
         "amount": 50,
         "creditor": "Ivy Olivia Goodall",
         "date": "2026-04-02"
+      },
+      {
+        "name": "Children's Savings",
+        "amount": 150,
+        "creditor": "Theo Austin Goodall",
+        "date": "2026-04-07"
       }
     ]
   },
@@ -336,8 +342,8 @@
     ]
   },
   "summary": {
-    "totalSpent": 6647.76,
-    "totalFixed": 848.64,
+    "totalSpent": 6797.76,
+    "totalFixed": 998.64,
     "totalVariable": 903.12,
     "totalUnclassified": 4896
   }
