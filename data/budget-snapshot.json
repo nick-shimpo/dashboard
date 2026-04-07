@@ -1,16 +1,16 @@
 {
-  "generatedAt": "2026-04-06T04:00:24.723Z",
+  "generatedAt": "2026-04-07T04:00:21.005Z",
   "cycle": {
     "startDate": "2026-03-26",
-    "daysPassed": 11,
-    "daysRemaining": 17,
+    "daysPassed": 12,
+    "daysRemaining": 16,
     "daysTotal": 28,
-    "percentElapsed": 39
+    "percentElapsed": 43
   },
   "balance": {
-    "current": 3506.57,
+    "current": 1670.02,
     "currency": "EUR",
-    "asOf": "2026-04-06"
+    "asOf": "2026-04-07"
   },
   "variableBuckets": [
     {
@@ -20,8 +20,8 @@
       "spent": 140.76,
       "remaining": 59.24,
       "percentUsed": 70,
-      "dailyPaceAllowed": 3.48,
-      "paceRatio": 1.79,
+      "dailyPaceAllowed": 3.7,
+      "paceRatio": 1.63,
       "paceStatus": "red",
       "transactionCount": 4,
       "status": "on_track"
@@ -33,8 +33,8 @@
       "spent": 280.19,
       "remaining": 469.81,
       "percentUsed": 37,
-      "dailyPaceAllowed": 27.64,
-      "paceRatio": 0.95,
+      "dailyPaceAllowed": 29.36,
+      "paceRatio": 0.86,
       "paceStatus": "green",
       "transactionCount": 10,
       "status": "on_track"
@@ -46,8 +46,8 @@
       "spent": 48,
       "remaining": 2,
       "percentUsed": 96,
-      "dailyPaceAllowed": 0.12,
-      "paceRatio": 2.46,
+      "dailyPaceAllowed": 0.13,
+      "paceRatio": 2.23,
       "paceStatus": "red",
       "transactionCount": 1,
       "status": "warning"
@@ -59,9 +59,9 @@
       "spent": 67.85,
       "remaining": 92.15,
       "percentUsed": 42,
-      "dailyPaceAllowed": 5.42,
-      "paceRatio": 1.08,
-      "paceStatus": "amber",
+      "dailyPaceAllowed": 5.76,
+      "paceRatio": 0.98,
+      "paceStatus": "green",
       "transactionCount": 2,
       "status": "on_track"
     },
@@ -72,8 +72,8 @@
       "spent": 64.01,
       "remaining": -44.01,
       "percentUsed": 320,
-      "dailyPaceAllowed": -2.59,
-      "paceRatio": 8.21,
+      "dailyPaceAllowed": -2.75,
+      "paceRatio": 7.44,
       "paceStatus": "red",
       "transactionCount": 2,
       "status": "over_budget"
@@ -85,8 +85,8 @@
       "spent": 79.5,
       "remaining": 20.5,
       "percentUsed": 80,
-      "dailyPaceAllowed": 1.21,
-      "paceRatio": 2.05,
+      "dailyPaceAllowed": 1.28,
+      "paceRatio": 1.86,
       "paceStatus": "red",
       "transactionCount": 6,
       "status": "warning"
@@ -98,7 +98,7 @@
       "spent": 0,
       "remaining": 100,
       "percentUsed": 0,
-      "dailyPaceAllowed": 5.88,
+      "dailyPaceAllowed": 6.25,
       "paceRatio": 0,
       "paceStatus": "green",
       "transactionCount": 0,
@@ -108,13 +108,13 @@
       "id": "subscriptions",
       "name": "Subscriptions",
       "budget": 100,
-      "spent": 132.5,
-      "remaining": -32.5,
-      "percentUsed": 133,
-      "dailyPaceAllowed": -1.91,
-      "paceRatio": 3.41,
+      "spent": 139.05,
+      "remaining": -39.05,
+      "percentUsed": 139,
+      "dailyPaceAllowed": -2.44,
+      "paceRatio": 3.23,
       "paceStatus": "red",
-      "transactionCount": 4,
+      "transactionCount": 5,
       "status": "over_budget"
     },
     {
@@ -248,13 +248,19 @@
     }
   ],
   "fixedCosts": {
-    "total": 998.64,
+    "total": 2828.64,
     "items": [
       {
         "name": "Housing",
         "amount": 390,
         "creditor": "Rolf Diefenthaler",
         "date": "2026-04-01"
+      },
+      {
+        "name": "Housing",
+        "amount": 80,
+        "creditor": "Stadtwerke Dreieich GmbH",
+        "date": "2026-04-07"
       },
       {
         "name": "Telecom",
@@ -327,6 +333,12 @@
         "amount": 150,
         "creditor": "Theo Austin Goodall",
         "date": "2026-04-07"
+      },
+      {
+        "name": "Children's Savings",
+        "amount": 1750,
+        "creditor": "Alexandra Orsi",
+        "date": "2026-04-07"
       }
     ]
   },
@@ -342,9 +354,9 @@
     ]
   },
   "summary": {
-    "totalSpent": 6797.76,
-    "totalFixed": 998.64,
-    "totalVariable": 903.12,
+    "totalSpent": 8634.31,
+    "totalFixed": 2828.64,
+    "totalVariable": 909.67,
     "totalUnclassified": 4896
   }
 }
