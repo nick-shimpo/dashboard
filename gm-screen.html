@@ -743,30 +743,59 @@
 
   <hr class="sidebar-divider">
 
-  <!-- ENCOUNTER BUILDER -->
-  <div class="improv-section">
-    <div class="improv-label">
-      <span class="red">Encounter Builder</span>
-    </div>
-    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
-      <button class="roll-btn" onclick="addEnemy('carcinid-basic')">+ Basic Carcinid</button>
-      <button class="roll-btn" onclick="addEnemy('carcinid-advanced')">+ Advanced Carcinid</button>
-      <button class="roll-btn" onclick="addEnemy('mimic')">+ The Mimic</button>
-      <button class="roll-btn" onclick="addEnemy('shaw')">+ Shaw</button>
-    </div>
-    <div id="encounter-tracker" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
-      <!-- Enemies appear here -->
-    </div>
-  </div>
-
-  <hr class="sidebar-divider">
-
   <button class="roll-btn primary" onclick="rollAll()" style="width:100%;padding:8px;font-size:13px;letter-spacing:2px">
     &#9881; Roll Everything
   </button>
 
 </div>
 
+</div>
+
+<!-- ==================== ENCOUNTER BUILDER ==================== -->
+<div class="encounter-section">
+  <div class="panel-header ph-red" style="margin-bottom:16px">
+    ⚔ Encounter Builder
+  </div>
+
+  <!-- COMBAT RULES QUICK REFERENCE -->
+  <div class="combat-rules">
+    <div class="rule-column">
+      <div class="rule-title">Initiative</div>
+      <div class="rule-text">Combat Check. Highest goes first. Ties = simultaneous.</div>
+
+      <div class="rule-title">Attacking</div>
+      <div class="rule-text">Roll d100 ≤ Combat skill. Hit = roll damage.</div>
+
+      <div class="rule-title">Damage</div>
+      <div class="rule-text">Roll weapon damage. Target reduces by Armor, then subtracts from HP.</div>
+    </div>
+
+    <div class="rule-column">
+      <div class="rule-title">Critical Hit (01-10)</div>
+      <div class="rule-text">Max damage + roll again.</div>
+
+      <div class="rule-title">Fumble (96-00)</div>
+      <div class="rule-text">Miss + GM complication (jam, drop, hurt self).</div>
+
+      <div class="rule-title">Panic Check</div>
+      <div class="rule-text">Fear Save when threatened. Fail = roll Panic table, lose action.</div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+
+  <!-- ENEMY QUICK-ADD -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+    <button class="enemy-add-btn" onclick="addEnemy('carcinid-basic')">+ Basic Carcinid</button>
+    <button class="enemy-add-btn" onclick="addEnemy('carcinid-advanced')">+ Advanced Carcinid</button>
+    <button class="enemy-add-btn" onclick="addEnemy('mimic')">+ The Mimic</button>
+    <button class="enemy-add-btn" onclick="addEnemy('shaw')">+ Shaw</button>
+  </div>
+
+  <!-- ACTIVE ENEMIES TRACKER -->
+  <div id="encounter-tracker" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:16px">
+    <!-- Enemy cards appear here -->
+  </div>
 </div>
 
 <!-- ===== JAVASCRIPT ===== -->
@@ -1106,17 +1135,96 @@ function removeEnemy(id) {
 </script>
 
 <style>
+/* ===== ENCOUNTER SECTION ===== */
+.encounter-section {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--panel);
+  border: 2px solid var(--border);
+}
+
+.combat-rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  background: var(--surface);
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--caution);
+}
+
+.rule-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rule-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--caution);
+  font-weight: 700;
+  margin-bottom: -6px;
+}
+
+.rule-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.enemy-add-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.enemy-add-btn:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
 .enemy-card {
   background: var(--surface);
   border: 1px solid var(--border);
-  border-left: 3px solid var(--red);
-  padding: 10px;
+  border-left: 4px solid var(--red);
+  padding: 14px;
   font-size: 13px;
   line-height: 1.6;
 }
 
 .enemy-stats > div {
-  margin: 2px 0;
+  margin: 4px 0;
+}
+
+.enemy-stats strong {
+  color: var(--dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.enemy-stats input[type="number"] {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  background: var(--bg);
+  color: var(--red);
+  width: 60px;
 }
 </style>
 
