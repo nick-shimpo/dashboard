@@ -743,6 +743,24 @@
 
   <hr class="sidebar-divider">
 
+  <!-- ENCOUNTER BUILDER -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="red">Encounter Builder</span>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:6px;margin-top:8px">
+      <button class="roll-btn" onclick="addEnemy('carcinid-basic')">+ Basic Carcinid</button>
+      <button class="roll-btn" onclick="addEnemy('carcinid-advanced')">+ Advanced Carcinid</button>
+      <button class="roll-btn" onclick="addEnemy('mimic')">+ The Mimic</button>
+      <button class="roll-btn" onclick="addEnemy('shaw')">+ Shaw</button>
+    </div>
+    <div id="encounter-tracker" style="margin-top:12px;display:flex;flex-direction:column;gap:8px">
+      <!-- Enemies appear here -->
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
   <button class="roll-btn primary" onclick="rollAll()" style="width:100%;padding:8px;font-size:13px;letter-spacing:2px">
     &#9881; Roll Everything
   </button>
@@ -1014,7 +1032,93 @@ function populateDressing() {
 }
 
 populateDressing();
+
+// ===== ENCOUNTER BUILDER =====
+const ENEMY_STATS = {
+  'carcinid-basic': {
+    name: 'Basic Carcinid',
+    hp: 10,
+    armor: 3,
+    instinct: 35,
+    combat: 40,
+    attacks: 'Claws +0 | 1d10 dmg',
+    notes: 'Pack tactics. Herd behavior.'
+  },
+  'carcinid-advanced': {
+    name: 'Advanced Carcinid',
+    hp: 15,
+    armor: 5,
+    instinct: 45,
+    combat: 50,
+    attacks: 'Claws +5 | 2d10 dmg | Acid spit (range)',
+    notes: 'Human DNA integration. Tactical. Can use tools.'
+  },
+  'mimic': {
+    name: 'The Mimic',
+    hp: 20,
+    armor: 7,
+    instinct: 60,
+    combat: 60,
+    attacks: 'Claws +10 | 2d10+5 dmg | Ambush (double damage first strike)',
+    notes: 'Looks human at distance. Moves on two legs. Wears marine gear. Uncanny valley horror.'
+  },
+  'shaw': {
+    name: 'Shaw (Android)',
+    hp: 25,
+    armor: 10,
+    instinct: 70,
+    combat: 75,
+    attacks: 'Unarmed +15 | 3d10 dmg | Can use weapons at +20',
+    notes: 'Company asset. Superhuman strength/speed. Mission: retrieve Hinton\'s core. Will negotiate if advantageous.'
+  }
+};
+
+let enemyCounter = 0;
+
+function addEnemy(type) {
+  const stats = ENEMY_STATS[type];
+  const id = `enemy-${++enemyCounter}`;
+  const tracker = document.getElementById('encounter-tracker');
+
+  const enemyCard = document.createElement('div');
+  enemyCard.id = id;
+  enemyCard.className = 'enemy-card';
+  enemyCard.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <strong style="color:var(--red)">${stats.name} #${enemyCounter}</strong>
+      <button onclick="removeEnemy('${id}')" style="background:var(--red);color:white;border:none;padding:2px 8px;cursor:pointer;font-family:inherit;font-size:11px;border-radius:2px">✕</button>
+    </div>
+    <div class="enemy-stats">
+      <div><strong>HP:</strong> <input type="number" value="${stats.hp}" style="width:50px;font-family:inherit;padding:2px 4px"> / ${stats.hp}</div>
+      <div><strong>Armor:</strong> ${stats.armor}</div>
+      <div><strong>Instinct:</strong> ${stats.instinct}% | <strong>Combat:</strong> ${stats.combat}%</div>
+      <div><strong>Attacks:</strong> ${stats.attacks}</div>
+      <div style="margin-top:4px;color:var(--dim);font-size:13px">${stats.notes}</div>
+    </div>
+  `;
+
+  tracker.appendChild(enemyCard);
+}
+
+function removeEnemy(id) {
+  document.getElementById(id).remove();
+}
 </script>
+
+<style>
+.enemy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--red);
+  padding: 10px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.enemy-stats > div {
+  margin: 2px 0;
+}
+</style>
 
 </body>
 </html>
