@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GM Brain — Another Bug Hunt</title>
+<meta name="viewport" content="width=1280">
+<style>
+  :root {
+    --bg: #050608;
+    --deeper: #0a0c10;
+    --panel: #0f1218;
+    --edge: #1a1f2a;
+    --edge-2: #252d3d;
+    --ink: #e4e7ec;
+    --ink-dim: #8b92a0;
+    --ink-faint: #4a5162;
+    --cyan: #22d3ee;
+    --magenta: #e879f9;
+    --amber: #fbbf24;
+    --red: #f87171;
+    --green: #4ade80;
+    --violet: #a78bfa;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 13px;
+    line-height: 1.5;
+  }
+
+  .shell {
+    display: grid;
+    grid-template-rows: 50px 1fr 40px;
+    grid-template-columns: 1fr 380px;
+    grid-template-areas:
+      "head head"
+      "canvas drawer"
+      "foot foot";
+    height: 100vh;
+  }
+
+  /* ===== HEAD ===== */
+  .head {
+    grid-area: head;
+    background: var(--deeper);
+    border-bottom: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 20px;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--cyan);
+    letter-spacing: 0.15em;
+  }
+  .brand .dim { color: var(--ink-faint); margin-left: 8px; }
+  .view-tabs {
+    display: flex;
+    gap: 2px;
+    margin-left: 20px;
+  }
+  .view-tabs button {
+    background: transparent;
+    border: 1px solid var(--edge-2);
+    color: var(--ink-dim);
+    padding: 5px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    cursor: pointer;
+    border-radius: 2px;
+  }
+  .view-tabs button.active {
+    background: var(--cyan);
+    color: var(--bg);
+    border-color: var(--cyan);
+    font-weight: 600;
+  }
+  .head-actions {
+    margin-left: auto;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+  }
+  .head-actions a { color: var(--ink-faint); text-decoration: none; }
+  .head-actions a:hover { color: var(--cyan); }
+  .truths-pill {
+    display: flex;
+    gap: 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+    letter-spacing: 0.1em;
+  }
+  .truths-pill span { padding: 3px 10px; border: 1px solid var(--edge-2); border-radius: 20px; }
+  .truths-pill span strong { color: var(--cyan); margin-right: 6px; }
+
+  /* ===== CANVAS ===== */
+  .canvas {
+    grid-area: canvas;
+    position: relative;
+    overflow: hidden;
+    background:
+      radial-gradient(circle at 50% 50%, #0c1017 0%, #050608 70%),
+      linear-gradient(0deg, transparent 24%, rgba(34, 211, 238, 0.03) 25%, rgba(34, 211, 238, 0.03) 26%, transparent 27%, transparent 74%, rgba(34, 211, 238, 0.03) 75%, rgba(34, 211, 238, 0.03) 76%, transparent 77%),
+      linear-gradient(90deg, transparent 24%, rgba(34, 211, 238, 0.03) 25%, rgba(34, 211, 238, 0.03) 26%, transparent 27%, transparent 74%, rgba(34, 211, 238, 0.03) 75%, rgba(34, 211, 238, 0.03) 76%, transparent 77%);
+    background-size: 100% 100%, 60px 60px, 60px 60px;
+  }
+
+  /* SVG layer */
+  svg.links {
+    position: absolute;
+    inset: 0;
+    width: 100%;
+    height: 100%;
+    pointer-events: none;
+  }
+  svg.links line { stroke: var(--edge-2); stroke-width: 1; }
+  svg.links line.hot { stroke: var(--red); stroke-width: 1.5; opacity: 0.8; stroke-dasharray: 4 4; }
+  svg.links line.cyan { stroke: var(--cyan); stroke-width: 1.5; opacity: 0.6; }
+  svg.links line.dim { stroke: var(--edge); stroke-width: 1; opacity: 0.5; }
+
+  /* Nodes */
+  .node {
+    position: absolute;
+    padding: 10px 14px;
+    background: var(--panel);
+    border: 1px solid var(--edge-2);
+    border-radius: 6px;
+    cursor: pointer;
+    min-width: 140px;
+    transition: transform 0.15s, box-shadow 0.15s;
+    user-select: none;
+  }
+  .node:hover {
+    transform: translate(-50%, -50%) scale(1.05);
+    box-shadow: 0 10px 30px rgba(34, 211, 238, 0.15);
+    z-index: 50;
+  }
+  .node.entity {
+    border-color: var(--violet);
+    box-shadow: 0 0 0 1px rgba(167, 139, 250, 0.2), inset 0 0 20px rgba(167, 139, 250, 0.04);
+  }
+  .node.peril {
+    border-color: var(--amber);
+    box-shadow: 0 0 0 1px rgba(251, 191, 36, 0.2), inset 0 0 20px rgba(251, 191, 36, 0.04);
+  }
+  .node.peril.hot {
+    border-color: var(--red);
+    box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4), 0 0 30px rgba(248, 113, 113, 0.2);
+    animation: pulse 2.4s infinite;
+  }
+  .node.peril.resolved, .node.peril.complete { opacity: 0.4; }
+  .node.location {
+    border-color: var(--cyan);
+    background: var(--deeper);
+  }
+  .node.pc {
+    border-color: var(--green);
+    background: #0a1410;
+  }
+  .node.pc.wounded { border-color: var(--red); }
+  .node.pc.shaken { border-color: var(--amber); }
+  .node.ship {
+    border-color: var(--magenta);
+    box-shadow: 0 0 0 1px rgba(232, 121, 249, 0.2), 0 0 40px rgba(232, 121, 249, 0.08);
+  }
+  .node.selected {
+    transform: translate(-50%, -50%) scale(1.1);
+    box-shadow: 0 0 0 2px var(--cyan), 0 10px 40px rgba(34, 211, 238, 0.3);
+    z-index: 100;
+  }
+  @keyframes pulse {
+    0%, 100% { box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.4), 0 0 30px rgba(248, 113, 113, 0.2); }
+    50% { box-shadow: 0 0 0 1px rgba(248, 113, 113, 0.7), 0 0 45px rgba(248, 113, 113, 0.35); }
+  }
+  .node { transform: translate(-50%, -50%); }
+  .node .tag {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 3px;
+  }
+  .node.entity .tag { color: var(--violet); }
+  .node.peril .tag { color: var(--amber); }
+  .node.peril.hot .tag { color: var(--red); }
+  .node.location .tag { color: var(--cyan); }
+  .node.pc .tag { color: var(--green); }
+  .node.ship .tag { color: var(--magenta); }
+  .node .name {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .node .sub {
+    font-size: 10px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+  .node .omens {
+    display: flex;
+    gap: 2px;
+    margin-top: 5px;
+  }
+  .node .omens span {
+    flex: 1;
+    height: 3px;
+    background: var(--edge);
+    border-radius: 1px;
+  }
+  .node .omens span.fired { background: var(--amber); }
+  .node.hot .omens span.fired { background: var(--red); }
+
+  /* Legend */
+  .legend {
+    position: absolute;
+    bottom: 20px;
+    left: 20px;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+    padding: 10px 14px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+    z-index: 50;
+  }
+  .legend .row { display: flex; gap: 18px; }
+  .legend span { display: flex; align-items: center; gap: 6px; }
+  .legend .dot {
+    width: 8px; height: 8px; border-radius: 50%;
+  }
+  .legend .dot.e { background: var(--violet); }
+  .legend .dot.p { background: var(--amber); }
+  .legend .dot.h { background: var(--red); }
+  .legend .dot.l { background: var(--cyan); }
+  .legend .dot.pc { background: var(--green); }
+  .legend .dot.s { background: var(--magenta); }
+
+  .hint {
+    position: absolute;
+    top: 20px;
+    right: 20px;
+    background: rgba(10, 12, 16, 0.85);
+    backdrop-filter: blur(4px);
+    border: 1px solid var(--edge);
+    border-radius: 4px;
+    padding: 8px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ===== DRAWER ===== */
+  .drawer {
+    grid-area: drawer;
+    background: var(--panel);
+    border-left: 1px solid var(--edge);
+    overflow-y: auto;
+    padding: 20px;
+  }
+  .drawer h2 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .drawer h1 {
+    font-size: 24px;
+    font-weight: 600;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .drawer .ntype {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-bottom: 20px;
+  }
+  .kv {
+    margin-bottom: 16px;
+    padding-bottom: 16px;
+    border-bottom: 1px solid var(--edge);
+  }
+  .kv:last-child { border: none; }
+  .kv .k {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 4px;
+  }
+  .kv .v { color: var(--ink); font-size: 13px; }
+  .kv .v.big { font-size: 15px; line-height: 1.4; }
+
+  .omen-list { margin-top: 8px; }
+  .omen-list .o {
+    padding: 8px 10px;
+    background: var(--deeper);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    margin-bottom: 4px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .omen-list .o.fired {
+    border-color: var(--amber);
+    color: var(--ink);
+    background: rgba(251, 191, 36, 0.06);
+  }
+  .omen-list .o .pip {
+    width: 12px;
+    height: 12px;
+    border-radius: 50%;
+    border: 1px solid var(--edge-2);
+    flex-shrink: 0;
+  }
+  .omen-list .o.fired .pip { background: var(--amber); border-color: var(--amber); }
+  .omen-list .o.hot .pip { background: var(--red); border-color: var(--red); }
+
+  .drawer-empty {
+    text-align: center;
+    padding: 80px 20px;
+    color: var(--ink-faint);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.1em;
+  }
+  .drawer-empty .big { font-size: 40px; margin-bottom: 12px; opacity: 0.4; }
+
+  /* ===== MIND PALACE (library view) ===== */
+  .palace {
+    padding: 40px 60px;
+    overflow-y: auto;
+    position: absolute;
+    inset: 0;
+    background: var(--deeper);
+    display: none;
+  }
+  .palace.active { display: block; }
+  .palace h1 {
+    font-size: 28px;
+    margin-bottom: 24px;
+    letter-spacing: -0.02em;
+  }
+  .palace-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+  }
+  .palace-card {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 6px;
+    padding: 20px;
+  }
+  .palace-card h3 {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--cyan);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--edge);
+  }
+  .palace-card.terra h3 { color: var(--red); }
+  .palace-card ul {
+    list-style: none;
+    font-size: 12px;
+  }
+  .palace-card li {
+    padding: 8px 0;
+    color: var(--ink-dim);
+    border-bottom: 1px dashed var(--edge);
+    line-height: 1.5;
+  }
+  .palace-card li:last-child { border: none; }
+  .palace-card li:hover { color: var(--ink); cursor: pointer; }
+
+  /* Foot */
+  .foot {
+    grid-area: foot;
+    background: var(--deeper);
+    border-top: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    gap: 18px;
+  }
+  .foot .hot { color: var(--red); }
+  .foot .right { margin-left: auto; color: var(--cyan); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--edge-2); border-radius: 4px; }
+
+  .hidden { display: none !important; }
+</style>
+</head>
+<body>
+
+<div class="shell">
+
+  <!-- HEAD -->
+  <div class="head">
+    <div class="brand">◈ CAMPAIGN BRAIN <span class="dim">/ another bug hunt</span></div>
+    <div class="view-tabs">
+      <button class="active" data-panel="graph">GRAPH</button>
+      <button data-panel="palace">MIND PALACE</button>
+    </div>
+    <div class="truths-pill">
+      <span><strong>T1</strong>Everything is changing</span>
+      <span><strong>T2</strong>You will die here</span>
+      <span><strong>T3</strong>This will spread</span>
+    </div>
+    <div class="head-actions">
+      <span id="clock">--:--</span>
+      <a href="gm-prototypes.html">← back</a>
+    </div>
+  </div>
+
+  <!-- CANVAS -->
+  <div class="canvas" id="canvas">
+
+    <!-- Graph view -->
+    <div id="panel-graph">
+      <svg class="links" id="links"></svg>
+
+      <!-- Central mystery: the mountain/ship -->
+      <div class="node ship" style="left: 50%; top: 50%;" data-id="ship">
+        <div class="tag">ELDER SHIP</div>
+        <div class="name">The Mountain</div>
+        <div class="sub">planetary engine · dormant</div>
+      </div>
+
+      <!-- Entities ring -->
+      <div class="node entity" style="left: 28%; top: 38%;" data-id="mother">
+        <div class="tag">ENTITY · transform engine</div>
+        <div class="name">The Mother</div>
+        <div class="sub">wants: transform</div>
+      </div>
+      <div class="node entity" style="left: 72%; top: 36%;" data-id="hinton">
+        <div class="tag">ENTITY · ascending</div>
+        <div class="name">Hinton</div>
+        <div class="sub">wants: ascend</div>
+      </div>
+      <div class="node entity" style="left: 22%; top: 60%;" data-id="carcinids">
+        <div class="tag">ENTITY · worker caste</div>
+        <div class="name">Carcinids</div>
+        <div class="sub">wants: serve</div>
+      </div>
+      <div class="node entity" style="left: 78%; top: 62%;" data-id="elders">
+        <div class="tag">ENTITY · orchestrators</div>
+        <div class="name">The Elders</div>
+        <div class="sub">wants: include</div>
+      </div>
+      <div class="node entity" style="left: 50%; top: 25%;" data-id="shaw">
+        <div class="tag">ENTITY · android</div>
+        <div class="name">Shaw</div>
+        <div class="sub">wants: Hinton's core</div>
+      </div>
+      <div class="node entity" style="left: 50%; top: 76%;" data-id="dropship">
+        <div class="tag">ENTITY · transport</div>
+        <div class="name">Dropship</div>
+        <div class="sub">wants: leave</div>
+      </div>
+
+      <!-- Perils -->
+      <div class="node peril hot" style="left: 18%; top: 48%;" data-id="p-mother">
+        <div class="tag">PERIL · 2/3</div>
+        <div class="name">Mother births</div>
+        <div class="omens"><span class="fired"></span><span class="fired"></span><span></span></div>
+      </div>
+      <div class="node peril" style="left: 40%; top: 14%;" data-id="p-hangar">
+        <div class="tag">PERIL · 2/3</div>
+        <div class="name">Hangar falls</div>
+        <div class="omens"><span class="fired"></span><span class="fired"></span><span></span></div>
+      </div>
+      <div class="node peril" style="left: 60%; top: 14%;" data-id="p-storm">
+        <div class="tag">PERIL · 1/3</div>
+        <div class="name">Storm closes</div>
+        <div class="omens"><span class="fired"></span><span></span><span></span></div>
+      </div>
+      <div class="node peril" style="left: 82%; top: 48%;" data-id="p-hinton">
+        <div class="tag">PERIL · 0/3</div>
+        <div class="name">Hinton ascends</div>
+        <div class="omens"><span></span><span></span><span></span></div>
+      </div>
+      <div class="node peril" style="left: 12%; top: 78%;" data-id="p-maas">
+        <div class="tag">PERIL · 0/3</div>
+        <div class="name">Maas transforms</div>
+        <div class="omens"><span></span><span></span><span></span></div>
+      </div>
+      <div class="node peril complete" style="left: 38%; top: 88%;" data-id="p-shaw">
+        <div class="tag">PERIL · complete</div>
+        <div class="name">Shaw activated</div>
+        <div class="omens"><span class="fired"></span><span class="fired"></span><span class="fired"></span></div>
+      </div>
+      <div class="node peril resolved" style="left: 62%; top: 88%;" data-id="p-reactor">
+        <div class="tag">PERIL · resolved</div>
+        <div class="name">Reactor stable</div>
+        <div class="omens"><span class="fired"></span><span class="fired"></span><span class="fired"></span></div>
+      </div>
+
+      <!-- Locations (smaller, periphery) -->
+      <div class="node location" style="left: 10%; top: 22%;" data-id="loc-stair">
+        <div class="tag">LOCATION</div>
+        <div class="name">Stairwell</div>
+        <div class="sub">Team Alpha here</div>
+      </div>
+      <div class="node location" style="left: 88%; top: 22%;" data-id="loc-hangar">
+        <div class="tag">LOCATION</div>
+        <div class="name">Hangar</div>
+        <div class="sub">Willis here</div>
+      </div>
+      <div class="node location" style="left: 10%; top: 88%;" data-id="loc-reactor">
+        <div class="tag">LOCATION</div>
+        <div class="name">Reactor chamber</div>
+        <div class="sub">Mother · Franco · cocoons</div>
+      </div>
+      <div class="node location" style="left: 88%; top: 88%;" data-id="loc-lab">
+        <div class="tag">LOCATION</div>
+        <div class="name">Edem's lab</div>
+        <div class="sub">presumed Shaw's base</div>
+      </div>
+
+      <!-- Party - top band -->
+      <div class="node pc shaken" style="left: 88%; top: 8%;" data-id="pc-willis">
+        <div class="tag">PC</div>
+        <div class="name">Willis</div>
+        <div class="sub">Teamster · shaken</div>
+      </div>
+      <div class="node pc wounded" style="left: 3%; top: 8%;" data-id="pc-bud">
+        <div class="tag">PC</div>
+        <div class="name">Bud</div>
+        <div class="sub">leg amp'd · carried</div>
+      </div>
+      <div class="node pc" style="left: 3%; top: 36%;" data-id="pc-tandy">
+        <div class="tag">PC</div>
+        <div class="name">Tandy</div>
+        <div class="sub">has rad data</div>
+      </div>
+      <div class="node pc shaken" style="left: 97%; top: 36%;" data-id="pc-rick">
+        <div class="tag">PC</div>
+        <div class="name">Rick</div>
+        <div class="sub">traumatised</div>
+      </div>
+      <div class="node pc" style="left: 50%; top: 50%; display:none;" data-id="pc-valdez"></div>
+
+      <div class="legend">
+        <div class="row">
+          <span><span class="dot e"></span>entity</span>
+          <span><span class="dot p"></span>peril</span>
+          <span><span class="dot h"></span>hot</span>
+          <span><span class="dot l"></span>location</span>
+          <span><span class="dot pc"></span>pc</span>
+          <span><span class="dot s"></span>the mystery</span>
+        </div>
+      </div>
+      <div class="hint">Click any node · dashed = hot thread</div>
+    </div>
+
+    <!-- Mind Palace view (libraries) -->
+    <div class="palace" id="panel-palace">
+      <h1>Mind palace · fragments.</h1>
+      <div class="palace-grid">
+
+        <div class="palace-card">
+          <h3>Carcinid · sound</h3>
+          <ul>
+            <li>A clicking that pauses when you pause, then resumes half a beat later.</li>
+            <li>Wet chitin sliding across metal.</li>
+            <li>Breathing in a pattern that isn't breathing. Four short, one long.</li>
+            <li>The Shriek — half insect cry, half imitation of a human voice.</li>
+            <li>Silence. They have stopped. They are listening.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card">
+          <h3>Carcinid · movement</h3>
+          <ul>
+            <li>Sideways faster than forwards.</li>
+            <li>Four limbs working together, two against — the body hasn't decided.</li>
+            <li>Pauses mid-stride, considers, changes direction.</li>
+            <li>Turns its whole front section toward a wall where there is nothing.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card">
+          <h3>Carcinid · uncanny</h3>
+          <ul>
+            <li>Its eye moves independently. It's looking past you.</li>
+            <li>A scrap of marine webbing fused to its carapace.</li>
+            <li>The body doesn't stop moving for ten seconds after it dies.</li>
+            <li>Still skin underneath the chitin. Human skin.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card">
+          <h3>Station · stairwell</h3>
+          <ul>
+            <li>Emergency lighting flickers when the reactor does.</li>
+            <li>Clicks echo. You can't tell which floor they're on.</li>
+            <li>Blood smear on a handrail, two flights long.</li>
+            <li>A door welded shut from the inside.</li>
+            <li>The number painted on the landing is wrong.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card">
+          <h3>Station · reactor corridor</h3>
+          <ul>
+            <li>Walls still warm. Metal ticks — a sound like many small things walking.</li>
+            <li>A service robot, powered on, head turning slowly. Won't respond.</li>
+            <li>Wall murals — the sunset is the wrong colour. No one painted over it.</li>
+            <li>The reactor's pulse — a low biological thump. It was not biological three days ago.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card">
+          <h3>Outdoors · jungle storm</h3>
+          <ul>
+            <li>Rain in horizontal sheets, hitting the station like gunfire.</li>
+            <li>Jungle wildlife is silent. Has been for hours.</li>
+            <li>Lightning horizontal, across the ridge, for two seconds.</li>
+            <li>The mud is warm. The ground is putting out heat.</li>
+            <li>A palm-sized beetle on your shoulder. It does not fly.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Shriek · control signal</h3>
+          <ul>
+            <li>You feel it before you hear it. A pressure. Then the sound.</li>
+            <li>Every carcinid stops. They are listening. Not to you.</li>
+            <li>It's coming from inside the mountain.</li>
+            <li>Lights dim — not flicker. As if something drew power through them.</li>
+            <li>Plants lean toward the mountain for several seconds afterwards.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Transformation · stages</h3>
+          <ul>
+            <li>1 · Contact — patches of plant growth where there shouldn't be any.</li>
+            <li>2 · Integration — a beetle twice its size, moving without its swarm.</li>
+            <li>3 · Symbiosis — a marine body cocooned, breathing in rhythm with the mother.</li>
+            <li>4 · Directed — the Mimic.</li>
+            <li>5 · Integrated — reserved for the alien ship.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Horror telescope</h3>
+          <ul>
+            <li>The mother's punctures match the mountain ridge line.</li>
+            <li>Carcinids in circle-arrangements face the mountain. All of them.</li>
+            <li>The storm is a spiral. Centred on the mountain.</li>
+            <li>Long-range comms: eight-symbol pattern everywhere. The ground is broadcasting.</li>
+            <li>Even the moon has unusual spectral readings.</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Hinton · voice</h3>
+          <ul>
+            <li>"They don't think like us. They don't have to."</li>
+            <li>"They've done this a thousand times."</li>
+            <li>"They don't destroy. They include. That's the terrifying part."</li>
+            <li>"I'm going to be the first human who chooses it."</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Maas · transformation</h3>
+          <ul>
+            <li>1 · Quieter. Stays in her office. Murals retouched — sunset wrong colour.</li>
+            <li>2 · Long sleeves even in heat. A patch of skin. She sees you notice.</li>
+            <li>3 · She asks: "Why are you afraid of this?"</li>
+          </ul>
+        </div>
+
+        <div class="palace-card terra">
+          <h3>Endgame · set pieces</h3>
+          <ul>
+            <li>The ship awakes — wildlife flees, storm reorients, mountain sheds.</li>
+            <li>Voice of the elders — presence in thought. Not hostile. Informational.</li>
+            <li>Complete — atmosphere changes colour, crater the size of a continent.</li>
+            <li>Interrupted — process stops but something is still in the mountain, dormant.</li>
+          </ul>
+        </div>
+
+      </div>
+    </div>
+
+  </div>
+
+  <!-- DRAWER -->
+  <div class="drawer" id="drawer">
+    <div class="drawer-empty">
+      <div class="big">◈</div>
+      Click a node<br>to see its detail
+    </div>
+  </div>
+
+  <!-- FOOT -->
+  <div class="foot">
+    <span>v3 framework</span>
+    <span>·</span>
+    <span>session 07 · scenario 02 late</span>
+    <span>·</span>
+    <span class="hot">next: Mother births omen 3 · mimic loose</span>
+    <span class="right">graph pre-session · palace during session</span>
+  </div>
+
+</div>
+
+<script>
+  // ===== Node data =====
+  const nodeData = {
+    ship: { type: 'Elder Ship · The mystery', name: 'The Mountain', desc: 'The ship has been on this planet longer than humans have been on Earth. It has been waiting. Hinton wants to merge with it. The elders use it as their terraforming engine.', want: '—', thinks: 'patience, in geological time' },
+    mother: { type: 'Entity · transform engine', name: 'The Mother', desc: 'Immobile, fused to reactor infrastructure. Absorbs radiation. Broadcasts the Shriek at smaller scale. Local terraforming satellite.', want: 'transform', thinks: 'radiation' },
+    hinton: { type: 'Entity · ascending android', name: 'Dr. Hinton', desc: 'Sabotaged the reactor as cover. Went through the gash. Now in the alien ship, studying. Negotiating with the Shriek.', want: 'ascend', thinks: 'curiosity' },
+    carcinids: { type: 'Entity · worker caste', name: 'Carcinids', desc: 'Virus/tool species. Latched onto local beetles as initial worker caste. Servants of elder will — can switch tactics on Shriek command.', want: 'serve', thinks: 'servitude' },
+    elders: { type: 'Entity · orchestrators', name: 'The Elders', desc: 'Ancient, unchanging. Genetic material is fixed. They don\'t destroy — they INCLUDE. The end goal: every living thing becomes susceptible to Shriek control.', want: 'include', thinks: 'patience' },
+    shaw: { type: 'Entity · Company android', name: 'Shaw', desc: 'Killed Edem Ash-style. At large. Original directive complete, new directive active.', want: "retrieve Hinton's logic core", thinks: 'orders' },
+    dropship: { type: 'Entity · crewed transport', name: 'Dropship', desc: 'Two pilots, still planetside. Calls getting shorter. Want to leave regardless.', want: 'leave', thinks: 'orders' },
+    'p-mother': { type: 'Peril · HOT · 2/3', name: 'The Mother births', omens: [
+      { text: '1 · carcinids heard nearby in corridors', fired: true },
+      { text: '2 · carcinids rush past mother + Shriek', fired: true },
+      { text: '3 · silence — mimic is loose', fired: false, next: true }
+    ] },
+    'p-hangar': { type: 'Peril · 2/3', name: 'The Hangar falls', omens: [
+      { text: '1 · radio chatter tense, Brookman arguing', fired: true },
+      { text: '2 · Brookman shot soldier, stole ATV, fled (accelerated)', fired: true },
+      { text: '3 · screams → carcinid sounds → nothing', fired: false }
+    ] },
+    'p-storm': { type: 'Peril · 1/3', name: 'The Storm closes', omens: [
+      { text: '1 · water rising, drains backing up', fired: true },
+      { text: '2 · a route is gone — collapsed or flooded', fired: false },
+      { text: '3 · full hurricane — going outside means death', fired: false }
+    ] },
+    'p-hinton': { type: 'Peril · 0/3 · future arc', name: 'Hinton ascends', omens: [
+      { text: '1 · evidence of betrayal', fired: false },
+      { text: '2 · the ship responds — signal, light', fired: false },
+      { text: '3 · the mountain moves', fired: false }
+    ] },
+    'p-maas': { type: 'Peril · 0/3 · slow burn', name: 'Maas transforms', omens: [
+      { text: '1 · behaviour changes, retouched murals', fired: false },
+      { text: '2 · physical changes, long sleeves', fired: false },
+      { text: '3 · integration — "Why are you afraid of this?"', fired: false }
+    ] },
+    'p-shaw': { type: 'Peril · COMPLETE', name: 'Shaw activated', omens: [
+      { text: '1 · manipulation', fired: true },
+      { text: '2 · force', fired: true },
+      { text: '3 · termination — Edem killed', fired: true }
+    ] },
+    'p-reactor': { type: 'Peril · RESOLVED', name: 'The Reactor dies', omens: [
+      { text: '1 · reports failing (prior)', fired: true },
+      { text: '2 · chamber flooded (prior)', fired: true },
+      { text: '3 · sluice gates fixed it', fired: true }
+    ] },
+    'loc-stair': { type: 'Location', name: 'Stairwell', desc: 'Team Alpha is here ascending. Bad roll last session — encounter pending. Vertical echo chamber.' },
+    'loc-hangar': { type: 'Location', name: 'Hangar', desc: 'Willis here. Brookman gone on ATV. Soldier shot. Dropship pilots on radio.' },
+    'loc-reactor': { type: 'Location', name: 'Reactor chamber', desc: 'Mother is here. Franco cocooned. Cocooned marines in walls. Mother absorbing radiation.' },
+    'loc-lab': { type: 'Location', name: "Edem's lab", desc: 'Where Shaw killed her. Presumed Shaw returned here. Possible research remnants.' },
+    'pc-willis': { type: 'PC · Teamster', name: 'Willis', desc: 'John McClane archetype. Fled the lab after Shaw killed Edem. At hangar now. Shaken.' },
+    'pc-bud': { type: 'PC · Teamster', name: 'Bud', desc: 'Leg amputated, stabilised. Being carried. Immobile. Cannot fight.' },
+    'pc-tandy': { type: 'PC · Scientist', name: 'Tandy', desc: 'Ran reactor diagnostics. Knows mother is absorbing radiation. Has the data no one else has connected yet.' },
+    'pc-rick': { type: 'PC · Marine', name: 'Rick', desc: 'Sister killed early in scenario. Traumatised. Ascending with Alpha.' }
+  };
+
+  // ===== Drawer =====
+  const drawer = document.getElementById('drawer');
+  let selectedId = null;
+
+  function renderNode(id) {
+    const d = nodeData[id];
+    if (!d) return;
+    selectedId = id;
+    document.querySelectorAll('.node').forEach(n => n.classList.remove('selected'));
+    const n = document.querySelector(`.node[data-id="${id}"]`);
+    if (n) n.classList.add('selected');
+
+    let html = `<h2>Selected</h2><h1>${d.name}</h1><div class="ntype">${d.type}</div>`;
+    if (d.want) html += `<div class="kv"><div class="k">wants</div><div class="v big">${d.want}</div></div>`;
+    if (d.thinks) html += `<div class="kv"><div class="k">thinks with</div><div class="v big">${d.thinks}</div></div>`;
+    if (d.desc) html += `<div class="kv"><div class="k">brief</div><div class="v">${d.desc}</div></div>`;
+    if (d.omens) {
+      html += `<div class="kv"><div class="k">omens</div><div class="omen-list">`;
+      d.omens.forEach(o => {
+        const cls = o.fired ? 'fired' : (o.next ? 'hot' : '');
+        html += `<div class="o ${cls}"><div class="pip"></div><div>${o.text}</div></div>`;
+      });
+      html += `</div></div>`;
+    }
+    drawer.innerHTML = html;
+  }
+
+  document.querySelectorAll('.node').forEach(n => {
+    const id = n.dataset.id;
+    if (!id) return;
+    n.addEventListener('click', () => renderNode(id));
+  });
+
+  // ===== Links (SVG) =====
+  function drawLinks() {
+    const svg = document.getElementById('links');
+    svg.innerHTML = '';
+    const canvas = document.getElementById('panel-graph').getBoundingClientRect();
+    const parent = document.getElementById('canvas').getBoundingClientRect();
+
+    const pairs = [
+      ['mother', 'ship', 'cyan'],
+      ['hinton', 'ship', 'cyan'],
+      ['carcinids', 'ship', 'dim'],
+      ['elders', 'ship', 'cyan'],
+      ['carcinids', 'mother', ''],
+      ['elders', 'hinton', ''],
+      ['shaw', 'hinton', 'dim'],
+      ['p-mother', 'mother', 'hot'],
+      ['p-hangar', 'pc-willis', ''],
+      ['p-maas', 'elders', 'dim'],
+      ['p-hinton', 'ship', ''],
+      ['p-shaw', 'shaw', 'dim'],
+      ['p-reactor', 'loc-reactor', 'dim'],
+      ['p-storm', 'loc-hangar', 'dim'],
+      ['pc-willis', 'loc-hangar', ''],
+      ['pc-bud', 'loc-stair', ''],
+      ['pc-tandy', 'loc-stair', ''],
+      ['pc-rick', 'loc-stair', ''],
+      ['loc-reactor', 'mother', 'hot']
+    ];
+
+    pairs.forEach(([a, b, style]) => {
+      const na = document.querySelector(`.node[data-id="${a}"]`);
+      const nb = document.querySelector(`.node[data-id="${b}"]`);
+      if (!na || !nb) return;
+      const ra = na.getBoundingClientRect();
+      const rb = nb.getBoundingClientRect();
+      const line = document.createElementNS('http://www.w3.org/2000/svg', 'line');
+      line.setAttribute('x1', ra.left + ra.width / 2 - parent.left);
+      line.setAttribute('y1', ra.top + ra.height / 2 - parent.top);
+      line.setAttribute('x2', rb.left + rb.width / 2 - parent.left);
+      line.setAttribute('y2', rb.top + rb.height / 2 - parent.top);
+      if (style) line.setAttribute('class', style);
+      svg.appendChild(line);
+    });
+  }
+  window.addEventListener('load', () => setTimeout(drawLinks, 50));
+  window.addEventListener('resize', () => setTimeout(drawLinks, 50));
+
+  // ===== View tabs =====
+  document.querySelectorAll('.view-tabs button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.view-tabs button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+      const t = b.dataset.panel;
+      document.getElementById('panel-graph').style.display = (t === 'graph' ? '' : 'none');
+      document.getElementById('panel-palace').classList.toggle('active', t === 'palace');
+      if (t === 'graph') setTimeout(drawLinks, 50);
+    });
+  });
+
+  // Palace click → copy fragment to drawer
+  document.querySelectorAll('.palace-card li').forEach(li => {
+    li.addEventListener('click', () => {
+      drawer.innerHTML = `
+        <h2>Fragment</h2>
+        <h1 style="font-family: Georgia, serif; font-style: italic; font-weight: 400; font-size: 22px; line-height: 1.4; margin: 20px 0;">
+          "${li.textContent.trim()}"
+        </h1>
+        <div class="ntype">Drop in. Don't explain. Let players interpret.</div>
+      `;
+    });
+  });
+
+  // Clock
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 10000);
+</script>
+
+</body>
+</html>

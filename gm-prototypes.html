@@ -1,0 +1,204 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GM Screen Prototypes — Another Bug Hunt</title>
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<style>
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  body {
+    background: #0a0d12;
+    color: #d8e2f0;
+    font-family: 'Inter', -apple-system, system-ui, sans-serif;
+    min-height: 100vh;
+    padding: 60px 40px;
+  }
+  .wrap { max-width: 1200px; margin: 0 auto; }
+  h1 {
+    font-family: Georgia, serif;
+    font-size: 48px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    margin-bottom: 8px;
+  }
+  .lede {
+    color: #8294ad;
+    font-size: 16px;
+    margin-bottom: 50px;
+    max-width: 720px;
+    line-height: 1.6;
+  }
+  .back {
+    display: inline-block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #8294ad;
+    text-decoration: none;
+    margin-bottom: 30px;
+    letter-spacing: 0.1em;
+  }
+  .back:hover { color: #e8c800; }
+
+  .grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 24px;
+  }
+  @media (max-width: 900px) { .grid { grid-template-columns: 1fr; } }
+
+  .proto {
+    background: #111821;
+    border: 1px solid #1e2a3a;
+    border-radius: 8px;
+    padding: 28px;
+    text-decoration: none;
+    color: inherit;
+    transition: transform 0.2s, border-color 0.2s;
+    display: block;
+  }
+  .proto:hover {
+    transform: translateY(-4px);
+    border-color: #e8c800;
+  }
+  .proto .num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #4d607a;
+    letter-spacing: 0.15em;
+    margin-bottom: 12px;
+  }
+  .proto h2 {
+    font-family: Georgia, serif;
+    font-size: 28px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .proto .tagline {
+    color: #a78bfa;
+    font-size: 13px;
+    font-style: italic;
+    margin-bottom: 20px;
+  }
+  .proto p {
+    color: #8294ad;
+    font-size: 13px;
+    line-height: 1.6;
+    margin-bottom: 16px;
+  }
+  .proto ul {
+    list-style: none;
+    margin-bottom: 20px;
+  }
+  .proto li {
+    font-size: 12px;
+    color: #8294ad;
+    padding: 4px 0;
+    padding-left: 18px;
+    position: relative;
+  }
+  .proto li::before {
+    content: '◆';
+    color: #e8c800;
+    position: absolute;
+    left: 0;
+    font-size: 10px;
+  }
+  .cta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: #e8c800;
+    letter-spacing: 0.15em;
+    border-top: 1px solid #1e2a3a;
+    padding-top: 14px;
+    display: flex;
+    justify-content: space-between;
+  }
+  .cta .best {
+    color: #4d607a;
+  }
+
+  .existing {
+    margin-top: 50px;
+    padding: 24px;
+    background: #0d131b;
+    border: 1px dashed #1e2a3a;
+    border-radius: 6px;
+  }
+  .existing h3 {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: #4d607a;
+    margin-bottom: 8px;
+    text-transform: uppercase;
+  }
+  .existing a {
+    color: #8294ad;
+    text-decoration: none;
+    margin-right: 20px;
+    font-size: 13px;
+  }
+  .existing a:hover { color: #e8c800; }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <a href="gm-screen.html" class="back">← back to current GM screen</a>
+  <h1>GM screen · prototypes</h1>
+  <p class="lede">Three design directions for the desktop-first GM screen. Same content, radically different philosophy for how it's accessed during play. Pick one to develop, or combine what works.</p>
+
+  <div class="grid">
+
+    <a href="gm-v1-cockpit.html" class="proto">
+      <div class="num">PROTOTYPE 01</div>
+      <h2>Cockpit</h2>
+      <div class="tagline">everything visible, search everything</div>
+      <p>A dense ops dashboard. Nothing is hidden. Perils live down the left rail, party down the right, scene-dressing rollers in the centre, truths as a permanent top strip. <kbd style="font-family:monospace; background:#1e2a3a; padding: 2px 6px; border-radius: 2px; font-size: 11px;">⌘K</kbd> opens a search palette over everything.</p>
+      <ul>
+        <li>Dark, monospace-heavy, mission-control aesthetic</li>
+        <li>Perils as live cards with omen pips and state colour</li>
+        <li>Command palette searches perils, entities, lore, rules</li>
+        <li>Best for: players who like things where they last saw them</li>
+      </ul>
+      <div class="cta"><span>OPEN →</span><span class="best">best for dense tracking</span></div>
+    </a>
+
+    <a href="gm-v2-stage.html" class="proto">
+      <div class="num">PROTOTYPE 02</div>
+      <h2>Stage</h2>
+      <div class="tagline">one mode at a time, beautifully</div>
+      <p>The screen physically transforms between RESET, LOOP, IMPROV and COMBAT modes. Light, editorial, serif-led typography. In IMPROV mode a single fragment takes the centre of the screen — because that's all you need to read aloud.</p>
+      <ul>
+        <li>Light, warm paper palette · Cormorant serif</li>
+        <li>Mode switch is the star of the header</li>
+        <li>IMPROV is a single big fragment — cinematic</li>
+        <li>Best for: GMs who want to be inside one thought at a time</li>
+      </ul>
+      <div class="cta"><span>OPEN →</span><span class="best">best for pacing + focus</span></div>
+    </a>
+
+    <a href="gm-v3-brain.html" class="proto">
+      <div class="num">PROTOTYPE 03</div>
+      <h2>Campaign Brain</h2>
+      <div class="tagline">a graph of the whole campaign</div>
+      <p>The campaign as a node graph — entities, perils, locations, PCs, and the central mystery (the ship) connected by lines of relationship. Hot threads glow red. A drawer opens rich detail. A "mind palace" tab surfaces the improv libraries.</p>
+      <ul>
+        <li>Dark cyberpunk · glowing connections · spatial memory</li>
+        <li>Ship is the centre; everything orbits it</li>
+        <li>Libraries live in a separate "mind palace" view</li>
+        <li>Best for: pre-session thinking + zoom-out moments</li>
+      </ul>
+      <div class="cta"><span>OPEN →</span><span class="best">best for spatial thinkers</span></div>
+    </a>
+
+  </div>
+
+  <div class="existing">
+    <h3>Existing</h3>
+    <a href="gm-screen.html">Current GM screen (mobile-compatible)</a>
+    <a href="library.html">Atmospheric + terraforming library</a>
+  </div>
+</div>
+</body>
+</html>

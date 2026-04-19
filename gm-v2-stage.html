@@ -1,0 +1,993 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GM Stage — Another Bug Hunt</title>
+<meta name="viewport" content="width=1280">
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --paper: #fbf8f1;
+    --ink: #18181b;
+    --ink-dim: #52525b;
+    --ink-faint: #a1a1aa;
+    --hair: #d4d4d8;
+    --hair-strong: #71717a;
+    --accent: #991b1b;
+    --accent-2: #7c2d12;
+    --amber: #b45309;
+    --green: #166534;
+    --violet: #6d28d9;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ===== LAYOUT ===== */
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr 48px;
+    grid-template-areas: "head" "main" "foot";
+    height: 100vh;
+  }
+
+  /* Head */
+  .head {
+    grid-area: head;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 32px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hair);
+    gap: 24px;
+  }
+  .logo {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .logo small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-left: 10px;
+    font-weight: 400;
+  }
+
+  /* Mode switcher — the star of the header */
+  .modes {
+    justify-self: center;
+    display: flex;
+    gap: 2px;
+    background: var(--bg);
+    padding: 3px;
+    border-radius: 40px;
+    border: 1px solid var(--hair);
+  }
+  .modes button {
+    background: transparent;
+    border: none;
+    padding: 8px 22px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    cursor: pointer;
+    border-radius: 40px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .modes button:hover { color: var(--ink); }
+  .modes button.active {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+  }
+  .clock a { color: var(--ink-faint); text-decoration: none; margin-right: 14px; font-size: 11px; }
+  .clock a:hover { color: var(--accent); }
+
+  /* Main stage */
+  .main {
+    grid-area: main;
+    overflow: hidden;
+    position: relative;
+  }
+  .view {
+    position: absolute;
+    inset: 0;
+    padding: 32px 48px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .view.active { opacity: 1; pointer-events: auto; }
+
+  /* ===== RESET VIEW ===== */
+  .reset-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .reset-col h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .reset-col .num {
+    font-family: var(--serif);
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink-faint);
+    float: left;
+    margin-right: 16px;
+    margin-top: 4px;
+  }
+  .reset-item {
+    padding: 14px 0;
+    border-bottom: 1px solid var(--hair);
+    clear: both;
+    overflow: auto;
+  }
+  .reset-item h3 {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 500;
+    margin-bottom: 4px;
+    letter-spacing: -0.01em;
+  }
+  .reset-item p {
+    color: var(--ink-dim);
+    font-size: 13px;
+  }
+  .reset-cta {
+    grid-column: 1 / -1;
+    text-align: center;
+    margin-top: 24px;
+    padding-top: 24px;
+    border-top: 1px solid var(--hair);
+  }
+  .reset-cta .big {
+    font-family: var(--serif);
+    font-size: 36px;
+    color: var(--ink);
+    font-weight: 400;
+    font-style: italic;
+    letter-spacing: -0.01em;
+  }
+
+  /* ===== LOOP VIEW ===== */
+  .loop-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 40px;
+  }
+  .loop-main h1 {
+    font-family: var(--serif);
+    font-size: 44px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+    line-height: 1.05;
+    margin-bottom: 8px;
+  }
+  .loop-main .sub {
+    color: var(--ink-dim);
+    font-size: 14px;
+    margin-bottom: 28px;
+  }
+  .truths-bar {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 20px;
+    padding: 20px 24px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 4px;
+    margin-bottom: 28px;
+  }
+  .truths-bar .truth {
+    border-left: 3px solid var(--accent);
+    padding-left: 14px;
+  }
+  .truths-bar .tlabel {
+    font-family: var(--mono);
+    font-size: 9px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .truths-bar .tval {
+    font-family: var(--serif);
+    font-size: 20px;
+    color: var(--ink);
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    line-height: 1.2;
+    margin-top: 2px;
+  }
+
+  /* Perils — LOOP mode centerpiece */
+  .peril-stack { margin-bottom: 24px; }
+  .peril-stack h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+  .peril-item {
+    display: grid;
+    grid-template-columns: 200px 1fr auto;
+    gap: 20px;
+    align-items: center;
+    padding: 14px 20px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 4px;
+    margin-bottom: 6px;
+    transition: transform 0.15s;
+  }
+  .peril-item:hover { transform: translateX(2px); border-color: var(--hair-strong); }
+  .peril-item.hot { border-color: var(--accent); background: #fef2f2; }
+  .peril-item.complete, .peril-item.resolved { opacity: 0.45; }
+  .peril-item h3 {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+  }
+  .omens {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+  }
+  .omen {
+    flex: 1;
+    padding: 6px 10px;
+    font-size: 12px;
+    color: var(--ink-dim);
+    background: var(--bg);
+    border-radius: 3px;
+    border: 1px dashed var(--hair-strong);
+  }
+  .omen.fired {
+    background: var(--amber);
+    color: var(--paper);
+    border-style: solid;
+    border-color: var(--amber);
+  }
+  .peril-item.hot .omen.fired { background: var(--accent); border-color: var(--accent); }
+  .peril-state {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+    text-align: right;
+    min-width: 80px;
+  }
+  .peril-item.hot .peril-state { color: var(--accent); font-weight: 600; }
+
+  /* Loop sidebar */
+  .loop-side h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .loop-side-section { margin-bottom: 28px; }
+  .pc-card {
+    padding: 10px 14px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 3px;
+    margin-bottom: 5px;
+  }
+  .pc-card.wounded { border-left: 3px solid var(--accent); }
+  .pc-card.shaken { border-left: 3px solid var(--amber); }
+  .pc-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .pc-n {
+    font-family: var(--serif);
+    font-size: 17px;
+    font-weight: 500;
+  }
+  .pc-c {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .pc-loc {
+    font-size: 11px;
+    color: var(--ink-dim);
+    margin-top: 2px;
+  }
+
+  .entity-mini {
+    padding: 8px 12px;
+    border-left: 2px solid var(--violet);
+    margin-bottom: 4px;
+    font-size: 12px;
+  }
+  .entity-mini strong { color: var(--ink); font-size: 13px; display: block; margin-bottom: 1px; }
+  .entity-mini span { color: var(--ink-dim); }
+
+  /* ===== IMPROV VIEW ===== */
+  .improv {
+    max-width: 1000px;
+    margin: 0 auto;
+    text-align: center;
+  }
+  .improv-title {
+    font-family: var(--serif);
+    font-size: 42px;
+    font-weight: 400;
+    margin-bottom: 6px;
+    letter-spacing: -0.02em;
+  }
+  .improv-sub {
+    color: var(--ink-dim);
+    margin-bottom: 32px;
+  }
+  .fragment {
+    font-family: var(--serif);
+    font-size: 30px;
+    line-height: 1.3;
+    color: var(--ink);
+    font-weight: 400;
+    font-style: italic;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 6px;
+    padding: 48px 56px;
+    margin-bottom: 28px;
+    min-height: 180px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.01em;
+  }
+  .fragment-controls {
+    display: flex;
+    gap: 10px;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-bottom: 28px;
+  }
+  .frag-btn {
+    padding: 10px 22px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 40px;
+    transition: all 0.15s;
+  }
+  .frag-btn:hover { border-color: var(--ink); color: var(--ink); background: var(--bg); }
+  .frag-btn.hot { border-color: var(--accent); color: var(--accent); }
+  .frag-btn.hot:hover { background: var(--accent); color: var(--paper); }
+
+  .library-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+
+  /* ===== COMBAT VIEW ===== */
+  .combat-wrap {
+    max-width: 1400px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 420px;
+    gap: 32px;
+  }
+  .combat-main h1 {
+    font-family: var(--serif);
+    font-size: 36px;
+    margin-bottom: 4px;
+    font-weight: 400;
+    letter-spacing: -0.02em;
+  }
+  .combat-main .sub { color: var(--ink-dim); margin-bottom: 24px; }
+
+  .enemy-buttons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    margin-bottom: 24px;
+  }
+  .enemy-btn {
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 4px;
+    padding: 14px;
+    cursor: pointer;
+    text-align: left;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .enemy-btn:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .enemy-btn .name { font-family: var(--serif); font-size: 18px; font-weight: 500; }
+  .enemy-btn .stats { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 2px; letter-spacing: 0.05em; }
+
+  .tracker {
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 4px;
+    min-height: 200px;
+    padding: 16px;
+  }
+  .tracker h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .combatant {
+    display: grid;
+    grid-template-columns: auto 1fr auto auto;
+    gap: 12px;
+    align-items: center;
+    padding: 10px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .combatant:last-child { border: none; }
+  .combatant .init {
+    font-family: var(--mono);
+    font-size: 12px;
+    background: var(--bg);
+    border: 1px solid var(--hair);
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: grid;
+    place-items: center;
+    color: var(--ink-dim);
+  }
+  .combatant .cname { font-family: var(--serif); font-size: 16px; font-weight: 500; }
+  .combatant .hp {
+    font-family: var(--mono);
+    font-size: 12px;
+    color: var(--ink-dim);
+    background: var(--bg);
+    padding: 3px 8px;
+    border-radius: 3px;
+  }
+  .combatant button {
+    border: 1px solid var(--hair);
+    background: transparent;
+    padding: 4px 10px;
+    cursor: pointer;
+    font-size: 11px;
+    color: var(--ink-dim);
+    border-radius: 3px;
+  }
+
+  .rules-card {
+    padding: 18px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 4px;
+  }
+  .rules-card h3 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.2em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+  }
+  .rule-row {
+    display: grid;
+    grid-template-columns: 90px 1fr;
+    gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px dashed var(--hair);
+    font-size: 12px;
+  }
+  .rule-row:last-child { border: none; }
+  .rule-row .k {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--accent);
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+  }
+
+  /* Foot */
+  .foot {
+    grid-area: foot;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    background: var(--paper);
+    border-top: 1px solid var(--hair);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .foot-tag { color: var(--accent); }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--hair); border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="head">
+    <div class="logo">Another Bug Hunt <small>HERON STATION · SESSION 07</small></div>
+    <div class="modes">
+      <button data-view="reset">RESET</button>
+      <button class="active" data-view="loop">LOOP</button>
+      <button data-view="improv">IMPROV</button>
+      <button data-view="combat">COMBAT</button>
+    </div>
+    <div class="clock"><a href="gm-prototypes.html">← back</a><span id="clock">--:--</span></div>
+  </div>
+
+  <div class="main">
+
+    <!-- ===== RESET ===== -->
+    <div class="view" id="view-reset">
+      <div class="reset-grid">
+        <div class="reset-col">
+          <h2>PRESSURES · 01</h2>
+          <div class="reset-item">
+            <span class="num">01</span>
+            <h3>Storm closes</h3>
+            <p>Water rising. Evac window shrinking by the hour.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">02</span>
+            <h3>Bud bleeds</h3>
+            <p>Temporarily stabilised. Hours, not days.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">03</span>
+            <h3>Mother pulses</h3>
+            <p>Next Shriek triggers birthing. Omen 2 fired.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">04</span>
+            <h3>Hangar radio</h3>
+            <p>Calls getting shorter. Carcinids at the perimeter.</p>
+          </div>
+        </div>
+
+        <div class="reset-col">
+          <h2>OBJECTIVES · 02</h2>
+          <div class="reset-item">
+            <span class="num">01</span>
+            <h3>Ascend</h3>
+            <p>Team Alpha back to the surface — Bud needs proper care.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">02</span>
+            <h3>Regroup</h3>
+            <p>Willis + Alpha need to meet before dropship leaves.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">03</span>
+            <h3>Make sense</h3>
+            <p>Tandy has the radiation data. Someone needs to connect the dots.</p>
+          </div>
+        </div>
+
+        <div class="reset-col">
+          <h2>CHALLENGES · 03</h2>
+          <div class="reset-item">
+            <span class="num">01</span>
+            <h3>Stairwell encounter</h3>
+            <p>Bad roll on ascent. Session opener. TBD.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">02</span>
+            <h3>Carrying Bud</h3>
+            <p>Immobile. Needs 2 teammates. Can't fight while carrying.</p>
+          </div>
+          <div class="reset-item">
+            <span class="num">03</span>
+            <h3>Willis alone</h3>
+            <p>Hangar chaos. No backup within reach.</p>
+          </div>
+        </div>
+
+        <div class="reset-cta">
+          <div class="big">→ Strategy → Direction</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== LOOP ===== -->
+    <div class="view active" id="view-loop">
+      <div class="loop-wrap">
+        <div class="loop-main">
+          <h1>Where we are.</h1>
+          <div class="sub">Scenario 2 · late-stage · party split · seven perils in motion</div>
+
+          <div class="truths-bar">
+            <div class="truth">
+              <div class="tlabel">Truth 01</div>
+              <div class="tval">Everything is changing.</div>
+            </div>
+            <div class="truth">
+              <div class="tlabel">Truth 02</div>
+              <div class="tval">You will die here.</div>
+            </div>
+            <div class="truth">
+              <div class="tlabel">Truth 03</div>
+              <div class="tval">This will spread.</div>
+            </div>
+          </div>
+
+          <div class="peril-stack">
+            <h2>Perils · live</h2>
+
+            <div class="peril-item hot">
+              <h3>The Mother births</h3>
+              <div class="omens">
+                <div class="omen fired">1 · clicks heard</div>
+                <div class="omen fired">2 · procession</div>
+                <div class="omen">3 · silence + mimic</div>
+              </div>
+              <div class="peril-state">HOT · 2/3</div>
+            </div>
+
+            <div class="peril-item">
+              <h3>The Hangar falls</h3>
+              <div class="omens">
+                <div class="omen fired">1 · radio tense</div>
+                <div class="omen fired">2 · Brookman gone</div>
+                <div class="omen">3 · screams then silence</div>
+              </div>
+              <div class="peril-state">2/3</div>
+            </div>
+
+            <div class="peril-item">
+              <h3>The Storm closes</h3>
+              <div class="omens">
+                <div class="omen fired">1 · water rising</div>
+                <div class="omen">2 · route gone</div>
+                <div class="omen">3 · full hurricane</div>
+              </div>
+              <div class="peril-state">1/3</div>
+            </div>
+
+            <div class="peril-item">
+              <h3>Maas transforms</h3>
+              <div class="omens">
+                <div class="omen">1 · behaviour</div>
+                <div class="omen">2 · physical</div>
+                <div class="omen">3 · integration</div>
+              </div>
+              <div class="peril-state">0/3</div>
+            </div>
+
+            <div class="peril-item">
+              <h3>Hinton ascends</h3>
+              <div class="omens">
+                <div class="omen">1 · evidence</div>
+                <div class="omen">2 · ship responds</div>
+                <div class="omen">3 · mountain moves</div>
+              </div>
+              <div class="peril-state">0/3</div>
+            </div>
+
+            <div class="peril-item complete">
+              <h3>Shaw activates</h3>
+              <div class="omens">
+                <div class="omen fired">1 · manipulation</div>
+                <div class="omen fired">2 · force</div>
+                <div class="omen fired">3 · termination</div>
+              </div>
+              <div class="peril-state">COMPLETE</div>
+            </div>
+
+            <div class="peril-item resolved">
+              <h3>Reactor dies</h3>
+              <div class="omens">
+                <div class="omen fired">sluice gates opened</div>
+                <div class="omen fired">pressure dropped</div>
+                <div class="omen fired">stable</div>
+              </div>
+              <div class="peril-state">RESOLVED</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="loop-side">
+          <div class="loop-side-section">
+            <h2>Party</h2>
+            <div class="pc-card shaken">
+              <div class="pc-row"><div class="pc-n">Willis</div><div class="pc-c">TEAMSTER</div></div>
+              <div class="pc-loc">Hangar · solo · shaken</div>
+            </div>
+            <div class="pc-card wounded">
+              <div class="pc-row"><div class="pc-n">Bud</div><div class="pc-c">TEAMSTER</div></div>
+              <div class="pc-loc">Stairwell · leg amp'd · carried</div>
+            </div>
+            <div class="pc-card">
+              <div class="pc-row"><div class="pc-n">Tandy</div><div class="pc-c">SCIENTIST</div></div>
+              <div class="pc-loc">Stairwell · has rad data</div>
+            </div>
+            <div class="pc-card shaken">
+              <div class="pc-row"><div class="pc-n">Rick</div><div class="pc-c">MARINE</div></div>
+              <div class="pc-loc">Stairwell · traumatised</div>
+            </div>
+            <div class="pc-card">
+              <div class="pc-row"><div class="pc-n">Valdez</div><div class="pc-c">SGT</div></div>
+              <div class="pc-loc">Stairwell · carrying Bud</div>
+            </div>
+          </div>
+
+          <div class="loop-side-section">
+            <h2>Entities</h2>
+            <div class="entity-mini"><strong>Shaw</strong><span>retrieve Hinton's core · thinks with orders</span></div>
+            <div class="entity-mini"><strong>The Mother</strong><span>transform · thinks with radiation</span></div>
+            <div class="entity-mini"><strong>Carcinids</strong><span>serve · thinks with servitude</span></div>
+            <div class="entity-mini"><strong>Hinton</strong><span>ascend · thinks with curiosity</span></div>
+            <div class="entity-mini"><strong>Dropship</strong><span>leave · thinks with orders</span></div>
+            <div class="entity-mini"><strong>Elders</strong><span>include · thinks with patience</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== IMPROV ===== -->
+    <div class="view" id="view-improv">
+      <div class="improv">
+        <h1 class="improv-title">A single fragment, dropped.</h1>
+        <div class="improv-sub">Pick a category. Read it aloud. Let the players interpret. Don't explain.</div>
+
+        <div class="fragment" id="frag">Press a button below.</div>
+
+        <div class="fragment-controls">
+          <button class="frag-btn" onclick="roll('sound')">SOUND</button>
+          <button class="frag-btn" onclick="roll('movement')">MOVEMENT</button>
+          <button class="frag-btn" onclick="roll('residue')">RESIDUE</button>
+          <button class="frag-btn" onclick="roll('uncanny')">UNCANNY</button>
+          <button class="frag-btn" onclick="roll('stair')">STAIRWELL</button>
+          <button class="frag-btn" onclick="roll('outdoor')">OUTDOORS</button>
+          <button class="frag-btn hot" onclick="roll('shriek')">SHRIEK</button>
+          <button class="frag-btn hot" onclick="roll('biological')">BIOLOGICAL</button>
+          <button class="frag-btn hot" onclick="roll('telescope')">TELESCOPE</button>
+          <button class="frag-btn hot" onclick="roll('hinton')">HINTON</button>
+        </div>
+
+        <div class="library-hint">Quiet = Phase 1 atmosphere &nbsp;·&nbsp; Red = Phase 2 terraforming</div>
+      </div>
+    </div>
+
+    <!-- ===== COMBAT ===== -->
+    <div class="view" id="view-combat">
+      <div class="combat-wrap">
+        <div class="combat-main">
+          <h1>Engagement.</h1>
+          <div class="sub">Add enemies, track initiative and HP, reference rules.</div>
+
+          <div class="enemy-buttons">
+            <button class="enemy-btn" onclick="addEnemy('Basic carcinid', 5, '1d10')">
+              <div class="name">Basic carcinid</div>
+              <div class="stats">HP 5 · DMG 1d10 · AP 11</div>
+            </button>
+            <button class="enemy-btn" onclick="addEnemy('Advanced carcinid', 15, '2d10')">
+              <div class="name">Advanced</div>
+              <div class="stats">HP 15 · DMG 2d10 · AP 13</div>
+            </button>
+            <button class="enemy-btn" onclick="addEnemy('Mimic', 20, '2d10')">
+              <div class="name">The Mimic</div>
+              <div class="stats">HP 20 · DMG 2d10 · Fear 50</div>
+            </button>
+            <button class="enemy-btn" onclick="addEnemy('Shaw', 30, '2d10')">
+              <div class="name">Shaw (android)</div>
+              <div class="stats">HP 30 · DMG 2d10 · Fear 40</div>
+            </button>
+          </div>
+
+          <div class="tracker" id="tracker">
+            <h3>Initiative / Tracker</h3>
+            <div id="tracker-body" style="color: var(--ink-faint); font-size: 13px; padding: 20px 0; text-align: center;">
+              Click an enemy above to begin.
+            </div>
+          </div>
+        </div>
+
+        <div>
+          <div class="rules-card">
+            <h3>Combat rules · quick</h3>
+            <div class="rule-row"><div class="k">Init</div><div>Highest Speed goes first. Ties → players.</div></div>
+            <div class="rule-row"><div class="k">Attack</div><div>Roll Combat vs target. Nat 1 = crit hit. Nat 20 = fumble.</div></div>
+            <div class="rule-row"><div class="k">Damage</div><div>Weapon die. Body Save to resist wound.</div></div>
+            <div class="rule-row"><div class="k">Panic</div><div>Fear check when sanity breaks. d20 + Stress vs Sanity.</div></div>
+            <div class="rule-row"><div class="k">Crit</div><div>Double damage + wound effect from table.</div></div>
+            <div class="rule-row"><div class="k">Fumble</div><div>Roll on fumble table. Weapon jam or worse.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div><span class="foot-tag">PERIL</span> &nbsp;&nbsp; next omen: Mother births 3/3 · mimic loose</div>
+    <div>v3 framework · prep quickcard</div>
+    <div>session 07 / scenario 02 late</div>
+  </div>
+
+</div>
+
+<script>
+  const lib = {
+    sound: [
+      "A clicking that pauses when you pause, then resumes half a beat later.",
+      "Wet chitin sliding across metal.",
+      "Something breathing in a pattern that isn't breathing. Four short, one long.",
+      "The Shriek — half insect cry, half something trying to imitate a human voice.",
+      "Silence. Complete. The carcinids have stopped. They are listening."
+    ],
+    movement: [
+      "It moves sideways faster than it moves forwards.",
+      "Four limbs working together, two working against each other — the body hasn't decided what it is yet.",
+      "One climbs a wall. Another watches from below. Neither is hunting you yet.",
+      "It stops. Turns its whole front section toward a wall where there is nothing. Moves on."
+    ],
+    residue: [
+      "Shed chitin — many pieces, each larger than the last.",
+      "Beetle carapaces stripped clean, arranged in a circle.",
+      "A human uniform, empty, boots laced, no blood, no body.",
+      "Metal that has softened. You can press a thumbprint into it."
+    ],
+    uncanny: [
+      "Its eye moves independently of its body. It's looking past you.",
+      "A scrap of marine webbing fused to its carapace. You recognise the stitching.",
+      "The body doesn't stop moving for ten seconds after it dies. It's finishing.",
+      "Still skin underneath the chitin. Human skin. It twitches when you touch it."
+    ],
+    stair: [
+      "Emergency lighting flickers when the reactor does.",
+      "Clicks echo. You can't tell which floor they're on.",
+      "Blood smear on a handrail, running two flights.",
+      "A door two levels down welded shut from the inside.",
+      "The number painted on the landing is wrong."
+    ],
+    outdoor: [
+      "Rain in horizontal sheets. It hits the far side of the station like gunfire.",
+      "Jungle wildlife is silent. Has been for hours.",
+      "Lightning horizontal, between two points on the ridge, for two full seconds.",
+      "Mud warmer than rain. The ground itself is putting out heat.",
+      "A palm-sized beetle on your shoulder. It does not fly when brushed."
+    ],
+    shriek: [
+      "The station hums at its usual frequency. Then — for a breath — it doesn't.",
+      "You feel it before you hear it. A pressure. Then the sound.",
+      "Every carcinid you can see stops. They are listening. None of them to you.",
+      "It's coming from inside the mountain.",
+      "Lights dim — not flicker. Dim, as if something drew power through them."
+    ],
+    biological: [
+      "A fern growing out of a wall socket. Leaves grey-blue.",
+      "Mould on the ceiling in perfect hexagonal patterns.",
+      "Human hair growing from a patch of moss. Just hair.",
+      "Drinking water tastes slightly sweet. Only from certain taps."
+    ],
+    telescope: [
+      "The mother's punctures, seen from above, match the mountain ridge line.",
+      "The carcinids in circle-arrangements face the mountain. All of them.",
+      "The storm is not a storm front. It's a spiral, centred on the mountain.",
+      "Long-range comms pick up an eight-symbol pattern everywhere. The ground is broadcasting.",
+      "Even the moon has unusual spectral readings."
+    ],
+    hinton: [
+      "\"They don't think like us. They don't have to.\"",
+      "\"They've done this a thousand times. Samsa VI is a small piece of a long pattern.\"",
+      "\"They don't destroy. They include. That's the terrifying part.\"",
+      "\"I'm going to be the first human who chooses it.\""
+    ]
+  };
+
+  function roll(key) {
+    const arr = lib[key];
+    const pick = arr[Math.floor(Math.random() * arr.length)];
+    document.getElementById('frag').textContent = pick;
+  }
+
+  // View switching
+  document.querySelectorAll('.modes button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.modes button').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      b.classList.add('active');
+      document.getElementById('view-' + b.dataset.view).classList.add('active');
+    });
+  });
+
+  // Combat tracker
+  let combatants = [];
+  function addEnemy(name, hp, dmg) {
+    combatants.push({ name, hp, dmg, init: Math.floor(Math.random() * 20) + 1 });
+    combatants.sort((a,b) => b.init - a.init);
+    render();
+  }
+  function render() {
+    const body = document.getElementById('tracker-body');
+    if (!combatants.length) { body.innerHTML = 'Click an enemy above to begin.'; return; }
+    body.innerHTML = combatants.map((c, i) => `
+      <div class="combatant">
+        <div class="init">${c.init}</div>
+        <div>
+          <div class="cname">${c.name}</div>
+          <div style="font-size:11px; color: var(--ink-faint); font-family: var(--mono);">${c.dmg}</div>
+        </div>
+        <div class="hp">HP ${c.hp}</div>
+        <button onclick="dmg(${i})">−1</button>
+      </div>
+    `).join('');
+  }
+  function dmg(i) {
+    combatants[i].hp--;
+    if (combatants[i].hp <= 0) combatants.splice(i, 1);
+    render();
+  }
+
+  // Clock
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+</script>
+
+</body>
+</html>

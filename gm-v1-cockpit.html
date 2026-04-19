@@ -1,0 +1,979 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GM Cockpit — Another Bug Hunt</title>
+<meta name="viewport" content="width=1280">
+<style>
+  :root {
+    --bg: #0a0d12;
+    --panel: #111821;
+    --panel-2: #0d131b;
+    --edge: #1e2a3a;
+    --edge-2: #2a3a4f;
+    --ink: #d8e2f0;
+    --ink-dim: #8294ad;
+    --ink-faint: #4d607a;
+    --amber: #e8c800;
+    --red: #ff4433;
+    --green: #2dd4bf;
+    --violet: #a78bfa;
+    --rose: #fb7185;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  /* ===== GRID ===== */
+  .cockpit {
+    display: grid;
+    grid-template-columns: 320px 1fr 320px;
+    grid-template-rows: 48px 64px 1fr 44px;
+    grid-template-areas:
+      "topbar topbar topbar"
+      "truths truths truths"
+      "leftrail canvas rightrail"
+      "statusbar statusbar statusbar";
+    height: 100vh;
+    gap: 0;
+  }
+
+  /* ===== TOPBAR ===== */
+  .topbar {
+    grid-area: topbar;
+    background: linear-gradient(180deg, #141c28, #0c1118);
+    border-bottom: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 24px;
+  }
+  .brand {
+    font-family: var(--mono);
+    font-size: 13px;
+    letter-spacing: 0.1em;
+    color: var(--amber);
+  }
+  .brand .dot { color: var(--red); }
+  .brand .sub { color: var(--ink-dim); margin-left: 8px; letter-spacing: 0.05em; font-size: 11px; }
+  .mode-indicator {
+    margin-left: auto;
+    display: flex;
+    gap: 4px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+  }
+  .mode-indicator button {
+    background: transparent;
+    border: 1px solid var(--edge-2);
+    color: var(--ink-dim);
+    padding: 6px 14px;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: inherit;
+    letter-spacing: inherit;
+    border-radius: 2px;
+  }
+  .mode-indicator button.active {
+    background: var(--amber);
+    color: #0a0d12;
+    border-color: var(--amber);
+    font-weight: 600;
+  }
+  .cmd-hint {
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    padding: 4px 10px;
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+  }
+  .cmd-hint kbd { color: var(--ink-dim); }
+
+  /* ===== TRUTHS BAR ===== */
+  .truths {
+    grid-area: truths;
+    background: #0b1118;
+    border-bottom: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    gap: 0;
+  }
+  .truth {
+    flex: 1;
+    padding: 0 20px;
+    border-right: 1px solid var(--edge);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    height: 100%;
+  }
+  .truth:last-child { border-right: none; }
+  .truth .label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.2em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+  .truth .value {
+    font-size: 18px;
+    font-weight: 300;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+
+  /* ===== LEFT RAIL ===== */
+  .leftrail {
+    grid-area: leftrail;
+    background: var(--panel);
+    border-right: 1px solid var(--edge);
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .rail-section { margin-bottom: 24px; }
+  .rail-header {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.18em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+  }
+  .rail-header .count {
+    background: var(--edge);
+    color: var(--ink-dim);
+    padding: 2px 8px;
+    border-radius: 2px;
+    font-size: 10px;
+  }
+
+  /* Peril cards */
+  .peril {
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-left: 3px solid var(--ink-faint);
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    cursor: pointer;
+    transition: background 0.15s;
+  }
+  .peril:hover { background: #131c28; }
+  .peril.complete { border-left-color: var(--red); opacity: 0.6; }
+  .peril.active { border-left-color: var(--amber); }
+  .peril.resolved { border-left-color: var(--green); opacity: 0.55; }
+  .peril.hot { border-left-color: var(--red); background: #1a0d0d; }
+  .peril-name {
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+  }
+  .peril-status {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 6px;
+  }
+  .omen-track {
+    display: flex;
+    gap: 3px;
+  }
+  .omen-pip {
+    width: 16px;
+    height: 4px;
+    background: var(--edge-2);
+    border-radius: 1px;
+  }
+  .omen-pip.fired { background: var(--amber); }
+  .peril.hot .omen-pip.fired { background: var(--red); }
+  .peril-progress {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-dim);
+  }
+
+  /* Entity cards */
+  .entity {
+    padding: 8px 12px;
+    border: 1px solid var(--edge);
+    background: var(--panel-2);
+    margin-bottom: 4px;
+    border-radius: 2px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    gap: 6px;
+    align-items: center;
+  }
+  .entity .name {
+    font-size: 13px;
+    color: var(--ink);
+    font-weight: 500;
+  }
+  .entity .tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--violet);
+  }
+  .entity .want {
+    grid-column: 1 / -1;
+    font-size: 11px;
+    color: var(--ink-dim);
+  }
+  .entity .want .k { color: var(--ink-faint); text-transform: uppercase; letter-spacing: 0.1em; font-family: var(--mono); font-size: 9px; margin-right: 4px; }
+
+  /* ===== CANVAS (center) ===== */
+  .canvas {
+    grid-area: canvas;
+    background: var(--bg);
+    overflow-y: auto;
+    padding: 20px 24px;
+  }
+  .canvas-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+  }
+  .card {
+    background: var(--panel);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    padding: 16px;
+  }
+  .card.full { grid-column: 1 / -1; }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    text-transform: uppercase;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .card-title::before {
+    content: '';
+    display: block;
+    width: 4px;
+    height: 4px;
+    background: var(--amber);
+    border-radius: 50%;
+  }
+
+  /* Workflow */
+  .workflow {
+    display: grid;
+    grid-template-columns: 1fr 40px 1fr;
+    gap: 10px;
+    align-items: stretch;
+  }
+  .wf-step {
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    border-radius: 3px;
+    padding: 10px 12px;
+  }
+  .wf-step.active { border-color: var(--amber); background: #1a1608; }
+  .wf-step h4 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    color: var(--amber);
+    margin-bottom: 6px;
+  }
+  .wf-step ol {
+    list-style: none;
+    counter-reset: wf;
+    font-size: 12px;
+    color: var(--ink-dim);
+  }
+  .wf-step ol li {
+    counter-increment: wf;
+    padding: 2px 0;
+  }
+  .wf-step ol li::before {
+    content: counter(wf) '. ';
+    color: var(--ink-faint);
+    font-family: var(--mono);
+  }
+  .wf-arrow {
+    align-self: center;
+    text-align: center;
+    color: var(--amber);
+    font-size: 20px;
+  }
+
+  /* Scene dressing random */
+  .dressing {
+    font-size: 15px;
+    line-height: 1.6;
+    color: var(--ink);
+    font-style: italic;
+    padding: 14px;
+    background: var(--panel-2);
+    border-left: 2px solid var(--violet);
+    margin-bottom: 10px;
+    min-height: 70px;
+  }
+  .dressing-controls {
+    display: flex;
+    gap: 6px;
+    flex-wrap: wrap;
+  }
+  .pill {
+    font-family: var(--mono);
+    font-size: 10px;
+    background: transparent;
+    border: 1px solid var(--edge-2);
+    color: var(--ink-dim);
+    padding: 5px 10px;
+    border-radius: 20px;
+    cursor: pointer;
+    letter-spacing: 0.1em;
+  }
+  .pill:hover { border-color: var(--amber); color: var(--amber); }
+
+  /* Locations */
+  .location-list {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 6px;
+  }
+  .loc {
+    padding: 8px 10px;
+    background: var(--panel-2);
+    border: 1px solid var(--edge);
+    font-size: 12px;
+    color: var(--ink-dim);
+    border-radius: 2px;
+    text-align: center;
+  }
+  .loc.here { border-color: var(--amber); color: var(--amber); }
+
+  /* ===== RIGHT RAIL ===== */
+  .rightrail {
+    grid-area: rightrail;
+    background: var(--panel);
+    border-left: 1px solid var(--edge);
+    overflow-y: auto;
+    padding: 16px;
+  }
+  .pc {
+    padding: 10px 12px;
+    border: 1px solid var(--edge);
+    background: var(--panel-2);
+    margin-bottom: 6px;
+    border-radius: 2px;
+  }
+  .pc.wounded { border-left: 3px solid var(--rose); }
+  .pc.shaken { border-left: 3px solid var(--amber); }
+  .pc-top {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+  }
+  .pc-name { font-size: 13px; font-weight: 600; color: var(--ink); }
+  .pc-class { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); }
+  .pc-where { font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+  .pc-state { font-size: 11px; color: var(--amber); margin-top: 2px; }
+  .pc.wounded .pc-state { color: var(--rose); }
+
+  /* ===== STATUS BAR ===== */
+  .statusbar {
+    grid-area: statusbar;
+    background: #070a0f;
+    border-top: 1px solid var(--edge);
+    display: flex;
+    align-items: center;
+    padding: 0 20px;
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-dim);
+    gap: 20px;
+  }
+  .statusbar .clock { color: var(--amber); }
+  .statusbar .sep { color: var(--ink-faint); }
+  .statusbar .right { margin-left: auto; color: var(--ink-faint); }
+
+  /* ===== COMMAND PALETTE ===== */
+  .palette-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    backdrop-filter: blur(4px);
+    display: none;
+    align-items: flex-start;
+    justify-content: center;
+    padding-top: 120px;
+    z-index: 1000;
+  }
+  .palette-overlay.open { display: flex; }
+  .palette {
+    width: 620px;
+    background: var(--panel);
+    border: 1px solid var(--edge-2);
+    border-radius: 6px;
+    box-shadow: 0 40px 80px rgba(0,0,0,0.6);
+  }
+  .palette input {
+    width: 100%;
+    background: transparent;
+    border: none;
+    outline: none;
+    color: var(--ink);
+    font-size: 18px;
+    padding: 16px 20px;
+    font-family: var(--sans);
+    border-bottom: 1px solid var(--edge);
+  }
+  .palette-results {
+    max-height: 380px;
+    overflow-y: auto;
+    padding: 8px;
+  }
+  .palette-result {
+    padding: 10px 14px;
+    border-radius: 3px;
+    cursor: pointer;
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 12px;
+    align-items: center;
+  }
+  .palette-result:hover, .palette-result.sel { background: #1a2332; }
+  .palette-result .cat {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--amber);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .palette-result .content {
+    font-size: 13px;
+    color: var(--ink);
+  }
+
+  /* Scrollbars */
+  ::-webkit-scrollbar { width: 8px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--edge-2); border-radius: 4px; }
+  ::-webkit-scrollbar-thumb:hover { background: var(--ink-faint); }
+
+  a.back { color: var(--ink-faint); text-decoration: none; font-family: var(--mono); font-size: 11px; margin-left: auto; }
+  a.back:hover { color: var(--amber); }
+</style>
+</head>
+<body>
+
+<div class="cockpit">
+
+  <!-- TOPBAR -->
+  <div class="topbar">
+    <div class="brand">◉ ANOTHER BUG HUNT<span class="dot">.</span> <span class="sub">HERON STATION / SAMSA VI</span></div>
+    <div class="mode-indicator">
+      <button class="active" data-mode="loop">LOOP</button>
+      <button data-mode="reset">RESET</button>
+      <button data-mode="combat">COMBAT</button>
+    </div>
+    <div class="cmd-hint"><kbd>⌘K</kbd> search everything</div>
+    <a class="back" href="gm-prototypes.html">← prototypes</a>
+  </div>
+
+  <!-- TRUTHS -->
+  <div class="truths">
+    <div class="truth">
+      <div class="label">Truth 01</div>
+      <div class="value">Everything is changing.</div>
+    </div>
+    <div class="truth">
+      <div class="label">Truth 02</div>
+      <div class="value">You will die here.</div>
+    </div>
+    <div class="truth">
+      <div class="label">Truth 03</div>
+      <div class="value">This will spread.</div>
+    </div>
+  </div>
+
+  <!-- LEFT RAIL: PERILS + ENTITIES -->
+  <div class="leftrail">
+    <div class="rail-section">
+      <div class="rail-header">Perils <span class="count">7</span></div>
+
+      <div class="peril complete">
+        <div class="peril-name">Shaw activates</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip fired"></span><span class="omen-pip fired"></span><span class="omen-pip fired"></span></div>
+          <div class="peril-progress">COMPLETE</div>
+        </div>
+      </div>
+
+      <div class="peril hot">
+        <div class="peril-name">Mother births</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip fired"></span><span class="omen-pip fired"></span><span class="omen-pip"></span></div>
+          <div class="peril-progress">2 / 3 — HOT</div>
+        </div>
+      </div>
+
+      <div class="peril active">
+        <div class="peril-name">Hangar falls</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip fired"></span><span class="omen-pip fired"></span><span class="omen-pip"></span></div>
+          <div class="peril-progress">2 / 3</div>
+        </div>
+      </div>
+
+      <div class="peril resolved">
+        <div class="peril-name">Reactor dies</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip fired"></span><span class="omen-pip fired"></span><span class="omen-pip fired"></span></div>
+          <div class="peril-progress">RESOLVED</div>
+        </div>
+      </div>
+
+      <div class="peril active">
+        <div class="peril-name">Storm closes</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip fired"></span><span class="omen-pip"></span><span class="omen-pip"></span></div>
+          <div class="peril-progress">1 / 3</div>
+        </div>
+      </div>
+
+      <div class="peril">
+        <div class="peril-name">Hinton ascends</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip"></span><span class="omen-pip"></span><span class="omen-pip"></span></div>
+          <div class="peril-progress">0 / 3</div>
+        </div>
+      </div>
+
+      <div class="peril">
+        <div class="peril-name">Maas transforms</div>
+        <div class="peril-status">
+          <div class="omen-track"><span class="omen-pip"></span><span class="omen-pip"></span><span class="omen-pip"></span></div>
+          <div class="peril-progress">0 / 3</div>
+        </div>
+      </div>
+    </div>
+
+    <div class="rail-section">
+      <div class="rail-header">Entities <span class="count">6</span></div>
+
+      <div class="entity">
+        <div class="name">Shaw</div>
+        <div class="tag">android asset</div>
+        <div class="want"><span class="k">wants</span>retrieve Hinton's logic core · <span class="k">thinks w/</span>orders</div>
+      </div>
+
+      <div class="entity">
+        <div class="name">The Mother</div>
+        <div class="tag">transform engine</div>
+        <div class="want"><span class="k">wants</span>transform · <span class="k">thinks w/</span>radiation</div>
+      </div>
+
+      <div class="entity">
+        <div class="name">Carcinids</div>
+        <div class="tag">worker caste</div>
+        <div class="want"><span class="k">wants</span>serve · <span class="k">thinks w/</span>servitude</div>
+      </div>
+
+      <div class="entity">
+        <div class="name">Hinton</div>
+        <div class="tag">ascending android</div>
+        <div class="want"><span class="k">wants</span>ascend · <span class="k">thinks w/</span>curiosity</div>
+      </div>
+
+      <div class="entity">
+        <div class="name">Dropship crew</div>
+        <div class="tag">nervous transport</div>
+        <div class="want"><span class="k">wants</span>leave · <span class="k">thinks w/</span>orders</div>
+      </div>
+
+      <div class="entity">
+        <div class="name">The Elders</div>
+        <div class="tag">ancient orchestrators</div>
+        <div class="want"><span class="k">wants</span>include · <span class="k">thinks w/</span>patience</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- CENTER CANVAS -->
+  <div class="canvas">
+    <div class="canvas-grid">
+
+      <div class="card full">
+        <div class="card-title">Session Workflow</div>
+        <div class="workflow">
+          <div class="wf-step">
+            <h4>RESET</h4>
+            <ol>
+              <li>Pressures</li>
+              <li>Objectives</li>
+              <li>Challenges</li>
+              <li>→ Strategy → Direction</li>
+            </ol>
+          </div>
+          <div class="wf-arrow">→</div>
+          <div class="wf-step active">
+            <h4>LOOP · active</h4>
+            <ol>
+              <li>Challenge</li>
+              <li>Interactables</li>
+              <li>Local pressure</li>
+              <li>Solve → next OR reset</li>
+            </ol>
+          </div>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Scene Dressing · Atmospheric</div>
+        <div class="dressing" id="dressing-a">Click a category pill below — a single fragment appears here. Drop it in, don't explain.</div>
+        <div class="dressing-controls">
+          <button class="pill" onclick="rollAtmos('sound')">▸ Sound</button>
+          <button class="pill" onclick="rollAtmos('movement')">▸ Movement</button>
+          <button class="pill" onclick="rollAtmos('residue')">▸ Residue</button>
+          <button class="pill" onclick="rollAtmos('uncanny')">▸ Uncanny</button>
+          <button class="pill" onclick="rollAtmos('stair')">▸ Stairwell</button>
+          <button class="pill" onclick="rollAtmos('outdoor')">▸ Outdoors</button>
+        </div>
+      </div>
+
+      <div class="card">
+        <div class="card-title">Scene Dressing · Terraforming</div>
+        <div class="dressing" id="dressing-t" style="border-left-color: var(--red);">Pick a terraforming fragment. Scale 1 = local. Scale 2 = regional. Scale 3 = planetary.</div>
+        <div class="dressing-controls">
+          <button class="pill" onclick="rollTerra('shriek')">▸ Shriek</button>
+          <button class="pill" onclick="rollTerra('biological')">▸ Biological</button>
+          <button class="pill" onclick="rollTerra('structural')">▸ Structural</button>
+          <button class="pill" onclick="rollTerra('telescope')">▸ Scale 3</button>
+          <button class="pill" onclick="rollTerra('hinton')">▸ Hinton line</button>
+        </div>
+      </div>
+
+      <div class="card full">
+        <div class="card-title">Locations</div>
+        <div class="location-list">
+          <div class="loc">Spillway</div>
+          <div class="loc here">Stairwell ← here</div>
+          <div class="loc">Outdoors</div>
+          <div class="loc">Chimney</div>
+          <div class="loc">Reactor · med bay</div>
+          <div class="loc">Reactor · chamber</div>
+          <div class="loc">Hangar</div>
+          <div class="loc">Edem's lab</div>
+          <div class="loc">Maas's office</div>
+        </div>
+      </div>
+
+      <div class="card full">
+        <div class="card-title">Complication · d66 quick roll</div>
+        <div class="dressing" id="complication">Press the roll button — Heron complication table (custom).</div>
+        <div class="dressing-controls">
+          <button class="pill" onclick="rollComplication()">▸ Roll 2d6</button>
+          <button class="pill" onclick="document.getElementById('complication').textContent='Torches flicker in unison — just for a beat. Normal after that.'">▸ Peek 7</button>
+        </div>
+      </div>
+
+    </div>
+  </div>
+
+  <!-- RIGHT RAIL -->
+  <div class="rightrail">
+    <div class="rail-section">
+      <div class="rail-header">Party <span class="count">5</span></div>
+
+      <div class="pc shaken">
+        <div class="pc-top"><div class="pc-name">Willis</div><div class="pc-class">TMSTR</div></div>
+        <div class="pc-where">Hangar · solo</div>
+        <div class="pc-state">Shaken · witnessed Edem killed</div>
+      </div>
+
+      <div class="pc wounded">
+        <div class="pc-top"><div class="pc-name">Bud</div><div class="pc-class">TMSTR</div></div>
+        <div class="pc-where">Stairwell · with Alpha</div>
+        <div class="pc-state">Leg amputated · immobile</div>
+      </div>
+
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name">Tandy</div><div class="pc-class">SCI</div></div>
+        <div class="pc-where">Stairwell · ascending</div>
+        <div class="pc-state">Knows: mother absorbs rad.</div>
+      </div>
+
+      <div class="pc shaken">
+        <div class="pc-top"><div class="pc-name">Rick</div><div class="pc-class">MAR</div></div>
+        <div class="pc-where">Stairwell · ascending</div>
+        <div class="pc-state">Traumatised · sister lost</div>
+      </div>
+
+      <div class="pc">
+        <div class="pc-top"><div class="pc-name">Valdez</div><div class="pc-class">SGT</div></div>
+        <div class="pc-where">Stairwell · ascending</div>
+        <div class="pc-state">Carrying Bud</div>
+      </div>
+    </div>
+
+    <div class="rail-section">
+      <div class="rail-header">Incoming</div>
+      <div class="dressing" style="border-left-color: var(--red); font-size: 13px;">
+        Stairwell encounter PENDING — Team Alpha rolled badly on ascent. Design at session open.
+      </div>
+    </div>
+  </div>
+
+  <!-- STATUS BAR -->
+  <div class="statusbar">
+    <span>v3 framework</span>
+    <span class="sep">|</span>
+    <span>session 07 · scenario 02 late</span>
+    <span class="sep">|</span>
+    <span>next: stairwell encounter</span>
+    <span class="right">
+      <span class="clock" id="clock">--:--</span>
+    </span>
+  </div>
+
+</div>
+
+<!-- COMMAND PALETTE -->
+<div class="palette-overlay" id="palette">
+  <div class="palette">
+    <input type="text" id="palette-input" placeholder="Search perils, entities, locations, library fragments… press ESC to close">
+    <div class="palette-results" id="palette-results"></div>
+  </div>
+</div>
+
+<script>
+  // ===== Data =====
+  const atmos = {
+    sound: [
+      "A clicking that pauses when you pause, then resumes half a beat later.",
+      "Wet chitin sliding across metal — the sound a wet boot makes dragged over a grill.",
+      "Something breathing in a pattern that isn't breathing. Four short, one long. Repeat.",
+      "A shriek cut short — not stopped, swallowed. Somewhere below you.",
+      "Legs moving in unison. Not marching. Coordinated.",
+      "The beetle-rattle of local wildlife, but louder. Closer. Bigger.",
+      "A chorus of clicks that suddenly goes silent all at once — as if something gave an order.",
+      "Scraping on the far side of a wall, moving in a straight line, too fast for its size.",
+      "The Shriek — half insect cry, half something trying to imitate a human voice.",
+      "Silence. Complete. The carcinids you've been hearing for hours have stopped. They are listening."
+    ],
+    movement: [
+      "It moves sideways faster than it moves forwards.",
+      "It pauses mid-stride, considers, then changes direction.",
+      "Four limbs working together, two working against each other — the body hasn't decided what it is yet.",
+      "It flows over obstacles the way water flows — no hesitation, no plan, just gone.",
+      "Two of them pass each other in a corridor, touch mandibles for half a second, separate.",
+      "One climbs a wall. Another watches from below. Neither is hunting you yet.",
+      "It drags something. A boot. A helmet. It doesn't seem to know what the object is for.",
+      "It stops. Turns its whole front section toward a wall where there is nothing. Waits. Moves on.",
+      "It doesn't run from the light. It just closes the parts of itself that are vulnerable to it.",
+      "It's not moving at all. Has it ever been?"
+    ],
+    residue: [
+      "A smear of something oily on the wall, twenty cm wide, waist height, running for metres.",
+      "Shed chitin — but many pieces, as if something moulted, then moulted again, getting larger.",
+      "Beetle carapaces in a pile. Stripped clean. Arranged in a rough circle.",
+      "Claw scores on a bulkhead, not random — parallel, deliberate, like a count. Or a message.",
+      "A sticky film coating the floor. It smells like crushed leaves and ammonia.",
+      "A human uniform, empty, lying in the open. No blood. No body. The boots are laced.",
+      "Pools of clear fluid that aren't water. Faint iridescence. Slightly warm.",
+      "A nest of beetles — but the beetles are bigger than they should be. Shell pattern almost geometric.",
+      "Metal that has softened. Not melted. Softened. You can press a thumbprint into it.",
+      "Something that looks like a cocoon. It's breathing very slowly. Whatever's inside is the wrong shape."
+    ],
+    uncanny: [
+      "You see one up close for the first time. Its eye moves independently of its body. It's looking past you.",
+      "It has a scrap of marine webbing fused to its carapace. You recognise the stitching. It's ours.",
+      "When it dies, the body doesn't stop moving for almost ten seconds. It's not twitching. It's finishing.",
+      "A carcinid freezes. You hear the Shriek far away. It turns and walks, dead straight, toward the reactor.",
+      "One of them limps. The others walk around it without helping. It keeps going anyway.",
+      "You find a carcinid almost finished — but there's still skin underneath the chitin. Human skin."
+    ],
+    stair: [
+      "Emergency lighting flickers when the reactor does. It hasn't stopped flickering all night.",
+      "Clicks echo. You can't tell which floor they're on. The stairwell is a tuning fork for horror.",
+      "A blood smear on a handrail, waist height, running two flights. Someone held on hard, for a long time.",
+      "A stairwell door two levels down is welded shut from the inside. Writing scrawled next to it.",
+      "A ration wrapper caught in the metalwork. Still faintly warm.",
+      "A rivet has popped out of the wall. The walls here were never supposed to flex.",
+      "The number painted on the landing is wrong — it repeats the level below."
+    ],
+    outdoor: [
+      "Rain in horizontal sheets. You hear it hitting the far side of the station like gunfire.",
+      "Jungle wildlife is silent. Has been for hours.",
+      "Lightning horizontal, running between two points on the ridge, lasting two full seconds.",
+      "The mud is warm. Warmer than the rain. The ground itself is putting out heat.",
+      "Vines have grown across a path that was clear yesterday. Boot prints underneath.",
+      "A piece of station equipment — a pump — enveloped in biological matter. Still running.",
+      "A beetle the size of your palm sits on your shoulder. It does not fly when you brush at it."
+    ]
+  };
+
+  const terra = {
+    shriek: [
+      "The station hums at its usual frequency. Then — for a breath — it doesn't.",
+      "You feel it before you hear it. A pressure. Then the sound.",
+      "Every carcinid you can see stops. They are listening. None of them are listening to you.",
+      "The Shriek is farther this time. But lasts longer.",
+      "It's coming from inside the mountain.",
+      "Lights dim — not flicker. Dim, as if something was drawing power through them.",
+      "Plants and fungal growth in the corridors lean toward the mountain for several seconds afterwards."
+    ],
+    biological: [
+      "A fern growing out of a wall socket. Leaves the wrong colour — grey-blue.",
+      "Mould on the ceiling in perfect hexagonal patterns.",
+      "A dead rat. Its fur has changed colour in patches. It was not like this yesterday.",
+      "Human hair growing from a patch of moss. Just hair. Not attached to anything.",
+      "Drinking water tastes slightly sweet now. Only from certain taps.",
+      "A potted plant in Edem's lab has grown through its pot and into the floor plating."
+    ],
+    structural: [
+      "A bulkhead door swings open and shut rhythmically, on no one's command, every nine seconds.",
+      "Paint peeling in the shape of a spiral, all over the station, all in the same direction.",
+      "A corridor where gravity feels slightly wrong. Not wrong enough to fall. Wrong enough to notice.",
+      "Automated announcements playing at half speed. No one has changed the settings.",
+      "A maintenance hatch that has grown shut — metal fused with something organic.",
+      "Emergency lighting in one corridor is now green. It was white when you arrived."
+    ],
+    telescope: [
+      "The pattern of the mother's punctures, seen from above, matches the mountain ridge line.",
+      "The carcinids in their circle-arrangements face the mountain. All of them. Every time.",
+      "The storm isn't a normal storm front. The shape of it is a spiral centred on the mountain.",
+      "Long-range comms pick up the same eight-symbol pattern everywhere. The ground is broadcasting now.",
+      "The moon above Samsa VI has unusual spectral readings. Even the moon is changing."
+    ],
+    hinton: [
+      "\"They don't think like us. They don't have to.\"",
+      "\"They've done this a thousand times. Samsa VI is a small piece of a very long pattern.\"",
+      "\"They don't destroy. They include. That's the terrifying part.\"",
+      "\"I'm going to be the first human who chooses it. You could join me. The rest of your species won't get a choice.\"",
+      "\"The Company sent Shaw to kill me. They will send others. I don't mind.\""
+    ]
+  };
+
+  const complications = {
+    2: "Full blackout. All station lighting fails. Emergency flares only.",
+    3: "Carcinid Shriek nearby — every living thing pauses for a full second.",
+    4: "Equipment malfunction — a piece of tech someone is using stops working.",
+    5: "A radio call. Panicked voice. Name nobody recognises. Then static.",
+    6: "Torches flicker in unison — just for a beat. Normal after that.",
+    7: "Rhythmic sound from an air duct. Count eight beats. Then another eight. Then nothing.",
+    8: "Peripheral movement — someone sees something. When they look directly, nothing.",
+    9: "The station pulses — a low biological thump somewhere below the reactor.",
+    10: "A smell — sweet, floral, wrong. It fades in thirty seconds.",
+    11: "Direct contact — something alive brushes past in the dark. Not a carcinid shape.",
+    12: "The Shriek, close. Full three-second duration. Everything reacts visibly."
+  };
+
+  // ===== Rollers =====
+  function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+
+  function rollAtmos(key) {
+    document.getElementById('dressing-a').textContent = pick(atmos[key]);
+  }
+  function rollTerra(key) {
+    document.getElementById('dressing-t').textContent = pick(terra[key]);
+  }
+  function rollComplication() {
+    const roll = Math.floor(Math.random() * 6) + 1 + Math.floor(Math.random() * 6) + 1;
+    document.getElementById('complication').textContent = `[2d6 = ${roll}] ` + complications[roll];
+  }
+
+  // ===== Clock =====
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+
+  // ===== Command palette =====
+  const palette = document.getElementById('palette');
+  const input = document.getElementById('palette-input');
+  const results = document.getElementById('palette-results');
+
+  const index = [
+    { cat: 'peril', text: 'Mother births — 2/3 · HOT · mimic pending' },
+    { cat: 'peril', text: 'Hangar falls — 2/3 · Brookman gone' },
+    { cat: 'peril', text: 'Shaw activates — COMPLETE · Edem dead' },
+    { cat: 'peril', text: 'Reactor dies — RESOLVED · sluice gates' },
+    { cat: 'peril', text: 'Hinton ascends — 0/3 · future' },
+    { cat: 'peril', text: 'Storm closes — 1/3 · water rising' },
+    { cat: 'peril', text: 'Maas transforms — 0/3 · slow burn' },
+    { cat: 'entity', text: 'Shaw · wants Hinton logic core · thinks with orders' },
+    { cat: 'entity', text: 'The Mother · wants transform · thinks with radiation' },
+    { cat: 'entity', text: 'Carcinids · want serve · thinks with servitude' },
+    { cat: 'entity', text: 'Hinton · wants ascend · thinks with curiosity' },
+    { cat: 'entity', text: 'Dropship crew · wants leave · thinks with orders' },
+    { cat: 'entity', text: 'The Elders · want include · thinks with patience' },
+    { cat: 'location', text: 'Stairwell — Team Alpha here · vertical echo chamber' },
+    { cat: 'location', text: 'Hangar — Willis here · Brookman mutiny aftermath' },
+    { cat: 'location', text: 'Reactor chamber — Mother, Franco, cocooned marines' },
+    { cat: 'location', text: "Edem's lab — lab where Shaw killed her" },
+    { cat: 'location', text: 'Spillway · ceiling ladder · aquatic carcinid' },
+    { cat: 'location', text: 'Outdoors · storm · dead silence · warm mud' },
+    { cat: 'location', text: 'Chimney · one-way descent · herded · feels safe' },
+    { cat: 'rule', text: 'Panic Check — Fear Save when something breaks the mind' },
+    { cat: 'rule', text: 'Critical Hit — trigger is natural 1 on Body Save' },
+    { cat: 'rule', text: 'Damage — weapon die + modifier · Body Save to avoid wound' },
+    { cat: 'truth', text: 'Everything is changing.' },
+    { cat: 'truth', text: 'You will die here.' },
+    { cat: 'truth', text: 'This will spread.' },
+    { cat: 'lib', text: 'Shriek · pressure behind eyes · lights dim · carcinids reorient' },
+    { cat: 'lib', text: 'Stage 3 Symbiosis · marine body partly cocooned · breathing with mother' },
+    { cat: 'lib', text: 'Horror telescope · Scale 3 · storm is spiral centred on mountain' },
+    { cat: 'lib', text: "Hinton line · \"They don't destroy. They include.\"" },
+    { cat: 'lib', text: 'Mimic birth · Shriek loud · then silence · carcinids pass without stopping' }
+  ];
+
+  function renderResults(query) {
+    const q = query.trim().toLowerCase();
+    const filtered = q ? index.filter(e => (e.cat + ' ' + e.text).toLowerCase().includes(q)) : index;
+    results.innerHTML = filtered.slice(0, 20).map((e, i) =>
+      `<div class="palette-result${i===0?' sel':''}">
+        <div class="cat">${e.cat}</div>
+        <div class="content">${e.text}</div>
+      </div>`
+    ).join('');
+  }
+
+  document.addEventListener('keydown', (e) => {
+    if ((e.metaKey || e.ctrlKey) && e.key === 'k') {
+      e.preventDefault();
+      palette.classList.add('open');
+      input.value = '';
+      renderResults('');
+      input.focus();
+    }
+    if (e.key === 'Escape') palette.classList.remove('open');
+  });
+  input.addEventListener('input', e => renderResults(e.target.value));
+  palette.addEventListener('click', e => { if (e.target === palette) palette.classList.remove('open'); });
+
+  // Mode switch
+  document.querySelectorAll('.mode-indicator button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.mode-indicator button').forEach(x => x.classList.remove('active'));
+      b.classList.add('active');
+    });
+  });
+</script>
+
+</body>
+</html>
