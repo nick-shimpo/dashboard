@@ -1,0 +1,1031 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<title>GM Stage v4 — Another Bug Hunt</title>
+<meta name="viewport" content="width=1280">
+<style>
+  :root {
+    --bg: #f4f1ea;
+    --paper: #fbf8f1;
+    --ink: #18181b;
+    --ink-dim: #52525b;
+    --ink-faint: #a1a1aa;
+    --hair: #d4d4d8;
+    --hair-strong: #71717a;
+    --accent: #991b1b;
+    --accent-2: #7c2d12;
+    --amber: #b45309;
+    --green: #166534;
+    --violet: #6d28d9;
+    --serif: 'Cormorant Garamond', Georgia, serif;
+    --sans: 'Inter', -apple-system, system-ui, sans-serif;
+    --mono: 'JetBrains Mono', 'Fira Code', ui-monospace, monospace;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { height: 100%; overflow: hidden; }
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    font-family: var(--sans);
+    font-size: 14px;
+    line-height: 1.5;
+  }
+
+  .stage {
+    display: grid;
+    grid-template-columns: 1fr;
+    grid-template-rows: 60px 1fr 48px;
+    grid-template-areas: "head" "main" "foot";
+    height: 100vh;
+  }
+
+  .head {
+    grid-area: head;
+    display: grid;
+    grid-template-columns: auto 1fr auto;
+    align-items: center;
+    padding: 0 32px;
+    background: var(--paper);
+    border-bottom: 1px solid var(--hair);
+    gap: 24px;
+  }
+  .logo {
+    font-family: var(--serif);
+    font-size: 22px;
+    font-weight: 600;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .logo small {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    margin-left: 10px;
+    font-weight: 400;
+  }
+
+  .modes {
+    justify-self: center;
+    display: flex;
+    gap: 2px;
+    background: var(--bg);
+    padding: 3px;
+    border-radius: 40px;
+    border: 1px solid var(--hair);
+  }
+  .modes button {
+    background: transparent;
+    border: none;
+    padding: 8px 22px;
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.18em;
+    color: var(--ink-dim);
+    cursor: pointer;
+    border-radius: 40px;
+    transition: all 0.2s;
+    font-weight: 500;
+  }
+  .modes button:hover { color: var(--ink); }
+  .modes button.active {
+    background: var(--ink);
+    color: var(--paper);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.15);
+  }
+
+  .clock {
+    font-family: var(--mono);
+    font-size: 13px;
+    color: var(--ink-dim);
+    letter-spacing: 0.05em;
+  }
+  .clock a { color: var(--ink-faint); text-decoration: none; margin-right: 14px; font-size: 11px; }
+  .clock a:hover { color: var(--accent); }
+
+  .main {
+    grid-area: main;
+    overflow: hidden;
+    position: relative;
+  }
+  .view {
+    position: absolute;
+    inset: 0;
+    padding: 32px 48px;
+    overflow-y: auto;
+    opacity: 0;
+    pointer-events: none;
+    transition: opacity 0.3s;
+  }
+  .view.active { opacity: 1; pointer-events: auto; }
+
+  /* ===== RESET VIEW (unchanged from v2) ===== */
+  .reset-grid {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  .reset-col h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--accent);
+    text-transform: uppercase;
+    margin-bottom: 16px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid var(--accent);
+  }
+  .reset-col .num {
+    font-family: var(--serif);
+    font-size: 48px;
+    font-weight: 300;
+    line-height: 1;
+    color: var(--ink-faint);
+    float: left;
+    margin-right: 16px;
+    margin-top: 4px;
+  }
+  .reset-item { padding: 14px 0; border-bottom: 1px solid var(--hair); clear: both; overflow: auto; }
+  .reset-item h3 { font-family: var(--serif); font-size: 22px; font-weight: 500; margin-bottom: 4px; letter-spacing: -0.01em; }
+  .reset-item p { color: var(--ink-dim); font-size: 13px; }
+  .reset-cta { grid-column: 1 / -1; text-align: center; margin-top: 24px; padding-top: 24px; border-top: 1px solid var(--hair); }
+  .reset-cta .big { font-family: var(--serif); font-size: 36px; color: var(--ink); font-weight: 400; font-style: italic; letter-spacing: -0.01em; }
+
+  /* ===== LOOP VIEW (unchanged from v2) ===== */
+  .loop-wrap { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
+  .loop-main h1 { font-family: var(--serif); font-size: 44px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 8px; }
+  .loop-main .sub { color: var(--ink-dim); font-size: 14px; margin-bottom: 28px; }
+  .truths-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px 24px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; margin-bottom: 28px; }
+  .truths-bar .truth { border-left: 3px solid var(--accent); padding-left: 14px; }
+  .truths-bar .tlabel { font-family: var(--mono); font-size: 9px; letter-spacing: 0.2em; color: var(--ink-faint); text-transform: uppercase; }
+  .truths-bar .tval { font-family: var(--serif); font-size: 20px; color: var(--ink); font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; margin-top: 2px; }
+  .peril-stack { margin-bottom: 24px; }
+  .peril-stack h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 14px; }
+  .peril-item { display: grid; grid-template-columns: 200px 1fr auto; gap: 20px; align-items: center; padding: 14px 20px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; margin-bottom: 6px; transition: transform 0.15s; }
+  .peril-item:hover { transform: translateX(2px); border-color: var(--hair-strong); }
+  .peril-item.hot { border-color: var(--accent); background: #fef2f2; }
+  .peril-item.complete, .peril-item.resolved { opacity: 0.45; }
+  .peril-item h3 { font-family: var(--serif); font-size: 18px; font-weight: 500; }
+  .omens { display: flex; gap: 6px; align-items: center; }
+  .omen { flex: 1; padding: 6px 10px; font-size: 12px; color: var(--ink-dim); background: var(--bg); border-radius: 3px; border: 1px dashed var(--hair-strong); }
+  .omen.fired { background: var(--amber); color: var(--paper); border-style: solid; border-color: var(--amber); }
+  .peril-item.hot .omen.fired { background: var(--accent); border-color: var(--accent); }
+  .peril-state { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; text-align: right; min-width: 80px; }
+  .peril-item.hot .peril-state { color: var(--accent); font-weight: 600; }
+  .loop-side h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 12px; }
+  .loop-side-section { margin-bottom: 28px; }
+  .pc-card { padding: 10px 14px; background: var(--paper); border: 1px solid var(--hair); border-radius: 3px; margin-bottom: 5px; }
+  .pc-card.wounded { border-left: 3px solid var(--accent); }
+  .pc-card.shaken { border-left: 3px solid var(--amber); }
+  .pc-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .pc-n { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+  .pc-c { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .pc-loc { font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+  .entity-mini { padding: 8px 12px; border-left: 2px solid var(--violet); margin-bottom: 4px; font-size: 12px; }
+  .entity-mini strong { color: var(--ink); font-size: 13px; display: block; margin-bottom: 1px; }
+  .entity-mini span { color: var(--ink-dim); }
+
+  /* ===== IMPROV VIEW — redesigned ===== */
+  .improv-wrap {
+    max-width: 1200px;
+    margin: 0 auto;
+    display: grid;
+    grid-template-columns: 420px 1fr;
+    gap: 40px;
+    align-items: start;
+  }
+
+  .improv-controls h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    margin-bottom: 14px;
+  }
+
+  /* Situation buttons — 2×4 grid, big primary tools */
+  .situations {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    margin-bottom: 28px;
+  }
+  .situation-btn {
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 6px;
+    padding: 16px 14px;
+    text-align: left;
+    cursor: pointer;
+    font-family: inherit;
+    transition: all 0.15s;
+  }
+  .situation-btn:hover {
+    border-color: var(--accent);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0,0,0,0.06);
+  }
+  .situation-btn .s-name {
+    font-family: var(--serif);
+    font-size: 18px;
+    font-weight: 500;
+    letter-spacing: -0.01em;
+    color: var(--ink);
+    line-height: 1.1;
+    margin-bottom: 3px;
+  }
+  .situation-btn .s-tag {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    color: var(--ink-faint);
+    text-transform: uppercase;
+  }
+
+  /* Fragment rollers — compact strip */
+  .fragments-section h2 { margin-top: 6px; }
+  .fragment-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .frag-pill {
+    padding: 7px 14px;
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.12em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+    cursor: pointer;
+    border-radius: 40px;
+    transition: all 0.15s;
+  }
+  .frag-pill:hover { border-color: var(--ink); color: var(--ink); background: var(--bg); }
+  .frag-pill.hot { border-color: var(--accent); color: var(--accent); }
+  .frag-pill.hot:hover { background: var(--accent); color: var(--paper); }
+
+  /* Card stack */
+  .card-stack {
+    min-height: 400px;
+  }
+  .card-stack-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 14px;
+  }
+  .card-stack-head h2 {
+    font-family: var(--mono);
+    font-size: 11px;
+    letter-spacing: 0.25em;
+    color: var(--ink-dim);
+    text-transform: uppercase;
+  }
+  .clear-btn {
+    background: transparent;
+    border: 1px solid var(--hair);
+    color: var(--ink-faint);
+    padding: 5px 12px;
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    border-radius: 40px;
+    cursor: pointer;
+    transition: all 0.15s;
+  }
+  .clear-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+  .empty-state {
+    text-align: center;
+    color: var(--ink-faint);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 22px;
+    padding: 80px 20px;
+    border: 1px dashed var(--hair);
+    border-radius: 6px;
+  }
+
+  .card {
+    background: var(--paper);
+    border: 1px solid var(--hair);
+    border-radius: 6px;
+    padding: 22px 26px;
+    margin-bottom: 14px;
+    transition: opacity 0.3s;
+  }
+  .card:not(:first-child) { opacity: 0.55; }
+  .card:not(:first-child):hover { opacity: 0.9; }
+  .card-head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    margin-bottom: 12px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--hair);
+  }
+  .card-title {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.25em;
+    text-transform: uppercase;
+    color: var(--accent);
+  }
+  .card-time {
+    font-family: var(--mono);
+    font-size: 10px;
+    color: var(--ink-faint);
+  }
+  .card-line {
+    font-family: var(--serif);
+    font-size: 17px;
+    line-height: 1.45;
+    color: var(--ink);
+    padding: 4px 0 4px 14px;
+    border-left: 2px solid var(--hair);
+    margin-bottom: 6px;
+  }
+  .card-line .facet {
+    font-family: var(--mono);
+    font-size: 9px;
+    color: var(--ink-faint);
+    letter-spacing: 0.15em;
+    text-transform: uppercase;
+    display: block;
+    margin-bottom: 2px;
+  }
+  .card.fragment-card .card-line {
+    font-style: italic;
+    font-size: 19px;
+    border-left-color: var(--accent);
+  }
+
+  /* ===== COMBAT VIEW (unchanged) ===== */
+  .combat-wrap { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 420px; gap: 32px; }
+  .combat-main h1 { font-family: var(--serif); font-size: 36px; margin-bottom: 4px; font-weight: 400; letter-spacing: -0.02em; }
+  .combat-main .sub { color: var(--ink-dim); margin-bottom: 24px; }
+  .enemy-buttons { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 24px; }
+  .enemy-btn { background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; padding: 14px; cursor: pointer; text-align: left; font-family: inherit; transition: all 0.15s; }
+  .enemy-btn:hover { border-color: var(--accent); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.06); }
+  .enemy-btn .name { font-family: var(--serif); font-size: 18px; font-weight: 500; }
+  .enemy-btn .stats { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); margin-top: 2px; letter-spacing: 0.05em; }
+  .tracker { background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; min-height: 200px; padding: 16px; }
+  .tracker h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 12px; }
+  .combatant { display: grid; grid-template-columns: auto 1fr auto auto; gap: 12px; align-items: center; padding: 10px; border-bottom: 1px solid var(--hair); }
+  .combatant:last-child { border: none; }
+  .combatant .init { font-family: var(--mono); font-size: 12px; background: var(--bg); border: 1px solid var(--hair); width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; color: var(--ink-dim); }
+  .combatant .cname { font-family: var(--serif); font-size: 16px; font-weight: 500; }
+  .combatant .hp { font-family: var(--mono); font-size: 12px; color: var(--ink-dim); background: var(--bg); padding: 3px 8px; border-radius: 3px; }
+  .combatant button { border: 1px solid var(--hair); background: transparent; padding: 4px 10px; cursor: pointer; font-size: 11px; color: var(--ink-dim); border-radius: 3px; }
+  .rules-card { padding: 18px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; }
+  .rules-card h3 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.2em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 12px; }
+  .rule-row { display: grid; grid-template-columns: 90px 1fr; gap: 10px; padding: 8px 0; border-bottom: 1px dashed var(--hair); font-size: 12px; }
+  .rule-row:last-child { border: none; }
+  .rule-row .k { font-family: var(--mono); font-size: 11px; color: var(--accent); letter-spacing: 0.1em; text-transform: uppercase; }
+
+  .foot {
+    grid-area: foot;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0 32px;
+    background: var(--paper);
+    border-top: 1px solid var(--hair);
+    font-family: var(--mono);
+    font-size: 11px;
+    color: var(--ink-faint);
+    letter-spacing: 0.1em;
+  }
+  .foot-tag { color: var(--accent); }
+
+  ::-webkit-scrollbar { width: 10px; }
+  ::-webkit-scrollbar-track { background: transparent; }
+  ::-webkit-scrollbar-thumb { background: var(--hair); border-radius: 5px; }
+</style>
+</head>
+<body>
+
+<div class="stage">
+
+  <div class="head">
+    <div class="logo">Another Bug Hunt <small>v4 · STAGE · SESSION 07</small></div>
+    <div class="modes">
+      <button data-view="reset">RESET</button>
+      <button data-view="loop">LOOP</button>
+      <button class="active" data-view="improv">IMPROV</button>
+      <button data-view="combat">COMBAT</button>
+    </div>
+    <div class="clock"><a href="gm-prototypes.html">← back</a><span id="clock">--:--</span></div>
+  </div>
+
+  <div class="main">
+
+    <!-- ===== RESET ===== -->
+    <div class="view" id="view-reset">
+      <div class="reset-grid">
+        <div class="reset-col">
+          <h2>PRESSURES · 01</h2>
+          <div class="reset-item"><span class="num">01</span><h3>Storm closes</h3><p>Water rising. Evac window shrinking by the hour.</p></div>
+          <div class="reset-item"><span class="num">02</span><h3>Bud bleeds</h3><p>Temporarily stabilised. Hours, not days.</p></div>
+          <div class="reset-item"><span class="num">03</span><h3>Mother pulses</h3><p>Next Shriek triggers birthing. Omen 2 fired.</p></div>
+          <div class="reset-item"><span class="num">04</span><h3>Hangar radio</h3><p>Calls getting shorter. Carcinids at the perimeter.</p></div>
+        </div>
+        <div class="reset-col">
+          <h2>OBJECTIVES · 02</h2>
+          <div class="reset-item"><span class="num">01</span><h3>Ascend</h3><p>Team Alpha back to the surface — Bud needs proper care.</p></div>
+          <div class="reset-item"><span class="num">02</span><h3>Regroup</h3><p>Willis + Alpha need to meet before dropship leaves.</p></div>
+          <div class="reset-item"><span class="num">03</span><h3>Make sense</h3><p>Tandy has the radiation data. Someone needs to connect the dots.</p></div>
+        </div>
+        <div class="reset-col">
+          <h2>CHALLENGES · 03</h2>
+          <div class="reset-item"><span class="num">01</span><h3>Stairwell encounter</h3><p>Bad roll on ascent. Session opener. TBD.</p></div>
+          <div class="reset-item"><span class="num">02</span><h3>Carrying Bud</h3><p>Immobile. Needs 2 teammates. Can't fight while carrying.</p></div>
+          <div class="reset-item"><span class="num">03</span><h3>Willis alone</h3><p>Hangar chaos. No backup within reach.</p></div>
+        </div>
+        <div class="reset-cta"><div class="big">→ Strategy → Direction</div></div>
+      </div>
+    </div>
+
+    <!-- ===== LOOP ===== -->
+    <div class="view" id="view-loop">
+      <div class="loop-wrap">
+        <div class="loop-main">
+          <h1>Where we are.</h1>
+          <div class="sub">Scenario 2 · late-stage · party split · seven perils in motion</div>
+          <div class="truths-bar">
+            <div class="truth"><div class="tlabel">Truth 01</div><div class="tval">Everything is changing.</div></div>
+            <div class="truth"><div class="tlabel">Truth 02</div><div class="tval">You will die here.</div></div>
+            <div class="truth"><div class="tlabel">Truth 03</div><div class="tval">This will spread.</div></div>
+          </div>
+          <div class="peril-stack">
+            <h2>Perils · live</h2>
+            <div class="peril-item hot"><h3>The Mother births</h3><div class="omens"><div class="omen fired">1 · clicks heard</div><div class="omen fired">2 · procession</div><div class="omen">3 · silence + mimic</div></div><div class="peril-state">HOT · 2/3</div></div>
+            <div class="peril-item"><h3>The Hangar falls</h3><div class="omens"><div class="omen fired">1 · radio tense</div><div class="omen fired">2 · Brookman gone</div><div class="omen">3 · screams then silence</div></div><div class="peril-state">2/3</div></div>
+            <div class="peril-item"><h3>The Storm closes</h3><div class="omens"><div class="omen fired">1 · water rising</div><div class="omen">2 · route gone</div><div class="omen">3 · full hurricane</div></div><div class="peril-state">1/3</div></div>
+            <div class="peril-item"><h3>Maas transforms</h3><div class="omens"><div class="omen">1 · behaviour</div><div class="omen">2 · physical</div><div class="omen">3 · integration</div></div><div class="peril-state">0/3</div></div>
+            <div class="peril-item"><h3>Hinton ascends</h3><div class="omens"><div class="omen">1 · evidence</div><div class="omen">2 · ship responds</div><div class="omen">3 · mountain moves</div></div><div class="peril-state">0/3</div></div>
+            <div class="peril-item complete"><h3>Shaw activates</h3><div class="omens"><div class="omen fired">1 · manipulation</div><div class="omen fired">2 · force</div><div class="omen fired">3 · termination</div></div><div class="peril-state">COMPLETE</div></div>
+            <div class="peril-item resolved"><h3>Reactor dies</h3><div class="omens"><div class="omen fired">sluice gates opened</div><div class="omen fired">pressure dropped</div><div class="omen fired">stable</div></div><div class="peril-state">RESOLVED</div></div>
+          </div>
+        </div>
+        <div class="loop-side">
+          <div class="loop-side-section">
+            <h2>Party</h2>
+            <div class="pc-card shaken"><div class="pc-row"><div class="pc-n">Willis</div><div class="pc-c">TEAMSTER</div></div><div class="pc-loc">Hangar · solo · shaken</div></div>
+            <div class="pc-card wounded"><div class="pc-row"><div class="pc-n">Bud</div><div class="pc-c">TEAMSTER</div></div><div class="pc-loc">Stairwell · leg amp'd · carried</div></div>
+            <div class="pc-card"><div class="pc-row"><div class="pc-n">Tandy</div><div class="pc-c">SCIENTIST</div></div><div class="pc-loc">Stairwell · has rad data</div></div>
+            <div class="pc-card shaken"><div class="pc-row"><div class="pc-n">Rick</div><div class="pc-c">MARINE</div></div><div class="pc-loc">Stairwell · traumatised</div></div>
+            <div class="pc-card"><div class="pc-row"><div class="pc-n">Valdez</div><div class="pc-c">SGT</div></div><div class="pc-loc">Stairwell · carrying Bud</div></div>
+          </div>
+          <div class="loop-side-section">
+            <h2>Entities</h2>
+            <div class="entity-mini"><strong>Shaw</strong><span>retrieve Hinton's core · thinks with orders</span></div>
+            <div class="entity-mini"><strong>The Mother</strong><span>transform · thinks with radiation</span></div>
+            <div class="entity-mini"><strong>Carcinids</strong><span>serve · thinks with servitude</span></div>
+            <div class="entity-mini"><strong>Hinton</strong><span>ascend · thinks with curiosity</span></div>
+            <div class="entity-mini"><strong>Dropship</strong><span>leave · thinks with orders</span></div>
+            <div class="entity-mini"><strong>Elders</strong><span>include · thinks with patience</span></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- ===== IMPROV (redesigned) ===== -->
+    <div class="view active" id="view-improv">
+      <div class="improv-wrap">
+
+        <div class="improv-controls">
+          <h2>Situations · scene-ready</h2>
+          <div class="situations">
+            <button class="situation-btn" onclick="genSituation('pack')">
+              <div class="s-name">Carcinid pack</div><div class="s-tag">what's special</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('dramatic')">
+              <div class="s-name">Dramatic encounter</div><div class="s-tag">something unexpected</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('tension')">
+              <div class="s-name">Escalating tension</div><div class="s-tag">tighten the scene</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('reveal')">
+              <div class="s-name">Reveal a truth</div><div class="s-tag">horror telescope</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('space')">
+              <div class="s-name">Environmental beat</div><div class="s-tag">room as set piece</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('complication')">
+              <div class="s-name">Complication</div><div class="s-tag">mid-action wrongness</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('radio')">
+              <div class="s-name">Radio voice</div><div class="s-tag">someone elsewhere</div>
+            </button>
+            <button class="situation-btn" onclick="genSituation('quiet')">
+              <div class="s-name">Quiet moment</div><div class="s-tag">sensory texture</div>
+            </button>
+          </div>
+
+          <div class="fragments-section">
+            <h2>Fragments · ingredients</h2>
+            <div class="fragment-pills">
+              <button class="frag-pill" onclick="genFragment('sound')">Sound</button>
+              <button class="frag-pill" onclick="genFragment('movement')">Movement</button>
+              <button class="frag-pill" onclick="genFragment('residue')">Residue</button>
+              <button class="frag-pill" onclick="genFragment('uncanny')">Uncanny</button>
+              <button class="frag-pill" onclick="genFragment('stair')">Stairwell</button>
+              <button class="frag-pill" onclick="genFragment('outdoor')">Outdoors</button>
+              <button class="frag-pill hot" onclick="genFragment('shriek')">Shriek</button>
+              <button class="frag-pill hot" onclick="genFragment('biological')">Biological</button>
+              <button class="frag-pill hot" onclick="genFragment('telescope')">Telescope</button>
+              <button class="frag-pill hot" onclick="genFragment('hinton')">Hinton</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="card-stack">
+          <div class="card-stack-head">
+            <h2>Generated · most recent on top</h2>
+            <button class="clear-btn" onclick="clearStack()">Clear all</button>
+          </div>
+          <div id="stack">
+            <div class="empty-state">Press a button. A scene-ready card appears here.<br>Stack grows downward as you generate more.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+
+    <!-- ===== COMBAT ===== -->
+    <div class="view" id="view-combat">
+      <div class="combat-wrap">
+        <div class="combat-main">
+          <h1>Engagement.</h1>
+          <div class="sub">Add enemies, track initiative and HP, reference rules.</div>
+          <div class="enemy-buttons">
+            <button class="enemy-btn" onclick="addEnemy('Basic carcinid', 5, '1d10')"><div class="name">Basic carcinid</div><div class="stats">HP 5 · DMG 1d10 · AP 11</div></button>
+            <button class="enemy-btn" onclick="addEnemy('Advanced carcinid', 15, '2d10')"><div class="name">Advanced</div><div class="stats">HP 15 · DMG 2d10 · AP 13</div></button>
+            <button class="enemy-btn" onclick="addEnemy('Mimic', 20, '2d10')"><div class="name">The Mimic</div><div class="stats">HP 20 · DMG 2d10 · Fear 50</div></button>
+            <button class="enemy-btn" onclick="addEnemy('Shaw', 30, '2d10')"><div class="name">Shaw (android)</div><div class="stats">HP 30 · DMG 2d10 · Fear 40</div></button>
+          </div>
+          <div class="tracker" id="tracker">
+            <h3>Initiative / Tracker</h3>
+            <div id="tracker-body" style="color: var(--ink-faint); font-size: 13px; padding: 20px 0; text-align: center;">Click an enemy above to begin.</div>
+          </div>
+        </div>
+        <div>
+          <div class="rules-card">
+            <h3>Combat rules · quick</h3>
+            <div class="rule-row"><div class="k">Init</div><div>Highest Speed goes first. Ties → players.</div></div>
+            <div class="rule-row"><div class="k">Attack</div><div>Roll Combat vs target. Nat 1 = crit hit. Nat 20 = fumble.</div></div>
+            <div class="rule-row"><div class="k">Damage</div><div>Weapon die. Body Save to resist wound.</div></div>
+            <div class="rule-row"><div class="k">Panic</div><div>Fear check when sanity breaks. d20 + Stress vs Sanity.</div></div>
+            <div class="rule-row"><div class="k">Crit</div><div>Double damage + wound effect from table.</div></div>
+            <div class="rule-row"><div class="k">Fumble</div><div>Roll on fumble table. Weapon jam or worse.</div></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+
+  <div class="foot">
+    <div><span class="foot-tag">PERIL</span> &nbsp;&nbsp; next omen: Mother births 3/3 · mimic loose</div>
+    <div>v4 · stacking situational improv</div>
+    <div>session 07 / scenario 02 late</div>
+  </div>
+
+</div>
+
+<script>
+  // ========== FRAGMENT TABLES (from v2) ==========
+  const frag = {
+    sound: [
+      "A clicking that pauses when you pause, then resumes half a beat later.",
+      "Wet chitin sliding across metal.",
+      "Something breathing in a pattern that isn't breathing. Four short, one long.",
+      "The Shriek — half insect cry, half something trying to imitate a human voice.",
+      "Silence. Complete. The carcinids have stopped. They are listening."
+    ],
+    movement: [
+      "It moves sideways faster than it moves forwards.",
+      "Four limbs working together, two working against each other — the body hasn't decided what it is yet.",
+      "One climbs a wall. Another watches from below. Neither is hunting you yet.",
+      "It stops. Turns its whole front section toward a wall where there is nothing. Moves on."
+    ],
+    residue: [
+      "Shed chitin — many pieces, each larger than the last.",
+      "Beetle carapaces stripped clean, arranged in a circle.",
+      "A human uniform, empty, boots laced, no blood, no body.",
+      "Metal that has softened. You can press a thumbprint into it."
+    ],
+    uncanny: [
+      "Its eye moves independently of its body. It's looking past you.",
+      "A scrap of marine webbing fused to its carapace. You recognise the stitching.",
+      "The body doesn't stop moving for ten seconds after it dies. It's finishing.",
+      "Still skin underneath the chitin. Human skin. It twitches when you touch it."
+    ],
+    stair: [
+      "Emergency lighting flickers when the reactor does.",
+      "Clicks echo. You can't tell which floor they're on.",
+      "Blood smear on a handrail, running two flights.",
+      "A door two levels down welded shut from the inside.",
+      "The number painted on the landing is wrong."
+    ],
+    outdoor: [
+      "Rain in horizontal sheets. It hits the far side of the station like gunfire.",
+      "Jungle wildlife is silent. Has been for hours.",
+      "Lightning horizontal, between two points on the ridge, for two full seconds.",
+      "Mud warmer than rain. The ground itself is putting out heat.",
+      "A palm-sized beetle on your shoulder. It does not fly when brushed."
+    ],
+    shriek: [
+      "The station hums at its usual frequency. Then — for a breath — it doesn't.",
+      "You feel it before you hear it. A pressure. Then the sound.",
+      "Every carcinid you can see stops. They are listening. None of them to you.",
+      "It's coming from inside the mountain.",
+      "Lights dim — not flicker. Dim, as if something drew power through them."
+    ],
+    biological: [
+      "A fern growing out of a wall socket. Leaves grey-blue.",
+      "Mould on the ceiling in perfect hexagonal patterns.",
+      "Human hair growing from a patch of moss. Just hair.",
+      "Drinking water tastes slightly sweet. Only from certain taps."
+    ],
+    telescope: [
+      "The mother's punctures, seen from above, match the mountain ridge line.",
+      "The carcinids in circle-arrangements face the mountain. All of them.",
+      "The storm is not a storm front. It's a spiral, centred on the mountain.",
+      "Long-range comms pick up an eight-symbol pattern everywhere. The ground is broadcasting.",
+      "Even the moon has unusual spectral readings."
+    ],
+    hinton: [
+      "\"They don't think like us. They don't have to.\"",
+      "\"They've done this a thousand times. Samsa VI is a small piece of a long pattern.\"",
+      "\"They don't destroy. They include. That's the terrifying part.\"",
+      "\"I'm going to be the first human who chooses it.\""
+    ]
+  };
+
+  // ========== SITUATION TABLES ==========
+  // Each situation = set of facets, each facet = weighted table
+  const sit = {
+    pack: {
+      title: "Carcinid pack",
+      facets: [
+        ["Composition", [
+          "Three adults, moving as one. Same timing, same stops.",
+          "One large, two smaller — the larger is older, chitin scarred.",
+          "Five or six. Too many. They shouldn't hunt in numbers this high.",
+          "A pair, male-and-female if those words still apply. One leads, one covers.",
+          "Just one — but something is wrong with how alone it is."
+        ]],
+        ["Behaviour", [
+          "Not hunting. Herding — funnelling something small through a doorway.",
+          "Feeding on something you can't see yet. The sounds are unmistakeable.",
+          "Communing — arranged in a loose circle, facing inward, motionless.",
+          "Patrolling. A route. They've done this before and they'll do it again.",
+          "Building — dragging material into a pile that already looks organised."
+        ]],
+        ["Tell", [
+          "One of them is humming. Not clicking. Humming.",
+          "They pause every twenty paces and turn their heads toward the mountain.",
+          "The smallest one keeps glancing at the others. Almost like a child.",
+          "Their shells are wet — too wet, like they've just been born.",
+          "Mandibles working in sync, as if chewing something none of them have."
+        ]],
+        ["Weak point", [
+          "The leader's left side is cracked — old injury, still seeping.",
+          "They're blinded by the emergency lights. Move fast enough, they miss you.",
+          "The gap between patrols is exactly forty seconds.",
+          "They're carrying something — drop it and they'll stop to retrieve it.",
+          "Two have their backs turned. They trust the third to watch."
+        ]],
+        ["Uncanny", [
+          "One of them is wearing a Maas-issue tool belt. Buckled correctly.",
+          "The largest has a human thumb fused into its mandible cluster.",
+          "They smell like something you last smelled at a birthday party.",
+          "One's shadow doesn't quite match its body.",
+          "When the nearest one clicks, you feel the click in your teeth."
+        ]]
+      ]
+    },
+
+    dramatic: {
+      title: "Dramatic encounter",
+      facets: [
+        ["Who/what", [
+          "A survivor — Maas jumpsuit, no visible wounds, eyes wrong.",
+          "A body, fresh. Someone you know. You need to look twice to confirm.",
+          "A carcinid doing something no carcinid should — praying, maybe. Or writing.",
+          "A small creature the size of a rat. Too many legs. Blinking.",
+          "Franco. Or what's left of him. Upright, somehow."
+        ]],
+        ["State", [
+          "Panicked, wounded, believes you're going to save them.",
+          "Lucid, calm, wrong — they shouldn't be calm right now.",
+          "Dying, whispering one word over and over. You can't tell what it is.",
+          "Transformed, mid-process — still asking for help in a voice you recognise.",
+          "Unconscious, bleeding a fluid that isn't blood."
+        ]],
+        ["They want", [
+          "To warn you. They know something specific.",
+          "To be killed. They know what's happening to them.",
+          "To touch you. Just to touch you. They won't say why.",
+          "You to follow them. Somewhere specific. Now.",
+          "To give you an object. Tightly held. Still warm."
+        ]],
+        ["The hook", [
+          "What they know contradicts something you thought was settled.",
+          "The way they died makes no sense unless one of your assumptions is wrong.",
+          "What they're holding is marked with a Company serial you've seen before.",
+          "The thing they're whispering is the name of a PC — one who isn't here.",
+          "If you leave them, you will hear them again later."
+        ]]
+      ]
+    },
+
+    tension: {
+      title: "Escalating tension",
+      facets: [
+        ["The shift", [
+          "The emergency lights are a shade redder than they were.",
+          "The temperature has dropped. Your breath is visible.",
+          "A smell like burnt hair, faint but consistent.",
+          "The air pressure has changed. Your ears.",
+          "The hum of the station has a second harmonic now."
+        ]],
+        ["A distant signal", [
+          "Something very large, very far away, is moving.",
+          "Radio static with a pattern underneath it. Four beats, three beats, one.",
+          "A door shut at the other end of the building. No-one there.",
+          "A Shriek, muffled — not one of the big ones. A small one, close.",
+          "The dropship's engines fire up for three seconds, then stop."
+        ]],
+        ["Something close", [
+          "A set of wet prints on a dry floor, leading into the room you're in.",
+          "A sound that was there a minute ago has stopped.",
+          "The lights at the far end of this corridor are out. They weren't before.",
+          "An object has moved. You didn't see it move. You know it did.",
+          "Breath on the back of your neck. You are alone in the room."
+        ]]
+      ]
+    },
+
+    reveal: {
+      title: "Reveal a truth",
+      facets: [
+        ["What they see", [
+          "A spore-pattern identical to one Tandy found in the reactor — on a surface a hundred metres from any biological source.",
+          "Etched symbols on an old Maas bulkhead that match the shape of the carcinid mandibles.",
+          "A map of the station where the 'cold zones' form a spiral converging on the mountain.",
+          "A radiation reading that climbs when they face one direction and drops when they face away.",
+          "A layer of terraform-era soil containing carcinid chitin fragments. The layer is eighty years old."
+        ]],
+        ["What it means", [
+          "The process has a memory. It has done this before.",
+          "The process isn't contained. It's been everywhere, unnoticed, for decades.",
+          "What they've been fighting isn't an infestation. It's a completion.",
+          "The scale is not what they thought. What they see here is a fractal of what's happening above.",
+          "There is no clean boundary between 'the dam' and 'the planet'. The dam was already gone."
+        ]],
+        ["The implication", [
+          "Every living thing on this world will respond to the Shriek once the process completes.",
+          "The Company's rescue protocols were never meant to rescue anyone.",
+          "Leaving Samsa VI does not leave the process. They've carried it with them.",
+          "The 'weather' on every nearby colony world is starting to look familiar.",
+          "Hinton didn't find this. He was always going to choose it."
+        ]]
+      ]
+    },
+
+    space: {
+      title: "Environmental beat",
+      facets: [
+        ["First thing", [
+          "Emergency lighting, half of it out. The rest hums at the wrong pitch.",
+          "An empty room that used to be full — gear still on the hooks, nobody wearing it.",
+          "Water on the floor. A centimetre, not more. It wasn't there on the last patrol.",
+          "A wall with a crack in it that you can see moisture moving inside.",
+          "A door half-open. Not one, two, three — always the middle one of three."
+        ]],
+        ["Unsettling", [
+          "The ventilation is blowing inwards everywhere. Not out. In.",
+          "Every mirror in the room has a fine film on it. Not dust.",
+          "The Maas posters on the wall have faded unevenly. Human faces blurred, background sharp.",
+          "One corner of the room is a different temperature.",
+          "There is a small sound here that you can hear only when you don't try."
+        ]],
+        ["Useful", [
+          "A working terminal. Half-charged. Partial access.",
+          "A toolbox, locked. Maas-issue, standard combination.",
+          "A vent wide enough to crawl through — exits two rooms over.",
+          "Medical supplies, expired but functional.",
+          "A radio left on receive, tuned to a channel that shouldn't be active."
+        ]],
+        ["Dangerous", [
+          "A structural weakness you can hear groaning if you stand still.",
+          "An exposed cable at ankle height — live, no warning sign.",
+          "The floor sags toward the centre. Something is underneath.",
+          "A chemical smell that gets stronger the further in you go.",
+          "A crawling thing on the ceiling you only see if you look up."
+        ]]
+      ]
+    },
+
+    complication: {
+      title: "Complication",
+      facets: [
+        ["Something wrong", [
+          "A weapon jams — not catastrophically, but the user knows it.",
+          "A torch flickers and stays dim for the rest of the scene.",
+          "A radio cuts in with someone else's voice for two seconds.",
+          "A previously-closed door is now open. Or vice versa.",
+          "An object they were carrying is now on the floor behind them."
+        ]],
+        ["The consequence", [
+          "They have to stop and fix it — or keep moving knowing it's worse.",
+          "Someone else in the group is affected first and doesn't realise.",
+          "A sound goes out. Something distant hears it.",
+          "The fix takes time they don't have.",
+          "A small piece of trust between two PCs is now bruised."
+        ]]
+      ]
+    },
+
+    radio: {
+      title: "Radio voice",
+      facets: [
+        ["Who", [
+          "Brookman, drunk or shaken — not apologising.",
+          "One of the dropship pilots. Calm. Too calm.",
+          "An unknown survivor, whispering, signal weak.",
+          "A voice that sounds like a PC — one they left behind.",
+          "Garbled. Human vowels. Carcinid consonants. Words almost there."
+        ]],
+        ["Situation", [
+          "Trapped somewhere and asking whether it's worth trying.",
+          "Fleeing — footsteps audible, breathing ragged.",
+          "Betrayed — someone in their group just did something.",
+          "Transforming, slowly, aware of it, narrating it.",
+          "Broadcasting coordinates that aren't quite where they are."
+        ]],
+        ["What they're asking", [
+          "Come get them. Specific route. Specific time window.",
+          "Confirm a rumour — they've heard something and need to know.",
+          "Make a decision for them. The weight of it is too much.",
+          "Relay a message to someone else. The message is one sentence.",
+          "Nothing. They just want to not be alone on the channel."
+        ]],
+        ["Not telling", [
+          "They aren't alone in the room. The other person is listening.",
+          "They've already given up. They're calling to say goodbye, not for help.",
+          "The signal is being relayed — they're closer than they claim.",
+          "They know one of the PCs is lying about something, and they're debating whether to say so.",
+          "Every word they've said so far has been true. The lie is what they haven't said."
+        ]]
+      ]
+    },
+
+    quiet: {
+      title: "Quiet moment",
+      facets: [
+        ["Small thing", [
+          "Dust in a shaft of emergency light. Moves wrong when someone walks past.",
+          "A photograph taped inside a locker — a child, someone's. Taken on Earth.",
+          "The sound of water dripping — slower than it should be.",
+          "Cold coffee in a mug on a desk. Someone sat here recently.",
+          "A hand-written sign: 'BE BACK SOON'. The date is three weeks ago."
+        ]],
+        ["Sensory", [
+          "The taste of the air here is faintly metallic.",
+          "The floor is slightly warmer here than two metres back.",
+          "A smell you can't place. Flowers? Cleaning product? Neither exactly.",
+          "Your breath sounds louder than it should.",
+          "The back of your neck has goosebumps. Nothing has changed to cause them."
+        ]],
+        ["The ground", [
+          "A colleague says something small. A memory. You smile without meaning to.",
+          "A moment where no-one is in immediate danger. It will not last.",
+          "A detail of something beautiful, not related to the horror.",
+          "A small kindness between two PCs. Unprompted.",
+          "A piece of music plays somewhere — a terminal left on, maybe. Two bars, then gone."
+        ]]
+      ]
+    }
+  };
+
+  const pick = arr => arr[Math.floor(Math.random() * arr.length)];
+
+  // ========== CARD STACK ==========
+  const stackEl = document.getElementById('stack');
+  let hasContent = false;
+
+  function timestamp() {
+    const d = new Date();
+    return String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+  }
+
+  function addCard(html) {
+    if (!hasContent) {
+      stackEl.innerHTML = '';
+      hasContent = true;
+    }
+    const div = document.createElement('div');
+    div.innerHTML = html;
+    const card = div.firstElementChild;
+    stackEl.insertBefore(card, stackEl.firstChild);
+  }
+
+  function clearStack() {
+    stackEl.innerHTML = '<div class="empty-state">Press a button. A scene-ready card appears here.<br>Stack grows downward as you generate more.</div>';
+    hasContent = false;
+  }
+
+  function genSituation(key) {
+    const s = sit[key];
+    const lines = s.facets.map(([label, table]) => `
+      <div class="card-line">
+        <span class="facet">${label}</span>
+        ${pick(table)}
+      </div>
+    `).join('');
+    addCard(`
+      <div class="card">
+        <div class="card-head">
+          <div class="card-title">${s.title}</div>
+          <div class="card-time">${timestamp()}</div>
+        </div>
+        ${lines}
+      </div>
+    `);
+  }
+
+  function genFragment(key) {
+    const text = pick(frag[key]);
+    addCard(`
+      <div class="card fragment-card">
+        <div class="card-head">
+          <div class="card-title">Fragment · ${key}</div>
+          <div class="card-time">${timestamp()}</div>
+        </div>
+        <div class="card-line">${text}</div>
+      </div>
+    `);
+  }
+
+  // ========== VIEW SWITCHING ==========
+  document.querySelectorAll('.modes button').forEach(b => {
+    b.addEventListener('click', () => {
+      document.querySelectorAll('.modes button').forEach(x => x.classList.remove('active'));
+      document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+      b.classList.add('active');
+      document.getElementById('view-' + b.dataset.view).classList.add('active');
+    });
+  });
+
+  // ========== COMBAT TRACKER ==========
+  let combatants = [];
+  function addEnemy(name, hp, dmg) {
+    combatants.push({ name, hp, dmg, init: Math.floor(Math.random() * 20) + 1 });
+    combatants.sort((a,b) => b.init - a.init);
+    renderCombat();
+  }
+  function renderCombat() {
+    const body = document.getElementById('tracker-body');
+    if (!combatants.length) { body.innerHTML = 'Click an enemy above to begin.'; return; }
+    body.innerHTML = combatants.map((c, i) => `
+      <div class="combatant">
+        <div class="init">${c.init}</div>
+        <div>
+          <div class="cname">${c.name}</div>
+          <div style="font-size:11px; color: var(--ink-faint); font-family: var(--mono);">${c.dmg}</div>
+        </div>
+        <div class="hp">HP ${c.hp}</div>
+        <button onclick="dmg(${i})">−1</button>
+      </div>
+    `).join('');
+  }
+  function dmg(i) {
+    combatants[i].hp--;
+    if (combatants[i].hp <= 0) combatants.splice(i, 1);
+    renderCombat();
+  }
+
+  // ========== CLOCK ==========
+  function tick() {
+    const d = new Date();
+    document.getElementById('clock').textContent =
+      String(d.getHours()).padStart(2,'0') + ':' + String(d.getMinutes()).padStart(2,'0') + ':' + String(d.getSeconds()).padStart(2,'0');
+  }
+  tick(); setInterval(tick, 1000);
+</script>
+
+</body>
+</html>
