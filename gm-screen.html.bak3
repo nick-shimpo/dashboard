@@ -123,7 +123,7 @@
 
 
   /* ===== LOOP VIEW (unchanged from v2) ===== */
-  .loop-wrap { max-width: 1400px; margin: 0 auto; }
+  .loop-wrap { max-width: 1400px; margin: 0 auto; display: grid; grid-template-columns: 1fr 380px; gap: 40px; }
   .loop-main h1 { font-family: var(--serif); font-size: 44px; font-weight: 400; letter-spacing: -0.02em; line-height: 1.05; margin-bottom: 8px; }
   .loop-main .sub { color: var(--ink-dim); font-size: 14px; margin-bottom: 28px; }
   .truths-bar { display: grid; grid-template-columns: repeat(3, 1fr); gap: 20px; padding: 20px 24px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; margin-bottom: 28px; }
@@ -143,6 +143,18 @@
   .peril-item.hot .omen.fired { background: var(--accent); border-color: var(--accent); }
   .peril-state { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; text-align: right; min-width: 80px; }
   .peril-item.hot .peril-state { color: var(--accent); font-weight: 600; }
+  .loop-side h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 12px; }
+  .loop-side-section { margin-bottom: 28px; }
+  .pc-card { padding: 10px 14px; background: var(--paper); border: 1px solid var(--hair); border-radius: 3px; margin-bottom: 5px; }
+  .pc-card.wounded { border-left: 3px solid var(--accent); }
+  .pc-card.shaken { border-left: 3px solid var(--amber); }
+  .pc-row { display: flex; justify-content: space-between; align-items: baseline; }
+  .pc-n { font-family: var(--serif); font-size: 17px; font-weight: 500; }
+  .pc-c { font-family: var(--mono); font-size: 10px; color: var(--ink-faint); letter-spacing: 0.1em; }
+  .pc-loc { font-size: 11px; color: var(--ink-dim); margin-top: 2px; }
+  .entity-mini { padding: 8px 12px; border-left: 2px solid var(--violet); margin-bottom: 4px; font-size: 12px; }
+  .entity-mini strong { color: var(--ink); font-size: 13px; display: block; margin-bottom: 1px; }
+  .entity-mini span { color: var(--ink-dim); }
 
   /* ===== IMPROV VIEW — redesigned ===== */
   .improv-wrap {
@@ -407,6 +419,7 @@
       <button class="active" data-view="loop">LOOP</button>
       <button data-view="improv">IMPROV</button>
       <button data-view="combat">COMBAT</button>
+      <button data-view="party">PARTY</button>
     </div>
     <div class="clock"><span id="clock">--:--</span></div>
   </div>
@@ -417,12 +430,15 @@
     <div class="view active" id="view-loop">
       <div class="loop-wrap">
         <div class="loop-main">
+          <h1>Where we are.</h1>
+          <div class="sub">Scenario 2 · late-stage · party split · seven perils in motion</div>
           <div class="truths-bar">
             <div class="truth"><div class="tlabel">Truth 01</div><div class="tval">Everything is changing.</div></div>
             <div class="truth"><div class="tlabel">Truth 02</div><div class="tval">You will die here.</div></div>
             <div class="truth"><div class="tlabel">Truth 03</div><div class="tval">This will spread.</div></div>
           </div>
           <div class="peril-stack">
+            <h2>Perils · live</h2>
 
             <!-- The Cure Is Lost — 2/3 -->
             <div class="peril-item hot">
@@ -521,13 +537,25 @@
               <div class="peril-state">RESOLVED</div>
             </div>
           </div>
-        <div class="loop-party">
-          <div class="party-controls" style="display:flex; justify-content:flex-end; gap:8px; margin: 28px 0 16px;">
-            <button class="party-btn" onclick="addPartyGroup()">+ Group</button>
-            <button class="party-btn" onclick="resetPartyTracker()">↺ Reset</button>
-          </div>
-          <div class="party-groups" id="party-groups"></div>
         </div>
+        <div class="loop-side">
+          <div class="loop-side-section">
+            <h2>Party</h2>
+            <div class="pc-card shaken"><div class="pc-row"><div class="pc-n">Willis</div><div class="pc-c">TEAMSTER</div></div><div class="pc-loc">Hangar · solo · shaken</div></div>
+            <div class="pc-card wounded"><div class="pc-row"><div class="pc-n">Bud</div><div class="pc-c">TEAMSTER</div></div><div class="pc-loc">Stairwell · leg amp'd · carried</div></div>
+            <div class="pc-card"><div class="pc-row"><div class="pc-n">Tandy</div><div class="pc-c">SCIENTIST</div></div><div class="pc-loc">Stairwell · has rad data</div></div>
+            <div class="pc-card shaken"><div class="pc-row"><div class="pc-n">Rick</div><div class="pc-c">MARINE</div></div><div class="pc-loc">Stairwell · traumatised</div></div>
+            <div class="pc-card"><div class="pc-row"><div class="pc-n">Valdez</div><div class="pc-c">SGT</div></div><div class="pc-loc">Stairwell · carrying Bud</div></div>
+          </div>
+          <div class="loop-side-section">
+            <h2>Entities</h2>
+            <div class="entity-mini"><strong>Shaw</strong><span>retrieve Hinton's core · thinks with orders</span></div>
+            <div class="entity-mini"><strong>The Mother</strong><span>transform · thinks with radiation</span></div>
+            <div class="entity-mini"><strong>Carcinids</strong><span>serve · thinks with servitude</span></div>
+            <div class="entity-mini"><strong>Hinton</strong><span>ascend · thinks with curiosity</span></div>
+            <div class="entity-mini"><strong>Dropship</strong><span>leave · thinks with orders</span></div>
+            <div class="entity-mini"><strong>Elders</strong><span>include · thinks with patience</span></div>
+          </div>
         </div>
       </div>
     </div>
@@ -537,6 +565,7 @@
       <div class="improv-wrap">
 
         <div class="improv-controls">
+          <h2>Situations · scene-ready</h2>
           <div class="situations">
             <button class="situation-btn" onclick="genSituation('pack')">
               <div class="s-name">Carcinid pack</div><div class="s-tag">what's special</div>
@@ -565,6 +594,7 @@
           </div>
 
           <div class="fragments-section">
+            <h2>Fragments · ingredients</h2>
             <div class="fragment-pills">
               <button class="frag-pill" onclick="genFragment('sound')">Sound</button>
               <button class="frag-pill" onclick="genFragment('movement')">Movement</button>
@@ -582,6 +612,7 @@
 
         <div class="card-stack">
           <div class="card-stack-head">
+            <h2>Generated · most recent on top</h2>
             <button class="clear-btn" onclick="clearStack()">Clear all</button>
           </div>
           <div id="stack">
@@ -596,6 +627,8 @@
     <div class="view" id="view-combat">
       <div class="combat-wrap">
         <div class="combat-main">
+          <h1>Engagement.</h1>
+          <div class="sub">Add enemies, track initiative and HP, reference rules.</div>
           <div class="enemy-buttons">
             <button class="enemy-btn" onclick="addEnemy('Basic carcinid', 5, '1d10')"><div class="name">Basic carcinid</div><div class="stats">HP 5 · DMG 1d10 · AP 11</div></button>
             <button class="enemy-btn" onclick="addEnemy('Advanced carcinid', 15, '2d10')"><div class="name">Advanced</div><div class="stats">HP 15 · DMG 2d10 · AP 13</div></button>
@@ -603,11 +636,13 @@
             <button class="enemy-btn" onclick="addEnemy('Shaw', 30, '2d10')"><div class="name">Shaw (android)</div><div class="stats">HP 30 · DMG 2d10 · Fear 40</div></button>
           </div>
           <div class="tracker" id="tracker">
+            <h3>Initiative / Tracker</h3>
             <div id="tracker-body" style="color: var(--ink-faint); font-size: 13px; padding: 20px 0; text-align: center;">Click an enemy above to begin.</div>
           </div>
         </div>
         <div>
           <div class="rules-card">
+            <h3>Combat rules · quick</h3>
             <div class="rule-row"><div class="k">Init</div><div>Highest Speed goes first. Ties → players.</div></div>
             <div class="rule-row"><div class="k">Attack</div><div>Roll Combat vs target. Nat 1 = crit hit. Nat 20 = fumble.</div></div>
             <div class="rule-row"><div class="k">Damage</div><div>Weapon die. Body Save to resist wound.</div></div>
@@ -616,6 +651,21 @@
             <div class="rule-row"><div class="k">Fumble</div><div>Roll on fumble table. Weapon jam or worse.</div></div>
           </div>
         </div>
+      </div>
+    </div>    <!-- ===== PARTY ===== -->
+    <div class="view" id="view-party">
+      <div class="party-wrap">
+        <div class="party-head">
+          <div>
+            <h1>Party composition.</h1>
+            <div class="sub">Drag to move. Click to expand. Right-click to edit. The voice cues are there so nobody slips your mind.</div>
+          </div>
+          <div class="party-controls">
+            <button class="party-btn" onclick="addPartyGroup()">+ Group</button>
+            <button class="party-btn" onclick="resetPartyTracker()">↺ Reset</button>
+          </div>
+        </div>
+        <div class="party-groups" id="party-groups"></div>
       </div>
     </div>
 
