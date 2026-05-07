@@ -1,0 +1,1902 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>GM SCREEN — ANOTHER BUG HUNT</title>
+<style>
+  @import url('https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Orbitron:wght@400;700;900&display=swap');
+
+  :root {
+    --bg: #f5f5f0;
+    --surface: #ffffff;
+    --panel: #fafaf7;
+    --border: #d0d0c8;
+    --text: #1a1a1a;
+    --dim: #777770;
+    --bright: #000000;
+    --red: #cc2200;
+    --red-dim: rgba(204,34,0,0.08);
+    --amber: #b8860b;
+    --amber-dim: rgba(184,134,11,0.08);
+    --green: #2d7a2d;
+    --green-dim: rgba(45,122,45,0.08);
+    --blue: #1a5276;
+    --blue-dim: rgba(26,82,118,0.08);
+    --cyan: #1a5276;
+    --cyan-dim: rgba(26,82,118,0.08);
+    --caution: #e8c800;
+    --caution-dim: rgba(232,200,0,0.12);
+  }
+
+  * { margin: 0; padding: 0; box-sizing: border-box; }
+
+  body {
+    background: var(--bg);
+    color: var(--text);
+    font-family: 'Share Tech Mono', 'Courier New', monospace;
+    font-size: 15px;
+    line-height: 1.5;
+    overflow-x: hidden;
+  }
+
+  /* No scanlines in light mode */
+
+  /* ===== HEADER ===== */
+  .header {
+    background: var(--bright);
+    border-bottom: 4px solid var(--caution);
+    padding: 12px 24px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    position: sticky;
+    top: 0;
+    z-index: 100;
+  }
+  .header h1 {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 900;
+    font-size: 18px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 3px;
+  }
+  .header .sub {
+    font-size: 12px;
+    color: #999;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+  }
+  .clock {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 16px;
+    color: var(--caution);
+  }
+
+  /* ===== PARTY COMPOSITION TRACKER ===== */
+  .party-tracker {
+    background: var(--panel);
+    border-bottom: 2px solid var(--border);
+    padding: 10px 16px 12px;
+  }
+  .party-tracker-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .party-tracker-title {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--bright);
+  }
+  .party-tracker-controls {
+    display: flex;
+    gap: 6px;
+  }
+  .party-btn {
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 11px;
+    padding: 3px 8px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .party-btn:hover { background: var(--caution-dim); }
+  .party-groups {
+    display: flex;
+    gap: 10px;
+    overflow-x: auto;
+    padding-bottom: 4px;
+  }
+  .party-group {
+    flex: 1;
+    min-width: 220px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-top: 3px solid var(--caution);
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .party-group.dragover { border-top-color: var(--blue); background: var(--blue-dim); }
+  .party-group.offscreen { border-top-color: var(--dim); opacity: 0.85; }
+  .party-group-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--bright);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+  .party-group-name input {
+    font: inherit;
+    background: transparent;
+    border: none;
+    color: var(--bright);
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    width: 100%;
+    padding: 0;
+  }
+  .party-group-name input:focus { outline: 1px dashed var(--caution); }
+  .party-group-remove {
+    background: transparent;
+    border: none;
+    color: var(--dim);
+    cursor: pointer;
+    font-size: 14px;
+    padding: 0 4px;
+  }
+  .party-group-remove:hover { color: var(--red); }
+  .party-members {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+    min-height: 40px;
+  }
+  .person {
+    background: var(--bg);
+    border: 1px solid var(--border);
+    border-left: 3px solid var(--blue);
+    padding: 5px 8px;
+    cursor: grab;
+    font-size: 12px;
+    line-height: 1.3;
+    user-select: none;
+  }
+  .person.pc { border-left-color: var(--green); }
+  .person.npc-ally { border-left-color: var(--blue); }
+  .person.npc-hostile { border-left-color: var(--red); }
+  .person.npc-neutral { border-left-color: var(--amber); }
+  .person:active { cursor: grabbing; opacity: 0.6; }
+  .person.dragging { opacity: 0.4; }
+  .person-line {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .person-name {
+    font-weight: 700;
+    color: var(--bright);
+  }
+  .person-role {
+    font-size: 10px;
+    color: var(--dim);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .person-voice {
+    font-size: 11px;
+    color: var(--blue);
+    font-style: italic;
+    margin-top: 2px;
+  }
+  .person-detail {
+    display: none;
+    margin-top: 4px;
+    padding-top: 4px;
+    border-top: 1px dashed var(--border);
+    font-size: 11px;
+    color: var(--text);
+  }
+  .person.expanded .person-detail { display: block; }
+  .person-detail-row { margin-top: 2px; }
+  .person-detail-row .label {
+    color: var(--dim);
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    margin-right: 4px;
+  }
+  .person-detail input,
+  .person-detail textarea {
+    width: 100%;
+    font: inherit;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    padding: 2px 4px;
+    margin-top: 2px;
+    resize: vertical;
+  }
+  .person-add {
+    background: transparent;
+    border: 1px dashed var(--border);
+    color: var(--dim);
+    font-family: inherit;
+    font-size: 11px;
+    padding: 4px;
+    cursor: pointer;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+  .person-add:hover { border-color: var(--caution); color: var(--text); }
+
+  /* ===== SESSION WORKFLOW BANNER ===== */
+  .workflow-banner {
+    background: var(--surface);
+    border-bottom: 2px solid var(--caution);
+    padding: 12px 24px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+    justify-content: center;
+  }
+
+  .workflow-step {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    padding: 10px 16px;
+    border: 2px solid var(--border);
+    background: var(--bg);
+    min-width: 220px;
+  }
+
+  .reset-step {
+    border-left: 4px solid var(--caution);
+  }
+
+  .loop-step {
+    border-left: 4px solid var(--cyan);
+  }
+
+  .step-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    color: var(--bright);
+    margin-bottom: 4px;
+  }
+
+  .step-content {
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+  }
+
+  .step-item {
+    font-size: 13px;
+    color: var(--text);
+    line-height: 1.3;
+  }
+
+  .step-arrow {
+    margin-top: 6px;
+    font-size: 12px;
+    color: var(--dim);
+    font-style: italic;
+  }
+
+  .workflow-divider {
+    font-size: 24px;
+    color: var(--dim);
+    font-weight: bold;
+  }
+
+  /* ===== TWO-COLUMN LAYOUT ===== */
+  .layout {
+    display: grid;
+    grid-template-columns: 1fr 360px;
+    min-height: calc(100vh - 50px);
+  }
+
+  .main {
+    padding: 16px 24px;
+    overflow-y: auto;
+  }
+
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--surface);
+    padding: 14px;
+    position: sticky;
+    top: 50px;
+    height: calc(100vh - 50px);
+    overflow-y: auto;
+  }
+
+  /* ===== TRUTHS ===== */
+  .truths {
+    display: flex;
+    gap: 16px;
+    margin-bottom: 20px;
+    justify-content: center;
+  }
+  .truth {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: #ffffff;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 14px 22px;
+    border: 2px solid var(--bright);
+    background: var(--bright);
+    text-align: center;
+    flex: 1;
+  }
+
+  /* ===== PANELS ===== */
+  .panel {
+    background: var(--panel);
+    border: 1px solid var(--border);
+    border-radius: 3px;
+    margin-bottom: 10px;
+    overflow: hidden;
+  }
+  .panel-header {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    padding: 10px 16px;
+    border-bottom: 1px solid var(--border);
+    cursor: pointer;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    user-select: none;
+    transition: background 0.15s;
+  }
+  .panel-header:hover { background: rgba(0,0,0,0.03); }
+  .panel-header .chev {
+    font-size: 11px;
+    color: var(--dim);
+    transition: transform 0.2s;
+  }
+  .panel.collapsed .panel-header .chev { transform: rotate(-90deg); }
+  .panel.collapsed .panel-body { display: none; }
+  .panel-body { padding: 12px 16px; }
+
+  .ph-red { color: var(--red); border-bottom-color: var(--red); }
+  .ph-amber { color: var(--amber); border-bottom-color: var(--amber); }
+  .ph-green { color: var(--green); border-bottom-color: var(--green); }
+  .ph-blue { color: var(--blue); border-bottom-color: var(--blue); }
+  .ph-cyan { color: var(--cyan); border-bottom-color: var(--cyan); }
+
+  /* ===== PERILS ===== */
+  .peril-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .peril {
+    background: var(--surface);
+    border-left: 4px solid var(--caution);
+    padding: 10px 12px;
+    border-top: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    border-bottom: 1px solid var(--border);
+  }
+  .peril-name {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 12px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--bright);
+    margin-bottom: 6px;
+  }
+  .omen {
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+    padding: 3px 0;
+    font-size: 13px;
+    line-height: 1.4;
+    transition: all 0.2s;
+    cursor: pointer;
+  }
+  .omen input[type="checkbox"] {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 14px;
+    height: 14px;
+    min-width: 14px;
+    border: 2px solid var(--bright);
+    background: transparent;
+    cursor: pointer;
+    margin-top: 2px;
+    position: relative;
+  }
+  .omen input[type="checkbox"]:checked {
+    border-color: var(--dim);
+    background: var(--dim);
+  }
+  .omen input[type="checkbox"]:checked::after {
+    content: 'X';
+    position: absolute;
+    top: -2px;
+    left: 1px;
+    color: #ffffff;
+    font-size: 11px;
+    font-weight: bold;
+  }
+  .omen.checked .omen-text {
+    text-decoration: line-through;
+    color: var(--dim);
+    opacity: 0.5;
+  }
+  .omen.next-up .omen-text {
+    color: var(--bright);
+    font-weight: bold;
+    font-size: 14px;
+    background: var(--caution-dim);
+    padding: 1px 4px;
+  }
+  .omen-text { flex: 1; }
+
+  /* ===== OMEN OPEN FORMAT (communicates / examples) ===== */
+  .omen-detail {
+    margin: 2px 0 4px 22px;
+    padding-left: 8px;
+    border-left: 1px solid var(--border);
+    font-size: 11px;
+    line-height: 1.45;
+    color: var(--dim);
+  }
+  .omen-detail .label {
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    color: var(--bright);
+    font-weight: 700;
+    margin-right: 4px;
+  }
+  .omen-detail-row { margin-top: 2px; }
+  .omen.parked, .peril.parked .omen { opacity: 0.5; font-style: italic; }
+  .peril.dormant {
+    border-left-color: var(--dim) !important;
+    opacity: 0.55;
+  }
+  .peril.dormant .peril-name::after {
+    content: ' — DORMANT';
+    font-size: 10px;
+    color: var(--dim);
+    letter-spacing: 1px;
+  }
+  .peril-tag {
+    display: inline-block;
+    margin-left: 6px;
+    font-size: 9px;
+    padding: 1px 5px;
+    background: var(--caution-dim);
+    color: var(--bright);
+    letter-spacing: 1px;
+    text-transform: uppercase;
+    font-weight: 700;
+    vertical-align: middle;
+  }
+  .peril-tag.parked { background: rgba(119,119,112,0.15); color: var(--dim); }
+
+  /* ===== ENTITY GRID ===== */
+  .entity-grid {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 6px;
+  }
+  .entity {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 8px 10px;
+    font-size: 13px;
+    line-height: 1.4;
+  }
+  .entity-name {
+    color: var(--bright);
+    font-weight: bold;
+    font-size: 14px;
+    margin-bottom: 3px;
+  }
+  .entity-tag {
+    font-weight: normal;
+    font-size: 11px;
+    color: var(--dim);
+    font-style: italic;
+  }
+  .entity-want { color: var(--text); font-weight: 600; }
+  .entity-thinks { color: var(--dim); font-style: italic; }
+
+  /* ===== LOCATIONS ===== */
+  .loc-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .loc-tag {
+    font-size: 12px;
+    padding: 4px 10px;
+    border: 1px solid var(--border);
+    color: var(--text);
+    background: var(--surface);
+    text-transform: uppercase;
+    letter-spacing: 1px;
+  }
+
+  /* ===== SESSION NOTES ===== */
+  .notes-area {
+    width: 100%;
+    min-height: 120px;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    color: var(--text);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 14px;
+    padding: 10px;
+    resize: vertical;
+    border-radius: 3px;
+  }
+  .notes-area:focus { outline: none; border-color: var(--bright); }
+
+  /* ===== SIDEBAR: IMPROV TOOLS ===== */
+  .improv-section { margin-bottom: 14px; }
+  .improv-section:last-child { margin-bottom: 0; }
+  .improv-label {
+    font-family: 'Orbitron', sans-serif;
+    font-size: 10px;
+    text-transform: uppercase;
+    letter-spacing: 1.5px;
+    color: var(--dim);
+    margin-bottom: 6px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+  }
+
+  .roll-btn {
+    background: var(--surface);
+    border: 2px solid var(--bright);
+    color: var(--bright);
+    font-family: 'Share Tech Mono', monospace;
+    font-size: 12px;
+    padding: 4px 12px;
+    cursor: pointer;
+    border-radius: 2px;
+    transition: all 0.15s;
+    text-transform: uppercase;
+    letter-spacing: 1px;
+    font-weight: bold;
+  }
+  .roll-btn:hover {
+    background: var(--bright);
+    color: #ffffff;
+  }
+  .roll-btn:active { transform: scale(0.97); }
+  .roll-btn.primary { border-color: var(--red); color: var(--red); }
+  .roll-btn.primary:hover { background: var(--red); color: #ffffff; border-color: var(--red); }
+
+  .result-box {
+    background: var(--surface);
+    border: 1px solid var(--border);
+    padding: 10px 14px;
+    font-size: 16px;
+    min-height: 42px;
+    display: flex;
+    align-items: center;
+    border-radius: 3px;
+    color: var(--bright);
+    transition: border-color 0.3s;
+  }
+  .result-box.flash { border-color: var(--caution); box-shadow: 0 0 0 2px var(--caution-dim); }
+  .result-box .action-word { color: var(--red); font-weight: bold; }
+  .result-box .theme-word { color: var(--blue); font-weight: bold; }
+  .result-box .plus { color: var(--dim); margin: 0 8px; }
+
+  .descriptor-chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .chip {
+    font-size: 13px;
+    padding: 3px 10px;
+    border: 1px solid var(--border);
+    border-radius: 2px;
+    color: var(--text);
+    background: var(--surface);
+    transition: all 0.3s;
+  }
+  .chip.fresh { border-color: var(--bright); color: var(--bright); font-weight: bold; }
+
+  .name-result {
+    font-size: 20px;
+    color: var(--bright);
+    font-weight: bold;
+    letter-spacing: 1px;
+  }
+
+  .sidebar-divider {
+    border: none;
+    border-top: 1px solid var(--border);
+    margin: 12px 0;
+  }
+  .sidebar {
+    border-left: 1px solid var(--border);
+    background: var(--panel);
+  }
+
+  /* ===== COMPLICATION ===== */
+  .complication-result {
+    font-size: 14px;
+    line-height: 1.5;
+  }
+  .complication-roll {
+    font-family: 'Orbitron', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    margin-right: 8px;
+  }
+
+  .dim { color: var(--dim); }
+  .red { color: var(--red); }
+  .amber { color: var(--amber); }
+  .green { color: var(--green); }
+  .blue { color: var(--blue); }
+  .cyan { color: var(--cyan); }
+  .bright { color: var(--bright); }
+  b { color: var(--bright); }
+  hr { border: none; border-top: 1px solid var(--border); margin: 10px 0; }
+  ::selection { background: var(--caution); color: var(--bright); }
+
+  /* SCENE DRESSING */
+  .dressing-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+  }
+  .dressing-item {
+    font-size: 12px;
+    line-height: 1.4;
+    padding: 6px 8px;
+    border: 1px solid var(--border);
+    background: var(--surface);
+    color: var(--text);
+  }
+  .dressing-item .dressing-label {
+    font-weight: bold;
+    color: var(--bright);
+    font-size: 11px;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===== HEADER ===== -->
+<div class="header">
+  <div>
+    <h1>Another Bug Hunt</h1>
+    <span class="sub">Mothership 1e &mdash; Heron Station</span>
+  </div>
+  <div style="display:flex;align-items:center;gap:12px;">
+    <a href="library.html" style="color:var(--caution,#e8c800);text-decoration:none;font-family:'Share Tech Mono',monospace;font-size:0.9rem;border:1px solid var(--caution,#e8c800);padding:6px 10px;border-radius:4px;">📖 Library</a>
+    <span class="clock" id="clock"></span>
+  </div>
+</div>
+
+<!-- ===== PARTY COMPOSITION TRACKER ===== -->
+<div class="party-tracker" id="party-tracker">
+  <div class="party-tracker-header">
+    <div class="party-tracker-title">Party Composition</div>
+    <div class="party-tracker-controls">
+      <button class="party-btn" onclick="addPartyGroup()">+ Group</button>
+      <button class="party-btn" onclick="resetPartyTracker()" title="Reset to default">↺ Reset</button>
+    </div>
+  </div>
+  <div class="party-groups" id="party-groups">
+    <!-- Groups injected by JS -->
+  </div>
+</div>
+
+<!-- ===== SESSION WORKFLOW ===== -->
+<div class="workflow-banner">
+  <div class="workflow-step reset-step">
+    <div class="step-label">RESET</div>
+    <div class="step-content">
+      <div class="step-item">1. Pressures</div>
+      <div class="step-item">2. Objectives</div>
+      <div class="step-item">3. Challenges</div>
+      <div class="step-arrow">→ Strategy → Direction</div>
+    </div>
+  </div>
+
+  <div class="workflow-divider">→</div>
+
+  <div class="workflow-step loop-step">
+    <div class="step-label">LOOP</div>
+    <div class="step-content">
+      <div class="step-item">1. Challenge</div>
+      <div class="step-item">2. Interactables</div>
+      <div class="step-item">3. Local pressure</div>
+      <div class="step-arrow">→ Solve → Next OR Reset</div>
+    </div>
+  </div>
+</div>
+
+<!-- ===== LAYOUT ===== -->
+<div class="layout">
+
+<!-- ==================== MAIN CONTENT ==================== -->
+<div class="main">
+
+  <!-- TRUTHS -->
+  <div class="truths">
+    <div class="truth">Everything is changing</div>
+    <div class="truth">You will die here</div>
+    <div class="truth">This will spread</div>
+  </div>
+
+  <!-- PERILS -->
+  <div class="panel">
+    <div class="panel-header ph-red" onclick="togglePanel(this)">
+      Perils <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="peril-grid">
+
+        <!-- THE CURE IS LOST -->
+        <div class="peril" data-peril="cure">
+          <div class="peril-name">The Cure Is Lost</div>
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">The Cure Has a Name</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>A cure exists, Edem was close to it, and the players know it's real.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>Valdez mentions it · scrap of Edem's notes · radio fragment · log entry.</div>
+          </div>
+
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">Signs of the Cure</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Shore is moving with the cure &mdash; she's putting distance between herself and the players. Time pressure rising.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>discarded medical kit · forced door · body she left · distant glimpse · security feed flicker.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">Omen 3 — pending</span>
+          </label>
+          <div class="omen-detail"><div class="omen-detail-row"><span class="label">TBD</span></div></div>
+        </div>
+
+        <!-- THE MIMIC IS BORN -->
+        <div class="peril" data-peril="mimic">
+          <div class="peril-name">The Mimic Is Born <span class="peril-tag">2/3 fired</span></div>
+          <label class="omen checked" onclick="updateOmens(this)">
+            <input type="checkbox" checked><span class="omen-text">Carcinids Heard Nearby</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Fired:</span>last session &mdash; corridors, clicks, peripheral movement.</div>
+          </div>
+
+          <label class="omen checked" onclick="updateOmens(this)">
+            <input type="checkbox" checked><span class="omen-text">The Procession</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Fired:</span>last session &mdash; carcinids streaming toward the mother + reactor shriek.</div>
+          </div>
+
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">The Radiation Returns</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>The mother is decomposing as the mimic forms. Radiation she absorbed is leaking back &mdash; the birth is imminent but not yet done.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>geiger spike from reactor direction · Tandy's dosimeter screams · radio static near reactor · symptoms of acute exposure on returning NPCs.</div>
+          </div>
+        </div>
+
+        <!-- THE HANGAR FALLS -->
+        <div class="peril" data-peril="hangar">
+          <div class="peril-name">The Hangar Falls <span class="peril-tag">2/3 fired</span></div>
+          <label class="omen checked" onclick="updateOmens(this)">
+            <input type="checkbox" checked><span class="omen-text">Radio Goes Tense</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Fired:</span>last session &mdash; Brookman arguing on the channel, signal drops out.</div>
+          </div>
+
+          <label class="omen checked" onclick="updateOmens(this)">
+            <input type="checkbox" checked><span class="omen-text">Brookman's Mutiny</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Fired:</span>last session &mdash; Brookman shot a soldier, stole an ATV, fled. Witnessed by Willis.</div>
+          </div>
+
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">We're Out of Time</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Hangar occupants are about to make a decision the players can't undo &mdash; last evac, full lockdown, abandon, scuttle.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>radio ultimatum (&quot;closing in five&quot;) · sound of a bird spinning up at the hangar · barricade going up audibly · last call by name.</div>
+          </div>
+        </div>
+
+        <!-- HINTON ASCENDS -->
+        <div class="peril" data-peril="hinton">
+          <div class="peril-name">Hinton Ascends</div>
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">He Wasn't Where He Was Supposed To Be</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Hinton was acting against the colony's interests &mdash; off-mission, off-protocol, off-character.</div>
+            <div class="omen-detail-row"><span class="label">Triggers:</span>where was he · what did he do · who did he leave behind or send away.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>duty log gap · order he gave that makes no sense · evac manifest with his name removed · door override · requisition.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">He Speaks Their Language</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Hinton is integrated with the carcinids &mdash; communicating, not fighting. He may not be fully human anymore.</div>
+            <div class="omen-detail-row"><span class="label">Triggers:</span>where is the contact heard from · is it voice or shriek or both · do the carcinids respond to him.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>recovered comms log of him talking to nothing · carcinids parting around him on a feed · shriek that carries his cadence.</div>
+          </div>
+
+          <label class="omen parked" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">Omen 3 — parked (won't come up yet)</span>
+          </label>
+          <div class="omen-detail"><div class="omen-detail-row"><span class="label">Reserved</span> for next scenario.</div></div>
+        </div>
+
+        <!-- THE WORLD BREATHES IN (formerly Storm Closes) -->
+        <div class="peril" data-peril="worldbreathes">
+          <div class="peril-name">The World Breathes In</div>
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">The Wildlife Came In</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>The storm isn't just weather &mdash; it's pushing transformed life out of the jungle and into human spaces.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>strange insect on a windowsill · bird with wrong skin in a corridor · soft scuttling in a vent that wasn't there yesterday.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">Skin Remembers</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Storm exposure is doing something to bodies &mdash; visible, wrong, and not stopping.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>scale-pattern rash on an NPC · patch of skin that won't stop sloughing · someone vomits something that's still moving.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">The Whispers Start</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>The Shriek frequency is bleeding through into human cognition &mdash; the planet is starting to be heard.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>player hears something in their own voice · NPC mid-sentence forgets which language they speak · shared dream · radio static that resolves into a word.</div>
+          </div>
+        </div>
+
+        <!-- THE DROPSHIP LEAVES WITHOUT THEM -->
+        <div class="peril" data-peril="dropship">
+          <div class="peril-name">The Dropship Leaves Without Them</div>
+          <label class="omen next-up" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">They're Doing Math</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>The pilots are calculating their launch window aloud &mdash; they're not threatening to leave, they're working out when they have to.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>radio chatter on weather windows · pilot asking how long the team needs · fuel/storm tradeoff said over comms.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">They're Spinning Up</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Preflight has begun. They've decided. This is committed action, not a warning.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>distant turbines audible · hot light on a control panel feed · a pilot's voice quieter, flatter, busy.</div>
+          </div>
+
+          <label class="omen" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">Last Call</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Communicates:</span>Hard deadline. The next thing the players hear from this peril is engines or silence.</div>
+            <div class="omen-detail-row"><span class="label">Examples:</span>named callout (&quot;Willis, where are you&quot;) · countdown · an apology · the channel switching to emergency band.</div>
+          </div>
+        </div>
+
+        <!-- MAAS TRANSFORMS — DORMANT -->
+        <div class="peril dormant" data-peril="maas">
+          <div class="peril-name">Maas Transforms</div>
+          <label class="omen parked" onclick="updateOmens(this)">
+            <input type="checkbox"><span class="omen-text">No foreshadowing</span>
+          </label>
+          <div class="omen-detail">
+            <div class="omen-detail-row"><span class="label">Reserved:</span>campaign closer, one-shot reveal &mdash; deliberately no breadcrumbs.</div>
+          </div>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- ENTITIES -->
+  <div class="panel">
+    <div class="panel-header ph-cyan" onclick="togglePanel(this)">
+      Entities <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="entity-grid">
+        <div class="entity">
+          <div class="entity-name">The Carcinids <span class="entity-tag">alien swarm</span></div>
+          <div class="entity-want">Want: reproduce</div>
+          <div class="entity-thinks">Thinks with: hunger</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name">The Mother <span class="entity-tag">transformation engine</span></div>
+          <div class="entity-want">Want: transform</div>
+          <div class="entity-thinks">Thinks with: instinct</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name">Hinton <span class="entity-tag">rogue android</span></div>
+          <div class="entity-want">Want: ascend</div>
+          <div class="entity-thinks">Thinks with: curiosity</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name red">Shaw <span class="entity-tag">sleeper android</span></div>
+          <div class="entity-want">Want: retrieve Hinton's logic core</div>
+          <div class="entity-thinks">Thinks with: programming</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name amber">Maas <span class="entity-tag">company suit</span></div>
+          <div class="entity-want">Want: retrieve assets</div>
+          <div class="entity-thinks">Thinks with: his ledger</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name green">Valdez <span class="entity-tag">dead sergeant</span></div>
+          <div class="entity-want">Want: protect her people</div>
+          <div class="entity-thinks">Thinks with: duty</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name blue">Dr. Edem <span class="entity-tag">colony researcher</span></div>
+          <div class="entity-want">Want: understand</div>
+          <div class="entity-thinks">Thinks with: wonder</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name">Brookman <span class="entity-tag">panicked medic</span></div>
+          <div class="entity-want">Want: escape</div>
+          <div class="entity-thinks">Thinks with: fear</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name">Weaver <span class="entity-tag">infected commando</span></div>
+          <div class="entity-want">Want: hide his secret</div>
+          <div class="entity-thinks">Thinks with: desperation</div>
+        </div>
+        <div class="entity">
+          <div class="entity-name dim">Franco <span class="entity-tag">cocooned marine</span></div>
+          <div class="entity-want">Want: be found</div>
+          <div class="entity-thinks">Thinks with: nothing</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- LOCATIONS -->
+  <div class="panel">
+    <div class="panel-header ph-blue" onclick="togglePanel(this)">
+      Locations <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="loc-list">
+        <span class="loc-tag">Greta Base</span>
+        <span class="loc-tag">Heron Hangar</span>
+        <span class="loc-tag">Heron Lab</span>
+        <span class="loc-tag">Heron Reactor</span>
+        <span class="loc-tag">Heron Comms Tower</span>
+        <span class="loc-tag">Heron Dam</span>
+        <span class="loc-tag">Heron Spillway</span>
+        <span class="loc-tag">Heron Stairwells</span>
+        <span class="loc-tag">Reactor Med Bay</span>
+        <span class="loc-tag">Reactor Chimney</span>
+        <span class="loc-tag">The Outdoors / Jungle</span>
+        <span class="loc-tag">The Alien Ship</span>
+        <span class="loc-tag">The Players' Ship (orbit)</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- SCENE DRESSING -->
+  <div class="panel">
+    <div class="panel-header" style="color:var(--dim)" onclick="togglePanel(this)">
+      Scene Dressing <span style="font-weight:normal;font-size:10px;letter-spacing:0;text-transform:none;color:var(--dim)">&mdash; refreshes on load</span> <span class="chev">&#9660;</span>
+    </div>
+    <div class="panel-body">
+      <div class="dressing-grid" id="dressing-grid"></div>
+    </div>
+  </div>
+
+</div>
+
+<!-- ==================== SIDEBAR: IMPROV TOOLS ==================== -->
+<div class="sidebar">
+
+  <div style="font-family:'Orbitron',sans-serif;font-weight:700;font-size:12px;text-transform:uppercase;letter-spacing:2px;color:var(--bright);margin-bottom:14px;border-bottom:2px solid var(--caution);padding-bottom:8px">Improv Tools</div>
+
+  <!-- COMPLICATION -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="red">Complication (2d6)</span>
+      <button class="roll-btn primary" onclick="rollComplication()">Roll</button>
+    </div>
+    <div class="result-box" id="complication-result" style="flex-direction:column;align-items:flex-start;min-height:42px">
+      <span class="dim">Roll 2d6...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- ORACLE -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Oracle &mdash; Action + Theme</span>
+      <button class="roll-btn" onclick="rollOracle()">Roll</button>
+    </div>
+    <div class="result-box" id="oracle-result">
+      <span class="dim">Click Roll...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- CARCINID -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="red">Carcinid</span>
+      <button class="roll-btn" onclick="rollDescriptors('carcinid', 4)">Roll 4</button>
+    </div>
+    <div class="descriptor-chips" id="carcinid-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- STATION -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="blue">Station</span>
+      <button class="roll-btn" onclick="rollDescriptors('station', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="station-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- BODY HORROR -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="amber">Body Horror</span>
+      <button class="roll-btn" onclick="rollDescriptors('bodyhorror', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="bodyhorror-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- SOUND -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="green">Sound</span>
+      <button class="roll-btn" onclick="rollDescriptors('sound', 3)">Roll 3</button>
+    </div>
+    <div class="descriptor-chips" id="sound-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <!-- EMOTIONAL -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span class="cyan">Emotional</span>
+      <button class="roll-btn" onclick="rollDescriptors('emotional', 2)">Roll 2</button>
+    </div>
+    <div class="descriptor-chips" id="emotional-chips">
+      <span class="chip dim">Roll for words...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <!-- NAME -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Name</span>
+      <button class="roll-btn" onclick="rollName()">Roll</button>
+    </div>
+    <div class="result-box" id="name-result">
+      <span class="dim">Roll for a name...</span>
+    </div>
+  </div>
+
+  <!-- SCENE SEED -->
+  <div class="improv-section">
+    <div class="improv-label">
+      <span>Scene Seed</span>
+      <button class="roll-btn" onclick="rollSceneSeed()">Generate</button>
+    </div>
+    <div class="result-box" id="seed-result" style="flex-direction:column;align-items:flex-start;gap:4px;min-height:50px">
+      <span class="dim">Generate a seed...</span>
+    </div>
+  </div>
+
+  <hr class="sidebar-divider">
+
+  <button class="roll-btn primary" onclick="rollAll()" style="width:100%;padding:8px;font-size:13px;letter-spacing:2px">
+    &#9881; Roll Everything
+  </button>
+
+</div>
+
+</div>
+
+<!-- ==================== ENCOUNTER BUILDER ==================== -->
+<div class="encounter-section">
+  <div class="panel-header ph-red" style="margin-bottom:16px">
+    ⚔ Encounter Builder
+  </div>
+
+  <!-- COMBAT RULES QUICK REFERENCE -->
+  <div class="combat-rules">
+    <div class="rule-column">
+      <div class="rule-title">Initiative</div>
+      <div class="rule-text">Combat Check. Highest goes first. Ties = simultaneous.</div>
+
+      <div class="rule-title">Attacking</div>
+      <div class="rule-text">Roll d100 ≤ Combat skill. Hit = roll damage.</div>
+
+      <div class="rule-title">Damage</div>
+      <div class="rule-text">Roll weapon damage. Target reduces by Armor, then subtracts from HP.</div>
+    </div>
+
+    <div class="rule-column">
+      <div class="rule-title">Critical Hit (01-10)</div>
+      <div class="rule-text">Max damage + roll again.</div>
+
+      <div class="rule-title">Fumble (96-00)</div>
+      <div class="rule-text">Miss + GM complication (jam, drop, hurt self).</div>
+
+      <div class="rule-title">Panic Check</div>
+      <div class="rule-text">Fear Save when threatened. Fail = roll Panic table, lose action.</div>
+    </div>
+  </div>
+
+  <hr style="border:none;border-top:1px solid var(--border);margin:20px 0">
+
+  <!-- ENEMY QUICK-ADD -->
+  <div style="display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin-bottom:20px">
+    <button class="enemy-add-btn" onclick="addEnemy('carcinid-basic')">+ Basic Carcinid</button>
+    <button class="enemy-add-btn" onclick="addEnemy('carcinid-advanced')">+ Advanced Carcinid</button>
+    <button class="enemy-add-btn" onclick="addEnemy('mimic')">+ The Mimic</button>
+    <button class="enemy-add-btn" onclick="addEnemy('shaw')">+ Shaw</button>
+  </div>
+
+  <!-- ACTIVE ENEMIES TRACKER -->
+  <div id="encounter-tracker" style="display:grid;grid-template-columns:repeat(auto-fit,minmax(350px,1fr));gap:16px">
+    <!-- Enemy cards appear here -->
+  </div>
+</div>
+
+<!-- ===== JAVASCRIPT ===== -->
+<script>
+function togglePanel(header) {
+  header.parentElement.classList.toggle('collapsed');
+}
+
+function updateClock() {
+  const now = new Date();
+  document.getElementById('clock').textContent =
+    now.toLocaleTimeString('en-GB', { hour: '2-digit', minute: '2-digit' });
+}
+updateClock();
+setInterval(updateClock, 30000);
+
+// ===== PERIL OMEN LOGIC =====
+function updateOmens(clickedLabel) {
+  // Let the checkbox toggle first
+  setTimeout(() => {
+    const peril = clickedLabel.closest('[data-peril]');
+    const omens = peril.querySelectorAll('.omen');
+    let foundNextUp = false;
+
+    omens.forEach(omen => {
+      const cb = omen.querySelector('input[type="checkbox"]');
+      omen.classList.remove('checked', 'next-up');
+
+      if (cb.checked) {
+        omen.classList.add('checked');
+      } else if (!foundNextUp) {
+        omen.classList.add('next-up');
+        foundNextUp = true;
+      }
+    });
+  }, 10);
+}
+
+// ===== PARTY COMPOSITION TRACKER =====
+const PARTY_STORAGE_KEY = 'gm-party-tracker-v1';
+
+const PARTY_DEFAULT = {
+  groups: [
+    {
+      id: 'g-alpha',
+      name: 'Team Alpha',
+      offscreen: false,
+      people: [
+        { id: 'p-bud',    name: 'Bud',    role: 'Teamster · legless',         voice: 'shock, gritted teeth, "carry me"', kind: 'pc',        status: 'Stabilised, immobile', knows: '' },
+        { id: 'p-rick',   name: 'Rick',   role: 'Marine · sister killed',     voice: 'flat, traumatized, short answers', kind: 'pc',        status: 'Numb', knows: '' },
+        { id: 'p-tandy',  name: 'Tandy',  role: 'Scientist',                  voice: 'analytical, asks why',             kind: 'pc',        status: 'Knows mother absorbing radiation', knows: 'mother absorbing radiation' },
+        { id: 'p-valdez', name: 'Valdez', role: 'Marine sergeant',            voice: 'calm authority, "stay tight"',     kind: 'npc-ally',  status: 'Leading the climb', knows: 'reactor med unit protocol' }
+      ]
+    },
+    {
+      id: 'g-willis',
+      name: 'Willis',
+      offscreen: false,
+      people: [
+        { id: 'p-willis', name: 'Willis', role: 'Teamster · McClane',         voice: 'wisecracks under pressure, sweary', kind: 'pc',        status: 'Hangar, shaken (saw Shaw kill Edem)', knows: 'Shaw is hostile' }
+      ]
+    },
+    {
+      id: 'g-offscreen',
+      name: 'Off-screen',
+      offscreen: true,
+      people: [
+        { id: 'p-brookman', name: 'Brookman', role: 'Medic · fled',           voice: 'panicked, justifying',             kind: 'npc-neutral', status: 'On stolen ATV, gone', knows: '' },
+        { id: 'p-shaw',     name: 'Shaw',     role: 'Android · antagonist',   voice: 'flat, polite, terminal',           kind: 'npc-hostile', status: 'At large, presumed lab',  knows: 'wants Hinton logic core' },
+        { id: 'p-pilots',   name: 'Pilots',   role: 'Dropship · 2 crew',      voice: 'impatient, "we are leaving"',      kind: 'npc-neutral', status: 'Planetside, wants to leave', knows: '' }
+      ]
+    }
+  ]
+};
+
+function loadParty() {
+  try {
+    const raw = localStorage.getItem(PARTY_STORAGE_KEY);
+    if (!raw) return structuredClone(PARTY_DEFAULT);
+    return JSON.parse(raw);
+  } catch (e) {
+    return structuredClone(PARTY_DEFAULT);
+  }
+}
+
+function saveParty(state) {
+  localStorage.setItem(PARTY_STORAGE_KEY, JSON.stringify(state));
+}
+
+let partyState = loadParty();
+
+function renderParty() {
+  const root = document.getElementById('party-groups');
+  if (!root) return;
+  root.innerHTML = '';
+
+  partyState.groups.forEach(group => {
+    const col = document.createElement('div');
+    col.className = 'party-group' + (group.offscreen ? ' offscreen' : '');
+    col.dataset.groupId = group.id;
+
+    col.addEventListener('dragover', e => { e.preventDefault(); col.classList.add('dragover'); });
+    col.addEventListener('dragleave', () => col.classList.remove('dragover'));
+    col.addEventListener('drop', e => {
+      e.preventDefault();
+      col.classList.remove('dragover');
+      const personId = e.dataTransfer.getData('text/person-id');
+      if (personId) movePerson(personId, group.id);
+    });
+
+    const nameEl = document.createElement('div');
+    nameEl.className = 'party-group-name';
+    nameEl.textContent = group.name;
+    nameEl.title = 'Click to rename · double-click to remove group';
+    nameEl.addEventListener('click', () => renameGroup(group.id));
+    nameEl.addEventListener('dblclick', () => removeGroup(group.id));
+    col.appendChild(nameEl);
+
+    const list = document.createElement('div');
+    list.className = 'party-members';
+
+    group.people.forEach(person => list.appendChild(buildPersonCard(person, group.id)));
+
+    const addBtn = document.createElement('button');
+    addBtn.className = 'person-add';
+    addBtn.textContent = '+ person';
+    addBtn.addEventListener('click', () => addPerson(group.id));
+    list.appendChild(addBtn);
+
+    col.appendChild(list);
+    root.appendChild(col);
+  });
+}
+
+function buildPersonCard(person, groupId) {
+  const card = document.createElement('div');
+  card.className = 'person ' + (person.kind || 'pc');
+  card.draggable = true;
+  card.dataset.personId = person.id;
+
+  card.addEventListener('dragstart', e => {
+    e.dataTransfer.setData('text/person-id', person.id);
+    card.classList.add('dragging');
+  });
+  card.addEventListener('dragend', () => card.classList.remove('dragging'));
+
+  const line = document.createElement('div');
+  line.className = 'person-line';
+  line.innerHTML =
+    `<span class="person-name">${escapeHtml(person.name)}</span>` +
+    `<span class="person-role"> · ${escapeHtml(person.role || '')}</span>`;
+  if (person.voice) {
+    line.innerHTML += `<div class="person-voice">${escapeHtml(person.voice)}</div>`;
+  }
+  card.appendChild(line);
+
+  if (person.status || person.knows) {
+    const detail = document.createElement('div');
+    detail.className = 'person-detail';
+    if (person.status) detail.innerHTML += `<div><b>status:</b> ${escapeHtml(person.status)}</div>`;
+    if (person.knows)  detail.innerHTML += `<div><b>knows:</b> ${escapeHtml(person.knows)}</div>`;
+    card.appendChild(detail);
+  }
+
+  card.addEventListener('click', e => {
+    if (e.target.closest('button')) return;
+    card.classList.toggle('expanded');
+  });
+
+  card.addEventListener('contextmenu', e => {
+    e.preventDefault();
+    editPerson(person.id);
+  });
+
+  return card;
+}
+
+function escapeHtml(s) {
+  return String(s ?? '').replace(/[&<>"']/g, c => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'
+  }[c]));
+}
+
+function findPerson(personId) {
+  for (const g of partyState.groups) {
+    const p = g.people.find(p => p.id === personId);
+    if (p) return { group: g, person: p };
+  }
+  return null;
+}
+
+function movePerson(personId, targetGroupId) {
+  const found = findPerson(personId);
+  if (!found) return;
+  if (found.group.id === targetGroupId) return;
+  found.group.people = found.group.people.filter(p => p.id !== personId);
+  const target = partyState.groups.find(g => g.id === targetGroupId);
+  if (target) target.people.push(found.person);
+  saveParty(partyState);
+  renderParty();
+}
+
+function addPartyGroup() {
+  const name = prompt('Group name?');
+  if (!name) return;
+  partyState.groups.push({
+    id: 'g-' + Date.now(),
+    name: name.trim(),
+    offscreen: /off.?screen|elsewhere|missing/i.test(name),
+    people: []
+  });
+  saveParty(partyState);
+  renderParty();
+}
+
+function renameGroup(groupId) {
+  const g = partyState.groups.find(g => g.id === groupId);
+  if (!g) return;
+  const name = prompt('Rename group:', g.name);
+  if (!name) return;
+  g.name = name.trim();
+  g.offscreen = /off.?screen|elsewhere|missing/i.test(g.name);
+  saveParty(partyState);
+  renderParty();
+}
+
+function removeGroup(groupId) {
+  const g = partyState.groups.find(g => g.id === groupId);
+  if (!g) return;
+  if (g.people.length > 0) {
+    if (!confirm(`Remove "${g.name}" and its ${g.people.length} people?`)) return;
+  } else {
+    if (!confirm(`Remove "${g.name}"?`)) return;
+  }
+  partyState.groups = partyState.groups.filter(x => x.id !== groupId);
+  saveParty(partyState);
+  renderParty();
+}
+
+function addPerson(groupId) {
+  const name = prompt('Name?');
+  if (!name) return;
+  const role  = prompt('Role / tag (e.g. "Marine · sergeant"):', '') || '';
+  const voice = prompt('Voice cue (one short line):', '') || '';
+  const kind  = prompt('Kind: pc | npc-ally | npc-neutral | npc-hostile', 'npc-neutral') || 'npc-neutral';
+  const g = partyState.groups.find(g => g.id === groupId);
+  if (!g) return;
+  g.people.push({
+    id: 'p-' + Date.now(),
+    name: name.trim(),
+    role: role.trim(),
+    voice: voice.trim(),
+    kind: kind.trim(),
+    status: '',
+    knows: ''
+  });
+  saveParty(partyState);
+  renderParty();
+}
+
+function editPerson(personId) {
+  const found = findPerson(personId);
+  if (!found) return;
+  const p = found.person;
+  const action = prompt(
+    `Edit ${p.name}:\n` +
+    `1 = name\n2 = role\n3 = voice\n4 = status\n5 = knows\n6 = kind\n9 = DELETE\n\nEnter number:`
+  );
+  if (!action) return;
+  switch (action.trim()) {
+    case '1': { const v = prompt('Name:', p.name);  if (v !== null) p.name = v.trim(); break; }
+    case '2': { const v = prompt('Role:', p.role);  if (v !== null) p.role = v.trim(); break; }
+    case '3': { const v = prompt('Voice cue:', p.voice); if (v !== null) p.voice = v.trim(); break; }
+    case '4': { const v = prompt('Status:', p.status); if (v !== null) p.status = v.trim(); break; }
+    case '5': { const v = prompt('Knows:', p.knows);   if (v !== null) p.knows = v.trim(); break; }
+    case '6': { const v = prompt('Kind (pc | npc-ally | npc-neutral | npc-hostile):', p.kind); if (v !== null) p.kind = v.trim(); break; }
+    case '9': {
+      if (confirm(`Delete ${p.name}?`)) {
+        found.group.people = found.group.people.filter(x => x.id !== p.id);
+      }
+      break;
+    }
+  }
+  saveParty(partyState);
+  renderParty();
+}
+
+function resetPartyTracker() {
+  if (!confirm('Reset Party Tracker to default seed? This wipes any edits.')) return;
+  partyState = structuredClone(PARTY_DEFAULT);
+  saveParty(partyState);
+  renderParty();
+}
+
+renderParty();
+// ===== COMPLICATION TABLE =====
+const COMPLICATIONS = {
+  2:  'Full blackout — everything dies, battery torches only',
+  3:  'Structural groan — somewhere close, something is giving way',
+  4:  'Water surge — ankle-deep becomes knee-deep in seconds',
+  5:  'Radio burst — fragment of voice, could be anyone',
+  6:  'Torch flicker — light source dims, recovers, dims again',
+  7:  'Rhythmic sound — click-click-click from behind the walls',
+  8:  'Peripheral movement — something at the edge of your light',
+  9:  'Temperature change — sudden warmth, sweet smell, wrong',
+  10: 'Wet footprints — not yours, fresh, leading away from you',
+  11: 'Equipment malfunction — comm static, suit alarm, jammed door',
+  12: 'Direct contact — something touches you in the dark'
+};
+
+function rollComplication() {
+  const d1 = Math.floor(Math.random() * 6) + 1;
+  const d2 = Math.floor(Math.random() * 6) + 1;
+  const total = d1 + d2;
+  const box = document.getElementById('complication-result');
+  const color = total <= 3 ? 'var(--red)' : total <= 5 ? 'var(--amber)' : total >= 11 ? 'var(--red)' : 'var(--text)';
+  box.innerHTML = `
+    <div class="complication-result">
+      <span class="complication-roll" style="color:${color}">${total}</span>
+      <span style="color:var(--dim)">(${d1}+${d2})</span>
+      <div style="margin-top:4px">${COMPLICATIONS[total]}</div>
+    </div>
+  `;
+  flash(box);
+}
+
+// ===== ORACLE =====
+const ACTIONS = [
+  'Seal','Breach','Sabotage','Protect','Abandon','Reveal','Consume','Isolate',
+  'Transform','Overwhelm','Contain','Corrupt','Salvage','Collapse','Awaken',
+  'Suppress','Infest','Fortify','Betray','Escape'
+];
+const THEMES = [
+  'Communication','Trust','Power','Biology','Authority','Memory','Survival',
+  'Identity','Sacrifice','Knowledge','Territory','Infection','Resource',
+  'Loyalty','Evolution','Isolation','Offspring','Protocol','Signal','Ruin'
+];
+
+// ===== DESCRIPTORS =====
+const DESCRIPTORS = {
+  carcinid: [
+    'chitinous','clicking','scuttling','wet','segmented','barbed','translucent',
+    'pulsing','folded','wrong','twitching','glistening','serrated','eyeless',
+    'patient','boneless','distended','articulated','human-shaped','uncoiling',
+    'mandibular','clattering','armoured','pallid','vestigial','stalked',
+    'jointed','calcified','moulting','asymmetric'
+  ],
+  station: [
+    'corroded','humming','dripping','flickering','buckled','pressurized',
+    'flooded','stagnant','rusted','dark','cramped','echoing','sealed',
+    'breached','listing','slick','warm','groaning','abandoned','sterile',
+    'venting','sparking','bowed','industrial','cavernous','claustrophobic'
+  ],
+  bodyhorror: [
+    'splitting','budding','oozing','calcifying','bloating','bristling',
+    'molting','extruding','fusing','rippling','organic','sweetish','fibrous',
+    'membranous','vestigial','peeling','throbbing','asymmetric','recognizable',
+    'almost-human','distending','cratered','marbled','translucent','puckered'
+  ],
+  sound: [
+    'clicking','droning','scraping','hissing','silence','distant','rhythmic',
+    'muffled','subsonic','keening','static','gurgling','creaking','whining',
+    'breath-like','wet snapping','skittering','resonant','hollow','wrong-pitch',
+    'dripping','ticking','grinding','whistling','chittering','throbbing'
+  ],
+  emotional: [
+    'dread','wrongness','claustrophobic','vertiginous','nauseating','inevitable',
+    'futile','disorienting','suffocating','primal','uncanny','intimate',
+    'relentless','degrading','irreversible','invasive','hopeless','alien'
+  ]
+};
+
+// ===== NAMES =====
+const FIRST_NAMES = [
+  'Vasquez','Harkness','Okonkwo','Chen','Moreau','Dietrich','Novak','Reyes',
+  'Kowalski','Tanaka','Brennan','Osei','Lindqvist','Gupta','Herrera','Volkov',
+  'Nakamura','Ortega','Fischer','Mbeki','Alvarez','Yusuf','Petrova','Anh',
+  'Cruz','Sato','Marchetti','Holm','Dakka','Webb','Krol','Marsh',
+  'Tran','Pavlov','Ikeda','Cortez','Engel','Ndiaye','Zhao','Burke','Ripley',
+  'Anders','Johansson','Moro','Kaur','Singh','Park','Jensen','Flores'
+];
+
+// ===== SCENE SEEDS =====
+const SCENE_ACTIONS = [
+  'Something moves in the','A sound stops suddenly in the','The lights fail in the',
+  'A voice crackles over comms from the','Water rises suddenly in the',
+  'A door seals itself in the','Blood trails lead into the',
+  'The temperature drops in the','Something watches from the',
+  'A body is found in the','An alarm triggers in the',
+  'Power fluctuates in the','A scream echoes from the',
+  'Something scrapes against the walls of the','The floor gives way in the'
+];
+
+const SCENE_LOCATIONS = [
+  'spillway','stairwell','reactor shaft','corridors above',
+  'Edem\'s lab','chimney entrance','maintenance crawlspace',
+  'ventilation duct','flooded sublevel','generator room',
+  'medical bay','storage bay','observation deck','comm tower'
+];
+
+// ===== UTILITY =====
+function pick(arr) { return arr[Math.floor(Math.random() * arr.length)]; }
+function pickN(arr, n) { return [...arr].sort(() => Math.random() - 0.5).slice(0, n); }
+function flash(el) { el.classList.add('flash'); setTimeout(() => el.classList.remove('flash'), 400); }
+
+function rollOracle() {
+  const box = document.getElementById('oracle-result');
+  box.innerHTML = `<span class="action-word">${pick(ACTIONS)}</span><span class="plus">+</span><span class="theme-word">${pick(THEMES)}</span>`;
+  flash(box);
+}
+
+function rollDescriptors(category, count) {
+  const words = pickN(DESCRIPTORS[category], count);
+  const container = document.getElementById(category + '-chips');
+  container.innerHTML = words.map(w => `<span class="chip fresh">${w}</span>`).join('');
+  setTimeout(() => container.querySelectorAll('.chip').forEach(c => c.classList.remove('fresh')), 500);
+}
+
+function rollName() {
+  const box = document.getElementById('name-result');
+  box.innerHTML = `<span class="name-result">${pick(FIRST_NAMES)}</span>`;
+  flash(box);
+}
+
+function rollSceneSeed() {
+  const box = document.getElementById('seed-result');
+  box.innerHTML = `
+    <div style="font-size:14px"><span class="bright">${pick(SCENE_ACTIONS)} ${pick(SCENE_LOCATIONS)}.</span></div>
+    <div style="font-size:12px;color:var(--dim)">Mood: <span style="color:var(--red);font-weight:bold">${pick(DESCRIPTORS.emotional)}</span></div>
+  `;
+  flash(box);
+}
+
+function rollAll() {
+  rollComplication();
+  rollOracle();
+  rollDescriptors('carcinid', 4);
+  rollDescriptors('station', 3);
+  rollDescriptors('bodyhorror', 3);
+  rollDescriptors('sound', 3);
+  rollDescriptors('emotional', 2);
+  rollName();
+  rollSceneSeed();
+}
+
+// ===== SCENE DRESSING =====
+const DRESSING = [
+  // OBJECTS — things you find
+  {cat:'Object', text:'Laminated evacuation map, water-stained, route marked in red pen'},
+  {cat:'Object', text:'Empty coffee mug with a name scratched into the handle'},
+  {cat:'Object', text:'Personal locker, door hanging open, photos taped inside'},
+  {cat:'Object', text:'Fire extinguisher pulled from bracket, lying on the floor'},
+  {cat:'Object', text:'Clipboard with maintenance checklist, last entry half-finished'},
+  {cat:'Object', text:'Boot print in something dark and sticky, heading toward a door'},
+  {cat:'Object', text:'Hard hat with company logo, cracked down the middle'},
+  {cat:'Object', text:'Roll of duct tape wrapped around a pipe joint — makeshift repair'},
+  {cat:'Object', text:'Duffel bag, zipped shut, heavier than it looks'},
+  {cat:'Object', text:'Wedding ring sitting on top of a folded uniform'},
+  {cat:'Object', text:'Flashlight, still on, beam pointing at the ceiling'},
+  {cat:'Object', text:'Child\'s drawing pinned to a notice board — crayon sun, stick figures'},
+  {cat:'Object', text:'Toolbox, open, wrenches scattered as if dropped in a hurry'},
+  {cat:'Object', text:'Handwritten note: "DON\'T GO BELOW LEVEL 3"'},
+  {cat:'Object', text:'Radio handset hanging by its cord, faint static'},
+
+  // TEXTURES — surface details
+  {cat:'Texture', text:'Condensation beading on cold pipes, running in slow trails'},
+  {cat:'Texture', text:'Organic residue — slick, slightly warm, smells faintly sweet'},
+  {cat:'Texture', text:'Floor grating caked with dried mud and something darker'},
+  {cat:'Texture', text:'Peeling safety tape, yellow-black stripes curling at the edges'},
+  {cat:'Texture', text:'Wall paint blistered from heat, rough like skin'},
+  {cat:'Texture', text:'Mineral deposits crusting around a leaking valve'},
+  {cat:'Texture', text:'Hairline cracks spreading across reinforced glass'},
+  {cat:'Texture', text:'Rust blooming through grey paint like a rash'},
+  {cat:'Texture', text:'Smooth patch on a handrail where a thousand hands have gripped'},
+  {cat:'Texture', text:'Floor tiles buckled upward, something growing underneath'},
+
+  // SOUNDS — background audio
+  {cat:'Sound', text:'Distant clang — metallic, rhythmic, like someone hammering'},
+  {cat:'Sound', text:'Air cycling through vents, changing pitch every few seconds'},
+  {cat:'Sound', text:'Water running somewhere behind a wall, faster than a drip'},
+  {cat:'Sound', text:'Generator hum shifting frequency — wrong for a moment, then back'},
+  {cat:'Sound', text:'Something dragging across the floor, one room over'},
+  {cat:'Sound', text:'Radio squelch — someone keying a mic but not speaking'},
+  {cat:'Sound', text:'Gurgling from a drain, like it\'s trying to breathe'},
+  {cat:'Sound', text:'Tick-tick-tick — thermal expansion in cooling pipes'},
+  {cat:'Sound', text:'Echo of your own footsteps coming back wrong — too many feet'},
+  {cat:'Sound', text:'A door closing softly, somewhere behind you'},
+
+  // ATMOSPHERE — vibes and conditions
+  {cat:'Vibe', text:'Emergency lighting only — everything red-tinted and long-shadowed'},
+  {cat:'Vibe', text:'Air feels thick, humid, slightly hard to breathe'},
+  {cat:'Vibe', text:'Temperature suddenly warmer than it should be'},
+  {cat:'Vibe', text:'Power flicker — half a second of total darkness'},
+  {cat:'Vibe', text:'Smell of ozone and burnt insulation'},
+  {cat:'Vibe', text:'Floor vibration — subsonic, felt in the chest not heard'},
+  {cat:'Vibe', text:'A room that looks perfectly normal. Nothing wrong at all. Somehow worse.'},
+  {cat:'Vibe', text:'Graffiti on the wall: tally marks. Forty-seven of them.'},
+  {cat:'Vibe', text:'A corridor that curves just enough that you can\'t see the end'},
+  {cat:'Vibe', text:'Handprints on the wall at running height — smeared, heading one direction'},
+
+  // BODIES & BIOLOGY — the horror layer
+  {cat:'Biology', text:'Shed chitin fragments on the floor, translucent, still wet'},
+  {cat:'Biology', text:'Mucus trail across a doorway, thick as a finger'},
+  {cat:'Biology', text:'Organic growth in a wall seam — soft, fibrous, pulsing faintly'},
+  {cat:'Biology', text:'A tooth on the floor. Human.'},
+  {cat:'Biology', text:'Something that used to be a hand, fused to a pipe fitting'},
+  {cat:'Biology', text:'Cocoon material draped from the ceiling like wet fabric'},
+  {cat:'Biology', text:'Scratch marks on the inside of a locked door'},
+  {cat:'Biology', text:'A puddle that\'s slightly too warm and slightly too thick'},
+  {cat:'Biology', text:'Shell casing in a cluster — someone fired at something here'},
+  {cat:'Biology', text:'A boot. Just one. Still laced.'},
+];
+
+function populateDressing() {
+  const grid = document.getElementById('dressing-grid');
+  const items = pickN(DRESSING, 8);
+  grid.innerHTML = items.map(d =>
+    `<div class="dressing-item"><span class="dressing-label">${d.cat}</span><br>${d.text}</div>`
+  ).join('');
+}
+
+populateDressing();
+
+// ===== ENCOUNTER BUILDER =====
+const ENEMY_STATS = {
+  'carcinid-basic': {
+    name: 'Basic Carcinid',
+    hp: 10,
+    armor: 3,
+    instinct: 35,
+    combat: 40,
+    attacks: 'Claws +0 | 1d10 dmg',
+    notes: 'Pack tactics. Herd behavior.'
+  },
+  'carcinid-advanced': {
+    name: 'Advanced Carcinid',
+    hp: 15,
+    armor: 5,
+    instinct: 45,
+    combat: 50,
+    attacks: 'Claws +5 | 2d10 dmg | Acid spit (range)',
+    notes: 'Human DNA integration. Tactical. Can use tools.'
+  },
+  'mimic': {
+    name: 'The Mimic',
+    hp: 20,
+    armor: 7,
+    instinct: 60,
+    combat: 60,
+    attacks: 'Claws +10 | 2d10+5 dmg | Ambush (double damage first strike)',
+    notes: 'Looks human at distance. Moves on two legs. Wears marine gear. Uncanny valley horror.'
+  },
+  'shaw': {
+    name: 'Shaw (Android)',
+    hp: 25,
+    armor: 10,
+    instinct: 70,
+    combat: 75,
+    attacks: 'Unarmed +15 | 3d10 dmg | Can use weapons at +20',
+    notes: 'Company asset. Superhuman strength/speed. Mission: retrieve Hinton\'s core. Will negotiate if advantageous.'
+  }
+};
+
+let enemyCounter = 0;
+
+function addEnemy(type) {
+  const stats = ENEMY_STATS[type];
+  const id = `enemy-${++enemyCounter}`;
+  const tracker = document.getElementById('encounter-tracker');
+
+  const enemyCard = document.createElement('div');
+  enemyCard.id = id;
+  enemyCard.className = 'enemy-card';
+  enemyCard.innerHTML = `
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:6px">
+      <strong style="color:var(--red)">${stats.name} #${enemyCounter}</strong>
+      <button onclick="removeEnemy('${id}')" style="background:var(--red);color:white;border:none;padding:2px 8px;cursor:pointer;font-family:inherit;font-size:11px;border-radius:2px">✕</button>
+    </div>
+    <div class="enemy-stats">
+      <div><strong>HP:</strong> <input type="number" value="${stats.hp}" style="width:50px;font-family:inherit;padding:2px 4px"> / ${stats.hp}</div>
+      <div><strong>Armor:</strong> ${stats.armor}</div>
+      <div><strong>Instinct:</strong> ${stats.instinct}% | <strong>Combat:</strong> ${stats.combat}%</div>
+      <div><strong>Attacks:</strong> ${stats.attacks}</div>
+      <div style="margin-top:4px;color:var(--dim);font-size:13px">${stats.notes}</div>
+    </div>
+  `;
+
+  tracker.appendChild(enemyCard);
+}
+
+function removeEnemy(id) {
+  document.getElementById(id).remove();
+}
+</script>
+
+<style>
+/* ===== ENCOUNTER SECTION ===== */
+.encounter-section {
+  max-width: 1400px;
+  margin: 40px auto;
+  padding: 24px;
+  background: var(--panel);
+  border: 2px solid var(--border);
+}
+
+.combat-rules {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  background: var(--surface);
+  padding: 16px;
+  border: 1px solid var(--border);
+  border-left: 3px solid var(--caution);
+}
+
+.rule-column {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.rule-title {
+  font-family: 'Orbitron', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 1.5px;
+  color: var(--caution);
+  font-weight: 700;
+  margin-bottom: -6px;
+}
+
+.rule-text {
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--text);
+}
+
+.enemy-add-btn {
+  background: var(--surface);
+  border: 2px solid var(--border);
+  color: var(--text);
+  padding: 12px;
+  font-family: 'Orbitron', sans-serif;
+  font-size: 12px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 1px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.enemy-add-btn:hover {
+  background: var(--red);
+  color: white;
+  border-color: var(--red);
+}
+
+.enemy-card {
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-left: 4px solid var(--red);
+  padding: 14px;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.enemy-stats > div {
+  margin: 4px 0;
+}
+
+.enemy-stats strong {
+  color: var(--dim);
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.5px;
+}
+
+.enemy-stats input[type="number"] {
+  font-family: 'Share Tech Mono', monospace;
+  font-size: 14px;
+  font-weight: bold;
+  border: 1px solid var(--border);
+  padding: 2px 6px;
+  background: var(--bg);
+  color: var(--red);
+  width: 60px;
+}
+</style>
+
+</body>
+</html>
