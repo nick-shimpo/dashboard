@@ -1345,10 +1345,29 @@
       } else if (fired >= total) {
         next.textContent = '';
         next.classList.add('placeholder');
+        // Allow windback even on completed/resolved perils (right-click only).
+        next.title = 'Right-click (or Shift+click on placeholder) to walk back';
+        next.oncontextmenu = function(ev) {
+          if (ev && ev.preventDefault) ev.preventDefault();
+          unfireOmen(def.id);
+          return false;
+        };
+        next.onclick = function(ev) {
+          if (ev && ev.shiftKey) { unfireOmen(def.id); }
+        };
       } else {
         const idx = fired;
         next.textContent = (idx + 1) + ' · ' + def.omens[idx];
-        next.onclick = function() { fireOmen(def.id); };
+        next.title = 'Click to fire next omen · Right-click (or Shift+click) to walk back';
+        next.onclick = function(ev) {
+          if (ev && ev.shiftKey) { unfireOmen(def.id); return; }
+          fireOmen(def.id);
+        };
+        next.oncontextmenu = function(ev) {
+          if (ev && ev.preventDefault) ev.preventDefault();
+          unfireOmen(def.id);
+          return false;
+        };
       }
     }
 
@@ -1400,6 +1419,20 @@
     updateFootHint();
   }
 
+  function unfireOmen(perilId) {
+    const def = PERIL_DEFS.find(function(d) { return d.id === perilId; });
+    if (!def) return;
+    if (def.kind === 'dormant') return;
+    const cur = CURRENT_STATE[perilId];
+    if (!cur) return;
+    if (cur.fired <= 0) return;
+    cur.fired -= 1;
+    savePerils(CURRENT_STATE);
+    const item = document.querySelector('.peril-item[data-peril-id="' + perilId + '"]');
+    if (item) renderPerilRow(item, def, CURRENT_STATE);
+    updateFootHint();
+  }
+
   function computeFootHint() {
     if (!CURRENT_STATE) return 'next omen: —';
     // Perils whose next omen is the FINAL one (one click from completion).
@@ -1440,7 +1473,7 @@
   }
 
   // Expose for debug only.
-  window.__perils = { render: renderPerils, fire: fireOmen, state: function() { return CURRENT_STATE; }, reset: function() { localStorage.removeItem(PERIL_STORAGE_KEY); renderPerils(); } };
+  window.__perils = { render: renderPerils, fire: fireOmen, unfire: unfireOmen, state: function() { return CURRENT_STATE; }, reset: function() { localStorage.removeItem(PERIL_STORAGE_KEY); renderPerils(); } };
 })();
 </script>
 
