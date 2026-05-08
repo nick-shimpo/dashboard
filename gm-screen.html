@@ -150,7 +150,8 @@
   .omens-locked .omen-locked { padding: 2px 6px; border: 1px dotted var(--hair-strong); border-radius: 2px; }
   .peril-state { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; text-align: right; min-width: 80px; }
   .peril-item.hot .peril-state { color: var(--accent); font-weight: 600; }
-  .peril-item.complete .omen-next, .peril-item.resolved .omen-next { display: none; }
+  .peril-item.complete .omen-next, .peril-item.resolved .omen-next { font-size: 14px; color: var(--ink-faint); background: var(--bg); border: 1px dashed var(--hair-strong); border-radius: 4px; padding: 6px 10px; cursor: context-menu; opacity: 0.7; }
+  .peril-item.complete .omen-next:hover, .peril-item.resolved .omen-next:hover { opacity: 1; background: rgba(0,0,0,0.03); }
 
   /* ===== IMPROV VIEW — redesigned ===== */
   .improv-wrap {
@@ -1343,18 +1344,16 @@
         next.textContent = 'no foreshadowing yet';
         next.classList.add('placeholder');
       } else if (fired >= total) {
-        next.textContent = '';
+        next.textContent = '↶ rewind';
         next.classList.add('placeholder');
-        // Allow windback even on completed/resolved perils (right-click only).
-        next.title = 'Right-click (or Shift+click on placeholder) to walk back';
+        // Allow windback even on completed/resolved perils (right-click or click).
+        next.title = 'Click or right-click to walk back';
         next.oncontextmenu = function(ev) {
           if (ev && ev.preventDefault) ev.preventDefault();
           unfireOmen(def.id);
           return false;
         };
-        next.onclick = function(ev) {
-          if (ev && ev.shiftKey) { unfireOmen(def.id); }
-        };
+        next.onclick = function() { unfireOmen(def.id); };
       } else {
         const idx = fired;
         next.textContent = (idx + 1) + ' · ' + def.omens[idx];
