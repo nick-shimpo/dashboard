@@ -132,17 +132,25 @@
   .truths-bar .tval { font-family: var(--serif); font-size: 20px; color: var(--ink); font-weight: 500; letter-spacing: -0.01em; line-height: 1.2; margin-top: 2px; }
   .peril-stack { margin-bottom: 24px; }
   .peril-stack h2 { font-family: var(--mono); font-size: 11px; letter-spacing: 0.25em; color: var(--ink-dim); text-transform: uppercase; margin-bottom: 14px; }
-  .peril-item { display: grid; grid-template-columns: 200px 1fr auto; gap: 20px; align-items: center; padding: 14px 20px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; margin-bottom: 6px; transition: transform 0.15s; }
+  .peril-item { display: grid; grid-template-columns: 220px auto 1fr auto auto; gap: 14px; align-items: center; padding: 14px 20px; background: var(--paper); border: 1px solid var(--hair); border-radius: 4px; margin-bottom: 6px; transition: transform 0.15s; }
   .peril-item:hover { transform: translateX(2px); border-color: var(--hair-strong); }
   .peril-item.hot { border-color: var(--accent); background: #fef2f2; }
   .peril-item.complete, .peril-item.resolved { opacity: 0.45; }
+  .peril-item.dormant { opacity: 0.5; }
   .peril-item h3 { font-family: var(--serif); font-size: 18px; font-weight: 500; }
-  .omens { display: flex; gap: 6px; align-items: center; }
-  .omen { flex: 1; padding: 6px 10px; font-size: 12px; color: var(--ink-dim); background: var(--bg); border-radius: 3px; border: 1px dashed var(--hair-strong); }
-  .omen.fired { background: var(--amber); color: var(--paper); border-style: solid; border-color: var(--amber); }
-  .peril-item.hot .omen.fired { background: var(--accent); border-color: var(--accent); }
+  .omens-trail { display: flex; gap: 4px; align-items: center; font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.05em; }
+  .omens-trail .omen-past { text-decoration: line-through; opacity: 0.55; }
+  .omen-next { padding: 8px 14px; font-size: 14px; font-family: var(--serif); color: var(--accent); background: rgba(220, 38, 38, 0.06); border: 1px solid rgba(220, 38, 38, 0.25); border-radius: 4px; cursor: pointer; user-select: none; transition: background 0.15s, transform 0.1s; line-height: 1.25; }
+  .peril-item:not(.hot) .omen-next { color: var(--ink); background: var(--bg); border-color: var(--hair-strong); }
+  .omen-next:hover { background: rgba(220, 38, 38, 0.12); }
+  .omen-next:active { transform: scale(0.98); }
+  .omen-next.placeholder { cursor: default; color: var(--ink-faint); background: transparent; border-style: dashed; font-style: italic; }
+  .omen-next.placeholder:hover { background: transparent; }
+  .omens-locked { display: flex; gap: 4px; align-items: center; font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.05em; opacity: 0.4; }
+  .omens-locked .omen-locked { padding: 2px 6px; border: 1px dotted var(--hair-strong); border-radius: 2px; }
   .peril-state { font-family: var(--mono); font-size: 11px; color: var(--ink-faint); letter-spacing: 0.1em; text-align: right; min-width: 80px; }
   .peril-item.hot .peril-state { color: var(--accent); font-weight: 600; }
+  .peril-item.complete .omen-next, .peril-item.resolved .omen-next { display: none; }
 
   /* ===== IMPROV VIEW — redesigned ===== */
   .improv-wrap {
@@ -422,103 +430,87 @@
             <div class="truth"><div class="tlabel">Truth 02</div><div class="tval">You will die here.</div></div>
             <div class="truth"><div class="tlabel">Truth 03</div><div class="tval">This will spread.</div></div>
           </div>
-          <div class="peril-stack">
+          <div class="peril-stack" id="peril-stack">
 
-            <!-- The Cure Is Lost — 2/3 -->
-            <div class="peril-item hot">
+            <!-- The Cure Is Lost -->
+            <div class="peril-item" data-peril-id="cure-lost">
               <h3>The Cure Is Lost</h3>
-              <div class="omens">
-                <div class="omen fired">1 · cure has a name</div>
-                <div class="omen fired">2 · signs of the cure</div>
-                <div class="omen">3 · pending</div>
-              </div>
-              <div class="peril-state">HOT · 2/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- The Mimic Is Born — 2/3 -->
-            <div class="peril-item hot">
+            <div class="peril-item" data-peril-id="mimic-born">
               <h3>The Mimic Is Born</h3>
-              <div class="omens">
-                <div class="omen fired">1 · clicks heard</div>
-                <div class="omen fired">2 · procession</div>
-                <div class="omen">3 · the radiation returns</div>
-              </div>
-              <div class="peril-state">HOT · 2/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- The Hangar Falls — 2/3 -->
-            <div class="peril-item hot">
+            <div class="peril-item" data-peril-id="hangar-falls">
               <h3>The Hangar Falls</h3>
-              <div class="omens">
-                <div class="omen fired">1 · radio tense</div>
-                <div class="omen fired">2 · Brookman gone</div>
-                <div class="omen">3 · we're out of time</div>
-              </div>
-              <div class="peril-state">HOT · 2/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- Hinton Ascends — 0/3 (Omen 3 parked) -->
-            <div class="peril-item">
+            <div class="peril-item" data-peril-id="hinton-ascends">
               <h3>Hinton Ascends</h3>
-              <div class="omens">
-                <div class="omen">1 · he wasn't where he was supposed to be</div>
-                <div class="omen">2 · he speaks their language</div>
-                <div class="omen" style="opacity:0.4">3 · parked</div>
-              </div>
-              <div class="peril-state">0/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- The World Breathes In — 0/3 (replaces Storm Closes) -->
-            <div class="peril-item">
+            <div class="peril-item" data-peril-id="world-breathes">
               <h3>The World Breathes In</h3>
-              <div class="omens">
-                <div class="omen">1 · the wildlife came in</div>
-                <div class="omen">2 · skin remembers</div>
-                <div class="omen">3 · the whispers start</div>
-              </div>
-              <div class="peril-state">0/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- The Dropship Leaves Without Them — 0/3 (NEW) -->
-            <div class="peril-item">
+            <div class="peril-item" data-peril-id="dropship-leaves">
               <h3>The Dropship Leaves Without Them</h3>
-              <div class="omens">
-                <div class="omen">1 · they're doing math</div>
-                <div class="omen">2 · they're spinning up</div>
-                <div class="omen">3 · last call</div>
-              </div>
-              <div class="peril-state">0/3</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- Maas Transforms — DORMANT -->
-            <div class="peril-item" style="opacity:0.5">
+            <div class="peril-item" data-peril-id="maas-transforms">
               <h3>Maas Transforms <span style="font-family:var(--mono);font-size:10px;color:var(--ink-faint);letter-spacing:0.15em;margin-left:8px">· DORMANT</span></h3>
-              <div class="omens">
-                <div class="omen" style="border-style:dotted">no foreshadowing yet</div>
-              </div>
-              <div class="peril-state">DORMANT</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- Shaw Activates — COMPLETE -->
-            <div class="peril-item complete">
+            <div class="peril-item" data-peril-id="shaw-activates">
               <h3>Shaw activates</h3>
-              <div class="omens">
-                <div class="omen fired">1 · manipulation</div>
-                <div class="omen fired">2 · force</div>
-                <div class="omen fired">3 · termination</div>
-              </div>
-              <div class="peril-state">COMPLETE</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
 
             <!-- Reactor Dies — RESOLVED -->
-            <div class="peril-item resolved">
+            <div class="peril-item" data-peril-id="reactor-dies">
               <h3>Reactor dies</h3>
-              <div class="omens">
-                <div class="omen fired">sluice gates opened</div>
-                <div class="omen fired">pressure dropped</div>
-                <div class="omen fired">stable</div>
-              </div>
-              <div class="peril-state">RESOLVED</div>
+              <div class="omens-trail"></div>
+              <div class="omen-next"></div>
+              <div class="omens-locked"></div>
+              <div class="peril-state"></div>
             </div>
           </div>
         <div class="loop-party">
@@ -624,7 +616,7 @@
   </div>
 
   <div class="foot">
-    <div><span class="foot-tag">PERIL</span> &nbsp;&nbsp; next omen: Cure Is Lost 3/3 · or Mimic 3/3 · or Hangar 3/3</div>
+    <div id="foot-peril"><span class="foot-tag">PERIL</span> &nbsp;&nbsp; <span id="foot-peril-hint">next omen: —</span></div>
     <div>v4 · stacking situational improv</div>
     <div>session 07 / scenario 02 late</div>
   </div>
@@ -1248,6 +1240,208 @@
     saveParty(partyState); renderParty();
   }
   renderParty();
+
+// ===== Peril/Omen state machine (V5b) =====
+(function() {
+  const PERIL_STORAGE_KEY = 'gm-perils-state-v1';
+
+  // Definitions: ordered list of perils with their omen text and behaviour.
+  // 'kind' values: hot | normal | dormant | complete | resolved
+  const PERIL_DEFS = [
+    { id: 'cure-lost', kind: 'hot', omens: ['cure has a name', 'signs of the cure', 'pending'], defaultFired: 2 },
+    { id: 'mimic-born', kind: 'hot', omens: ['clicks heard', 'procession', 'the radiation returns'], defaultFired: 2 },
+    { id: 'hangar-falls', kind: 'hot', omens: ['radio tense', 'Brookman gone', "we're out of time"], defaultFired: 2 },
+    { id: 'hinton-ascends', kind: 'normal', omens: ['he wasn\'t where he was supposed to be', 'he speaks their language', 'parked'], defaultFired: 0 },
+    { id: 'world-breathes', kind: 'normal', omens: ['the wildlife came in', 'skin remembers', 'the whispers start'], defaultFired: 0 },
+    { id: 'dropship-leaves', kind: 'normal', omens: ["they're doing math", "they're spinning up", 'last call'], defaultFired: 0 },
+    { id: 'maas-transforms', kind: 'dormant', omens: [], defaultFired: 0 },
+    { id: 'shaw-activates', kind: 'complete', omens: ['manipulation', 'force', 'termination'], defaultFired: 3 },
+    { id: 'reactor-dies', kind: 'resolved', omens: ['sluice gates opened', 'pressure dropped', 'stable'], defaultFired: 3 },
+  ];
+
+  const HUMAN_NAMES = {
+    'cure-lost': 'Cure Is Lost',
+    'mimic-born': 'Mimic',
+    'hangar-falls': 'Hangar',
+    'hinton-ascends': 'Hinton',
+    'world-breathes': 'World Breathes',
+    'dropship-leaves': 'Dropship',
+    'maas-transforms': 'Maas',
+    'shaw-activates': 'Shaw',
+    'reactor-dies': 'Reactor',
+  };
+
+  function defaultState() {
+    const s = {};
+    for (const def of PERIL_DEFS) s[def.id] = { fired: def.defaultFired };
+    return s;
+  }
+
+  function loadPerils() {
+    try {
+      const raw = localStorage.getItem(PERIL_STORAGE_KEY);
+      if (!raw) return defaultState();
+      const parsed = JSON.parse(raw);
+      // Merge with defaults so newly added perils show up if storage is stale.
+      const merged = defaultState();
+      for (const def of PERIL_DEFS) {
+        if (parsed && parsed[def.id] && typeof parsed[def.id].fired === 'number') {
+          merged[def.id].fired = parsed[def.id].fired;
+        }
+      }
+      return merged;
+    } catch (e) {
+      return defaultState();
+    }
+  }
+
+  function savePerils(state) {
+    try { localStorage.setItem(PERIL_STORAGE_KEY, JSON.stringify(state)); } catch (e) {}
+  }
+
+  function statusFor(def, fired) {
+    if (def.kind === 'dormant') return 'dormant';
+    if (def.kind === 'resolved' && fired >= def.omens.length) return 'resolved';
+    if (fired >= def.omens.length) return 'complete';
+    if (def.kind === 'hot') return 'hot';
+    return 'normal';
+  }
+
+  function renderPerilRow(item, def, state) {
+    const fired = state[def.id].fired;
+    const total = def.omens.length;
+    const status = statusFor(def, fired);
+
+    // Reset row classes
+    item.classList.remove('hot', 'complete', 'resolved', 'dormant');
+    if (status === 'hot') item.classList.add('hot');
+    else if (status === 'complete') item.classList.add('complete');
+    else if (status === 'resolved') item.classList.add('resolved');
+    else if (status === 'dormant') item.classList.add('dormant');
+
+    const trail = item.querySelector('.omens-trail');
+    const next = item.querySelector('.omen-next');
+    const locked = item.querySelector('.omens-locked');
+    const stateEl = item.querySelector('.peril-state');
+
+    // Trail: numbers of fired omens, struck-through.
+    if (trail) {
+      trail.innerHTML = '';
+      for (let i = 0; i < fired && i < total; i++) {
+        const span = document.createElement('span');
+        span.className = 'omen-past';
+        span.textContent = (i + 1) + (i < fired - 1 || fired < total ? ' ·' : '');
+        trail.appendChild(span);
+      }
+    }
+
+    // Next omen pill: the upcoming omen, clickable.
+    if (next) {
+      next.classList.remove('placeholder');
+      next.onclick = null;
+      if (status === 'dormant') {
+        next.textContent = 'no foreshadowing yet';
+        next.classList.add('placeholder');
+      } else if (fired >= total) {
+        next.textContent = '';
+        next.classList.add('placeholder');
+      } else {
+        const idx = fired;
+        next.textContent = (idx + 1) + ' · ' + def.omens[idx];
+        next.onclick = function() { fireOmen(def.id); };
+      }
+    }
+
+    // Locked future omens: ghost markers for each remaining omen beyond next.
+    if (locked) {
+      locked.innerHTML = '';
+      const lockedStart = fired + 1;
+      for (let i = lockedStart; i < total; i++) {
+        const span = document.createElement('span');
+        span.className = 'omen-locked';
+        span.textContent = '· ' + (i + 1);
+        locked.appendChild(span);
+      }
+    }
+
+    // State pill text
+    if (stateEl) {
+      if (status === 'dormant') stateEl.textContent = 'DORMANT';
+      else if (status === 'resolved') stateEl.textContent = 'RESOLVED';
+      else if (status === 'complete') stateEl.textContent = 'COMPLETE';
+      else if (status === 'hot') stateEl.textContent = 'HOT · ' + fired + '/' + total;
+      else stateEl.textContent = fired + '/' + total;
+    }
+  }
+
+  let CURRENT_STATE = null;
+
+  function renderPerils() {
+    CURRENT_STATE = loadPerils();
+    for (const def of PERIL_DEFS) {
+      const item = document.querySelector('.peril-item[data-peril-id="' + def.id + '"]');
+      if (!item) continue;
+      renderPerilRow(item, def, CURRENT_STATE);
+    }
+    updateFootHint();
+  }
+
+  function fireOmen(perilId) {
+    const def = PERIL_DEFS.find(function(d) { return d.id === perilId; });
+    if (!def) return;
+    if (def.kind === 'dormant') return;
+    const cur = CURRENT_STATE[perilId];
+    if (!cur) return;
+    if (cur.fired >= def.omens.length) return;
+    cur.fired += 1;
+    savePerils(CURRENT_STATE);
+    const item = document.querySelector('.peril-item[data-peril-id="' + perilId + '"]');
+    if (item) renderPerilRow(item, def, CURRENT_STATE);
+    updateFootHint();
+  }
+
+  function computeFootHint() {
+    if (!CURRENT_STATE) return 'next omen: —';
+    // Perils whose next omen is the FINAL one (one click from completion).
+    const oneAway = [];
+    for (const def of PERIL_DEFS) {
+      if (def.kind === 'dormant' || def.kind === 'resolved') continue;
+      const fired = CURRENT_STATE[def.id].fired;
+      const total = def.omens.length;
+      if (total > 0 && fired === total - 1) {
+        oneAway.push(HUMAN_NAMES[def.id] + ' ' + total + '/' + total);
+      }
+    }
+    if (oneAway.length > 0) return 'next omen: ' + oneAway.join(' · or ');
+    // Fallback: most-progressed live perils.
+    const live = [];
+    for (const def of PERIL_DEFS) {
+      if (def.kind === 'dormant' || def.kind === 'resolved') continue;
+      const fired = CURRENT_STATE[def.id].fired;
+      const total = def.omens.length;
+      if (total > 0 && fired < total) live.push({ name: HUMAN_NAMES[def.id], fired: fired, total: total });
+    }
+    if (live.length === 0) return 'all perils settled';
+    live.sort(function(a, b) { return b.fired - a.fired; });
+    const top = live.slice(0, 3).map(function(p) { return p.name + ' ' + (p.fired + 1) + '/' + p.total; });
+    return 'next omen: ' + top.join(' · ');
+  }
+
+  function updateFootHint() {
+    const el = document.getElementById('foot-peril-hint');
+    if (el) el.textContent = computeFootHint();
+  }
+
+  // Self-initialise after DOM ready.
+  if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', renderPerils);
+  } else {
+    renderPerils();
+  }
+
+  // Expose for debug only.
+  window.__perils = { render: renderPerils, fire: fireOmen, state: function() { return CURRENT_STATE; }, reset: function() { localStorage.removeItem(PERIL_STORAGE_KEY); renderPerils(); } };
+})();
 </script>
 
 </body>
